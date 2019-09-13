@@ -21,7 +21,7 @@ setuptools.setup(
         "pyyaml",
         "xmldiff",
         "xmltodict",
-        "request-toolbelt",
+        "requests-toolbelt",
         "requests",
     ],
     classifiers=[
