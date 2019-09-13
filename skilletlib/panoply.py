@@ -315,7 +315,7 @@ class Panoply:
         else:
             raise SkilletLoaderException('Could not determine sw-version for baseline load')
 
-        template_path = Path(__file__).parent.joinpath('..', 'skillets', skillet_type_dir, skillet_dir)
+        template_path = Path(__file__).parent.joinpath('assets', skillet_type_dir, skillet_dir)
         print(f'{template_path.resolve()}')
         baseline_skillet = Skillet(str(template_path.resolve()))
         snippets = baseline_skillet.get_snippets()

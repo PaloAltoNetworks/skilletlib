@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<config version="9.0.0" urldb="paloaltonetworks">
+    <mgt-config>
+        <devices/>
+        <users>
+            <entry name="{{ ADMINISTRATOR_USERNAME }}">
+                <phash>{{ ADMINISTRATOR_PASSWORD | md5_hash }}</phash>
+                <permissions>
+                    <role-based>
+                        <superuser>yes</superuser>
+                    </role-based>
+                </permissions>
+            </entry>
+        </users>
+    </mgt-config>
+    <shared/>
+    <devices>
+        <entry name="localhost.localdomain">
+            <deviceconfig>
+                <system>
+                    <hostname>{{ PANORAMA_NAME }}</hostname>
+                    {%- if PANORAMA_TYPE == "static" %}
+                    <ip-address>{{ PANORAMA_IP }}</ip-address>
+                    <netmask>{{ PANORAMA_MASK }}</netmask>
+                    <default-gateway>{{ PANORAMA_DG }}</default-gateway>
+                    {%- elif PANORAMA_TYPE == "cloud" %}
+                    <type>
+                        <dhcp-client>
+                            <send-hostname>yes</send-hostname>
+                            <send-client-id>no</send-client-id>
+                            <accept-dhcp-hostname>no</accept-dhcp-hostname>
+                            <accept-dhcp-domain>no</accept-dhcp-domain>
+                        </dhcp-client>
+                    </type>
+                    {% endif %}
+                    <update-server>updates.paloaltonetworks.com</update-server>
+                    <update-schedule>
+                        <threats>
+                            <recurring>
+                                <weekly>
+                                    <day-of-week>{{ ['monday', 'tuesday', 'wednesday', 'thursday', 'friday','saturday','sunday']|random }}</day-of-week>
+                                    <at>{{ ['01','02','03','04','05','06','07','08','09','10','11','12']|random }}:{{ ['00','05','10','15','20','25','30']|random }}</at>
+                                    <action>download-only</action>
+                                </weekly>
+                            </recurring>
+                        </threats>
+                    </update-schedule>
+                    <timezone>US/Pacific</timezone>
+                    <service>
+                        <disable-telnet>yes</disable-telnet>
+                        <disable-http>yes</disable-http>
+                    </service>
+                    <hostname>{{ PANORAMA_NAME }}</hostname>
+                    <dns-setting>
+                        <servers>
+                            <primary>{{ DNS_1 }}</primary>
+                            <secondary>{{ DNS_2 }}</secondary>
+                        </servers>
+                    </dns-setting>
+                    <login-banner>Automation Team Panorama Lab Rat 9.0.2. The config on this device is wiped hourly, do
+                        not relay on anything here!
+                    </login-banner>
+                </system>
+                <setting>
+                    <management>
+                        <storage-partition>
+                            <internal/>
+                        </storage-partition>
+                        <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>
+                    </management>
+                </setting>
+            </deviceconfig>
+        </entry>
+    </devices>
+</config>
