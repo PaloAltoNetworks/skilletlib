@@ -13,6 +13,17 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nembery/skilletlib",
     packages=setuptools.find_packages(),
+    install_requires=[
+        "oyaml",
+        "pan-python",
+        "pathlib",
+        "jinja2",
+        "pyyaml",
+        "xmldiff",
+        "xmltodict",
+        "request-toolbelt",
+        "requests",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache 2.0",
