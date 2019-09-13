@@ -1,0 +1,8 @@
+oyaml
+pan-python
+pathlib
+pyyaml
+requests
+xmldiff
+xmltodict
+requests-toolbelt
