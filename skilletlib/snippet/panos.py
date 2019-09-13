@@ -18,7 +18,7 @@
 import xml.etree.ElementTree as elementTree
 from xml.etree.ElementTree import ParseError
 
-from utils.exceptions import SkilletLoaderException
+from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
 
 

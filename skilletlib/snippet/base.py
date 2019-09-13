@@ -9,7 +9,7 @@ from jinja2 import Environment
 from jsonpath_ng import parse
 from passlib.hash import md5_crypt
 
-from utils.exceptions import SkilletLoaderException
+from skilletlib.exceptions import SkilletLoaderException
 
 
 class Snippet:

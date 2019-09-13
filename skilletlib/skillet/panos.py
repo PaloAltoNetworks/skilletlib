@@ -17,7 +17,7 @@
 from pathlib import Path
 from typing import List
 
-from utils.snippet.panos import PanosSnippet
+from skilletlib.snippet.panos import PanosSnippet
 from .base import Skillet
 
 
