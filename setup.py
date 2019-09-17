@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="skilletlib",
-    version="0.0.2",
+    version="0.0.3.3",
     author="Nathan Embery",
     author_email="nembery@paloaltonetworks.com",
     description="Tools for working with PAN-OS Skillets in Python 3",
@@ -13,7 +13,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nembery/skilletlib",
     packages=setuptools.find_packages(),
-    package_data={'skilletlib': ['assets/**/*']},
+    include_package_data=True,
+    package_data={'assets': ['skilletlib/assets/**/*.yaml', 'skilletlib/assets/**/*.xml']},
     install_requires=[
         "oyaml",
         "pan-python",
