@@ -71,7 +71,7 @@ class Panoply:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
                                      port=self.port, serial=self.serial_number)
         except PanXapiError:
-            print('Invalid Connection information')
+            # print('Invalid Connection information')
             raise LoginException('Invalid connection parameters')
         else:
             self.connect(allow_offline=True)
@@ -91,7 +91,7 @@ class Panoply:
                 raise LoginException('Invalid credentials logging into device')
             else:
                 if allow_offline:
-                    print('FYI - Device is not currently available')
+                    # print('FYI - Device is not currently available')
                     self.connected = False
                 else:
                     raise SkilletLoaderException('Could not connect to device!')
@@ -113,14 +113,12 @@ class Panoply:
             embedded_result = doc.find('result')
             if embedded_result is not None:
                 commit_result = embedded_result.text
-                print(f'Commit result is {commit_result}')
                 if commit_result == 'FAIL':
                     raise SkilletLoaderException(self.xapi.status_detail)
 
             return self.xapi.status_detail
 
         except PanXapiError as pxe:
-            print(pxe)
             raise SkilletLoaderException('Could not commit configuration')
 
     def set_at_path(self, name: str, xpath: str, xml_str: str) -> None:
@@ -133,7 +131,6 @@ class Panoply:
         """
 
         try:
-            print(f'Loading xpath {xpath}')
             self.xapi.set(xpath=xpath, element=self.sanitize_element(xml_str))
             if self.xapi.status_code == '7':
                 raise SkilletLoaderException(f'xpath {xpath} was NOT found for skillet: {name}')
@@ -145,7 +142,6 @@ class Panoply:
             self.xapi.op(cmd=cmd_str)
             return self.xapi.xml_result()
         except PanXapiError as pxe:
-            print(pxe)
             raise SkilletLoaderException(pxe)
 
     def execute_cmd(self, cmd: str, params: dict) -> str:
@@ -317,11 +313,9 @@ class Panoply:
             raise SkilletLoaderException('Could not determine sw-version for baseline load')
 
         template_path = Path(__file__).parent.joinpath('assets', skillet_type_dir, skillet_dir)
-        print(f'{template_path.resolve()}')
         baseline_skillet = Skillet(str(template_path.resolve()))
         snippets = baseline_skillet.get_snippets()
         snippet = snippets[0]
-        print(f'Loading {snippet.name}')
         return snippet.template(context)
 
     def import_file(self, filename: str, file_contents: (str, bytes), category: str) -> bool:
@@ -388,7 +382,6 @@ class Panoply:
         timeout_mark = mark + timeout
 
         while True:
-            print(f'Checking {self.hostname} if ready...')
             try:
                 self.xapi.op(cmd='<show><chassis-ready></chassis-ready></show>')
                 resp = self.xapi.xml_result()
@@ -396,12 +389,12 @@ class Panoply:
                     if resp.strip() == 'yes':
                         return True
             except PanXapiError:
-                print(f'{self.hostname} is not yet ready...')
+                logger.info(f'{self.hostname} is not yet ready...')
 
             if time.time() > timeout_mark:
                 return False
 
-            print(f'Waiting for {self.hostname} to become ready...')
+            logger.info(f'Waiting for {self.hostname} to become ready...')
             time.sleep(interval)
 
     def update_dynamic_content(self, content_type: str) -> bool:
@@ -413,10 +406,10 @@ class Panoply:
         try:
             version_to_install = self.check_content_updates(content_type)
             if version_to_install is None:
-                print('Latest content version is already installed')
+                logger.info('Latest content version is already installed')
                 return True
 
-            print('Downloading latest and greatest')
+            logger.info('Downloading latest and greatest')
             cmd = f'<request>' \
                   f'<{content_type}><upgrade><download><latest/></download></upgrade></{content_type}>' \
                   f'</request>'
@@ -429,7 +422,7 @@ class Panoply:
                 if not self.wait_for_job(job_id):
                     raise SkilletLoaderException('Could not update dynamic content')
 
-            print(f'Installing latest and greatest ')
+            logger.info(f'Installing latest and greatest ')
             install_cmd = f'<request><content><upgrade><install>' \
                           f'<version>latest</version><commit>no</commit></install></upgrade></content></request>'
 
@@ -441,12 +434,12 @@ class Panoply:
                 if not self.wait_for_job(job_id):
                     raise SkilletLoaderException('Could not install dynamic content')
             else:
-                print(f'No job returned to track')
+                logger.info(f'No job returned to track')
 
             return True
 
         except PanXapiError:
-            print('Could not check for updated dynamic content')
+            logger.error('Could not check for updated dynamic content')
             return False
 
     def check_content_updates(self, content_type: str) -> (str, None):
@@ -461,7 +454,7 @@ class Panoply:
         latest_version_second = 0
         latest_version_current = 'no'
         try:
-            print('Checking for latest content...')
+            logger.info('Checking for latest content...')
             self.xapi.op(cmd=f'<request><{content_type}><upgrade><check/></upgrade></{content_type}></request>')
             er = self.xapi.element_root
             for entry in er.findall('.//entry'):
@@ -496,12 +489,12 @@ class Panoply:
         """
         mark = time.time()
         timeout_mark = mark + timeout
-        print(f'Waiting for job id: {job_id} to finish...')
+        logger.debug(f'Waiting for job id: {job_id} to finish...')
         while True:
             try:
                 self.xapi.op(cmd=f'<show><jobs><id>{job_id}</id></jobs></show>')
             except PanXapiError:
-                print(f'Could not locate job with id: {job_id}')
+                logger.error(f'Could not locate job with id: {job_id}')
                 return False
 
             if self.xapi.status == 'success':
@@ -510,21 +503,21 @@ class Panoply:
                 if job_status_element is not None:
                     job_status = job_status_element.text
                     if job_status == 'FIN':
-                        print('Job is now complete')
+                        logger.debug('Job is now complete')
                         return True
                     elif job_status == 'ACT':
                         job_progress_element = job_element.find('.//progress')
                         if job_progress_element is not None:
                             job_progress = job_progress_element.text
-                            print(f'Progress is currently: {job_progress}')
+                            logger.debug(f'Progress is currently: {job_progress}')
                 else:
-                    print('No job status element to be found!')
+                    logger.error('No job status element to be found!')
                     return False
             else:
-                print(f'{self.xapi.xml_result()}')
+                logger.debug(f'{self.xapi.xml_result()}')
                 if time.time() > timeout_mark:
                     return False
-                print('Waiting a bit longer')
+                logger.info('Waiting a bit longer')
 
             time.sleep(interval)
 
@@ -606,7 +599,7 @@ class Panoply:
                 if d.node not in xpaths:
                     node_target = re.sub(r'\[\d+\]$', '', d.node)
                     xpaths[d.node] = f'{node_target}[@{d.name}="{d.value}"]'
-                    # print(f'added {d.node} with value {xpaths[d.node]} ')
+                    logger.debug(f'added {d.node} with value {xpaths[d.node]} ')
 
         snippets = list()
         # we have found changes in the latest_config
@@ -630,18 +623,19 @@ class Panoply:
                 xml_string = ''
                 # we can't just dump out the changed element because it'll contain the 'tag' as the outermost tag
                 # so, find all the children of this 'tag' and append them to the xml_string
+                for child_element in changed_element.findall('./'):
+                    xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
+                if xml_string == '':
+                    if changed_element.text:
+                        xml_string = changed_element.text
+                    else:
+                        continue
 
-                xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
-                xml_string_scrub_1 = re.sub(rf'<{f.tag}.*?>', '', xml_string)
-                xml_string_cleaned = re.sub(rf'</{f.tag}>', '', xml_string_scrub_1)
                 snippet = dict()
-                snippet['element'] = xml_string_cleaned.strip()
+                snippet['element'] = xml_string.strip()
                 snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
                 # now print out to the end user
                 snippets.append(snippet)
-                # print('---')
-                # print(f'XPath: {f_target_str_normalized}/{f.tag}')
-                # print(f'XML: {xml_string_cleaned.strip()}')
         return snippets
 
     def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
@@ -661,7 +655,7 @@ class Panoply:
             metadata = snippet.render_metadata(context)
             # check the 'when' conditional against variables currently held in the context
             if snippet.should_execute(context):
-                print(f'  Executing Snippet: {snippet.name}')
+                logger.info(f'  Executing Snippet: {snippet.name}')
                 # execute the command from the snippet definition and return the raw output
                 output = self.execute_cmd(snippet.cmd, metadata)
                 # update the context with any captured outputs defined in the snippet metadata
@@ -669,7 +663,7 @@ class Panoply:
 
             else:
                 # FIXME - we should possibly be able to bail out when a conditional fails
-                print(f'  Skipping Snippet: {snippet.name}')
+                logger.debug(f'  Skipping Snippet: {snippet.name}')
 
         return context
 
@@ -729,6 +723,6 @@ class Panoply:
             else:
                 check_path = re.sub(r'\[\d+\]', '', check_path)
 
-        # print(f'returning {check_path}')
+        logger.debug(f'returning {check_path}')
         return check_path
 

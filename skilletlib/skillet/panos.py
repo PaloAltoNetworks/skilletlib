@@ -19,6 +19,7 @@ from typing import List
 
 from skilletlib.snippet.panos import PanosSnippet
 from .base import Skillet
+from ..exceptions import SkilletLoaderException
 
 
 class PanosSkillet(Skillet):
@@ -31,10 +32,14 @@ class PanosSkillet(Skillet):
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
                 if 'file' not in snippet_def:
                     continue
-                snippet_file = snippet_path.joinpath(snippet_def['file'])
-                if snippet_file.exists():
-                    with open(snippet_file, 'r') as sf:
-                        snippet_def['element'] = sf.read()
+                if 'element' not in snippet_def or snippet_def['element'] == '':
+                    if 'file' not in snippet_def:
+                        raise SkilletLoaderException(
+                            'YAMLError: Could not parse metadata file for snippet %s' % snippet_def['name'])
+                    snippet_file = snippet_path.joinpath(snippet_def['file'])
+                    if snippet_file.exists():
+                        with open(snippet_file, 'r') as sf:
+                            snippet_def['element'] = sf.read()
 
             snippet = PanosSnippet(snippet_def)
             snippet_list.append(snippet)

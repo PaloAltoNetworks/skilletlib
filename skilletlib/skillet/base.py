@@ -7,6 +7,9 @@ from yaml.error import YAMLError
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Skillet:
@@ -28,11 +31,11 @@ class Skillet:
         else:
             # we were only passed a directory like '.' or something, try to find a .meta-cnc.yaml or .meta-cnc.yml
             directory = Path(path).absolute()
-            print(f'using directory {directory}')
+            logger.debug(f'using directory {directory}')
             found_meta = False
             for filename in ['.meta-cnc.yaml', '.meta-cnc.yml', 'meta-cnc.yaml', 'meta-cnc.yml']:
                 meta_cnc_file = directory.joinpath(filename)
-                print(f'checking now {meta_cnc_file}')
+                logger.debug(f'checking now {meta_cnc_file}')
                 if meta_cnc_file.exists():
                     found_meta = True
                     break
@@ -49,14 +52,14 @@ class Skillet:
                     return skillet
 
             except IOError as ioe:
-                print('Could not open metadata file in dir %s' % meta_cnc_file.parent)
+                logger.error('Could not open metadata file in dir %s' % meta_cnc_file.parent)
                 raise SkilletLoaderException('IOError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
             except YAMLError as ye:
-                print(ye)
+                logger.error(ye)
                 raise SkilletLoaderException(
                     'YAMLError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
             except Exception as ex:
-                print(ex)
+                logger.error(ex)
                 raise SkilletLoaderException(
                     'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
 
@@ -96,8 +99,7 @@ class Skillet:
         elif type(skillet['variables']) is list:
             for variable in skillet['variables']:
                 if type(variable) is not dict:
-                    print('Removing Invalid Variable Definition')
-                    print(type(variable))
+                    logger.debug('Removing Invalid Variable Definition')
                     skillet['variables'].remove(variable)
                 else:
                     if 'name' not in variable:
