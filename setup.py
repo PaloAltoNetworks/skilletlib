@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/nembery/skilletlib",
     packages=setuptools.find_packages(),
-    package_data={'skilletlib': ['assets/**/*']},
+    package_data={'assets': ['skilletlib/assets/**/*']},
     install_requires=[
         "oyaml",
         "pan-python",
