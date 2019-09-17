@@ -21,6 +21,7 @@ import sys
 import time
 from pathlib import Path
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 import requests
 import requests_toolbelt
@@ -558,7 +559,7 @@ class Panoply:
         xpaths = dict()
         for d in diffs:
             logger.debug(d)
-            # step 1 - find all inserted nodes (future enhancement can consider other types of deteced changes as well
+            # step 1 - find all inserted nodes (future enhancement can consider other types of detected changes as well
             if 'InsertNode' in str(d):
                 if d.target not in xpaths:
                     xpaths[d.target] = d.target
@@ -606,6 +607,8 @@ class Panoply:
                     node_target = re.sub(r'\[\d+\]$', '', d.node)
                     xpaths[d.node] = f'{node_target}[@{d.name}="{d.value}"]'
                     # print(f'added {d.node} with value {xpaths[d.node]} ')
+
+        snippets = list()
         # we have found changes in the latest_config
         if fx:
             # convert the config string to an xml doc
@@ -616,7 +619,9 @@ class Panoply:
                 # target contains the full xpath, since we have the 'config' element already in 'latest_config'
                 # we need to adjust the xpath to be relative. Also attach the 'tag' to the end of the xpath
                 f_target_str = xpaths[f.target]
-                f_target_str_relative = f_target_str.replace('/config/', './')
+
+                f_target_str_relative = self.__normalize_xpath(latest_doc, f_target_str)
+                f_target_str_normalized = re.sub(r'^\./', '/config/', f_target_str_relative)
                 changed_short_xpath = f'{f_target_str_relative}/{f.tag}'
                 # get this element from the latest config xml document
                 changed_element_dirty = latest_doc.find(changed_short_xpath)
@@ -629,11 +634,15 @@ class Panoply:
                 xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
                 xml_string_scrub_1 = re.sub(rf'<{f.tag}.*?>', '', xml_string)
                 xml_string_cleaned = re.sub(rf'</{f.tag}>', '', xml_string_scrub_1)
+                snippet = dict()
+                snippet['element'] = xml_string_cleaned.strip()
+                snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
                 # now print out to the end user
-                print('---')
-                print(f'XPath: {f_target_str}/{f.tag}')
-                print(f'XML: {xml_string_cleaned.strip()}')
-        return fx
+                snippets.append(snippet)
+                # print('---')
+                # print(f'XPath: {f_target_str_normalized}/{f.tag}')
+                # print(f'XML: {xml_string_cleaned.strip()}')
+        return snippets
 
     def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
         """
@@ -665,7 +674,7 @@ class Panoply:
         return context
 
     @staticmethod
-    def __clean_uuid(changed_element: ElementTree.Element) -> ElementTree.Element:
+    def __clean_uuid(changed_element: Element) -> Element:
         """
         Some rules and other elements contain the 'uuid' attribute. These should be removed before
         they can be applied to another device / fw. This function descends to all child nodes and removes the uuid
@@ -679,7 +688,47 @@ class Panoply:
             return changed_element
 
         for child in child_nodes:
-            print('POPPING')
             child.attrib.pop('uuid')
 
         return changed_element
+
+    @staticmethod
+    def __normalize_xpath(document: Element, xpath: str) -> str:
+        """
+        Normalize xpath to contain attributes if possible
+        :param document: xml configuration Element
+        :param xpath: xpath to break up and check
+        :return: new xpath with indexed nodes replaced with nodes with attributes
+        """
+        # ensure we construct the xpaths with the attribute names if any
+        # these arrive to use like: /config/devices/entry/vsys/entry/rulebase[1]/security/rules/entry[1]
+        # fortunately, we can query each element and grab any attributes if any to make this xpath portable
+        # first, make this a relative xpath as we are going to query an Element
+        relative_xpath = re.sub('/config/', './', xpath)
+
+        # find all the xpaths with an 'index' value instead of an attribute
+        # for example, we will get something like: /config/devices/entry/vsys/entry/rulebase[1]/nat/rules/entry[1]/extra
+        # and split it like: ['/config/devices/entry/vsys/entry/rulebase[1]', '/nat/rules/entry[1]', '/extra']
+        xpath_parts = re.findall(r'(.*?\[\d+\]|.+?$)', relative_xpath)
+        # begin assembling the parts after we query the document and check for attributes
+        check_path = ''
+        # iterate over the list
+        for p in xpath_parts:
+            # assemble this part with the last (blank on first iter)
+            check_path = check_path + p
+            # query here to get the Element
+            el = document.find(check_path)
+            # if the attrib attribute is a dict and not blank
+            if el.attrib != {} and type(el.attrib) is dict:
+                # begin assembling the attributes into a string
+                # resulting xpath will be something like entry[@name='rule1']
+                attrib_str = ''
+                for k, v in el.attrib.items():
+                    attrib_str += f'[@{k}="{v}"]'
+                check_path = re.sub(r'\[\d+\]', f'{attrib_str}', check_path)
+            else:
+                check_path = re.sub(r'\[\d+\]', '', check_path)
+
+        # print(f'returning {check_path}')
+        return check_path
+
