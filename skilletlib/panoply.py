@@ -47,7 +47,7 @@ class Panoply:
     Panoply is a wrapper around pan-python PanXAPI class to provide additional, commonly used functions
     """
 
-    def __init__(self, hostname, api_username, api_password, api_port=443, serial_number=None):
+    def __init__(self, hostname, api_username, api_password, api_port=443, serial_number=None, debug=False):
         """
         Initialize a new panos object
         :param hostname: hostname or ip address of target device`
@@ -67,6 +67,9 @@ class Panoply:
         self.connected = False
         self.facts = {}
         self.last_error = ''
+
+        if debug:
+            logger.setLevel(logging.DEBUG)
 
         try:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
