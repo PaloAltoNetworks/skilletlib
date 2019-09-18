@@ -66,6 +66,7 @@ class Panoply:
         self.serial = serial_number
         self.connected = False
         self.facts = {}
+        self.last_error = ''
 
         try:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
@@ -541,15 +542,24 @@ class Panoply:
             latest_config = self.xapi.xml_result()
 
         # use the excellent xmldiff library to get a list of changed elements
-        diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
+        #diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
+        diffs = xmldiff_main.diff_texts(previous_config, latest_config)
         # returned diffs have the following basic structure
         # InsertNode(target='/config/shared[1]', tag='log-settings', position=2)
         # InsertNode(target='/config/shared/log-settings[1]', tag='http', position=0)
         # keep a list of found xpaths
         fx = list()
 
+        # also track nodes with updated text
+        updated_text_snippets = list()
+
+        snippets = list()
         # keep a dict of targets to xpaths
         xpaths = dict()
+
+        # convert the config string to an xml doc
+        latest_doc = ElementTree.fromstring(latest_config)
+
         for d in diffs:
             logger.debug(d)
             # step 1 - find all inserted nodes (future enhancement can consider other types of detected changes as well
@@ -600,13 +610,18 @@ class Panoply:
                     node_target = re.sub(r'\[\d+\]$', '', d.node)
                     xpaths[d.node] = f'{node_target}[@{d.name}="{d.value}"]'
                     logger.debug(f'added {d.node} with value {xpaths[d.node]} ')
+            elif 'UpdateTextIn' in str(d):
+                snippet = dict()
+                logger.debug('checking node for text update')
+                logger.debug(d.node)
+                changed_xpath = self.__normalize_xpath(latest_doc, d.node)
+                relative_xpath = re.sub(r'^\./', '/config/', changed_xpath)
+                snippet['xpath'] = relative_xpath
+                snippet['element'] = d.text
+                updated_text_snippets.append(snippet)
 
-        snippets = list()
         # we have found changes in the latest_config
         if fx:
-            # convert the config string to an xml doc
-            latest_doc = ElementTree.fromstring(latest_config)
-
             # now iterate only the top-level diffs (insertednodes only at this time)
             for f in fx:
                 # target contains the full xpath, since we have the 'config' element already in 'latest_config'
@@ -636,6 +651,19 @@ class Panoply:
                 snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
                 # now print out to the end user
                 snippets.append(snippet)
+
+        if updated_text_snippets:
+            found = False
+            for ut_snippet in updated_text_snippets:
+                for snippet in snippets:
+                    if snippet['xpath'] in ut_snippet['xpath']:
+                        logger.debug('This text snippet is a child of one already included')
+                        found = True
+                        break
+                if not found:
+                    logger.debug('Adding a text snippet')
+                    snippets.append(ut_snippet)
+
         return snippets
 
     def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
@@ -688,41 +716,34 @@ class Panoply:
 
     @staticmethod
     def __normalize_xpath(document: Element, xpath: str) -> str:
-        """
-        Normalize xpath to contain attributes if possible
-        :param document: xml configuration Element
-        :param xpath: xpath to break up and check
-        :return: new xpath with indexed nodes replaced with nodes with attributes
-        """
-        # ensure we construct the xpaths with the attribute names if any
-        # these arrive to use like: /config/devices/entry/vsys/entry/rulebase[1]/security/rules/entry[1]
-        # fortunately, we can query each element and grab any attributes if any to make this xpath portable
-        # first, make this a relative xpath as we are going to query an Element
         relative_xpath = re.sub('/config/', './', xpath)
+        parts = relative_xpath.split('/')
+        path = ''
+        for p in parts:
+            if p == '.':
+                # skip checking the root node, don't care about attributes here in the xpath
+                path = p
+                continue
+            path = path + '/' + p
+            el = document.find(path)
+            if el is None:
+                raise SkilletLoaderException('Could not normalize xpath in configuration document!')
 
-        # find all the xpaths with an 'index' value instead of an attribute
-        # for example, we will get something like: /config/devices/entry/vsys/entry/rulebase[1]/nat/rules/entry[1]/extra
-        # and split it like: ['/config/devices/entry/vsys/entry/rulebase[1]', '/nat/rules/entry[1]', '/extra']
-        xpath_parts = re.findall(r'(.*?\[\d+\]|.+?$)', relative_xpath)
-        # begin assembling the parts after we query the document and check for attributes
-        check_path = ''
-        # iterate over the list
-        for p in xpath_parts:
-            # assemble this part with the last (blank on first iter)
-            check_path = check_path + p
-            # query here to get the Element
-            el = document.find(check_path)
-            # if the attrib attribute is a dict and not blank
             if el.attrib != {} and type(el.attrib) is dict:
+                logger.debug('Found attributes here')
                 # begin assembling the attributes into a string
                 # resulting xpath will be something like entry[@name='rule1']
                 attrib_str = ''
                 for k, v in el.attrib.items():
                     attrib_str += f'[@{k}="{v}"]'
-                check_path = re.sub(r'\[\d+\]', f'{attrib_str}', check_path)
+
+                if re.match(r'.*\[\d+\]$', path):
+                    logger.debug('replacing indexed element with attribute named')
+                    path = re.sub(r'\[\d+\]$', f'{attrib_str}', path)
+                else:
+                    path = path + attrib_str
             else:
-                check_path = re.sub(r'\[\d+\]', '', check_path)
+                path = re.sub(r'\[\d+\]', '', path)
 
-        logger.debug(f'returning {check_path}')
-        return check_path
-
+        logger.debug(f'returning {path}')
+        return path
