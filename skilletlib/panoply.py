@@ -719,10 +719,11 @@ class Panoply:
 
     @staticmethod
     def __normalize_xpath(document: Element, xpath: str) -> str:
-        relative_xpath = re.sub('/config/', './', xpath)
+        relative_xpath = re.sub('^/config/', './', xpath)
         parts = relative_xpath.split('/')
         path = ''
         for p in parts:
+
             if p == '.':
                 # skip checking the root node, don't care about attributes here in the xpath
                 path = p
