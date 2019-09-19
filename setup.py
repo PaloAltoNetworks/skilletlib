@@ -27,7 +27,6 @@ setuptools.setup(
         "requests",
         "jsonpath_ng",
         "passlib"
-
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
