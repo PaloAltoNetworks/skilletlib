@@ -545,7 +545,7 @@ class Panoply:
             latest_config = self.xapi.xml_result()
 
         # use the excellent xmldiff library to get a list of changed elements
-        #diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
+        # diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
         diffs = xmldiff_main.diff_texts(previous_config, latest_config)
         # returned diffs have the following basic structure
         # InsertNode(target='/config/shared[1]', tag='log-settings', position=2)
@@ -660,7 +660,7 @@ class Panoply:
             for ut_snippet in updated_text_snippets:
                 for snippet in snippets:
                     if snippet['xpath'] in ut_snippet['xpath']:
-                        logger.debug('This text snippet is a child of one already included')
+                        # logger.debug('This text snippet is a child of one already included')
                         found = True
                         break
                 if not found:
@@ -719,18 +719,37 @@ class Panoply:
 
     @staticmethod
     def __normalize_xpath(document: Element, xpath: str) -> str:
+        """
+        create an xpath with all attributes included. The xpaths generated from the diffing library
+        are guaranteed to be unique and valid against this configuration file, however, they are not
+        guaranteed to be portable to another configuration. To avoid this, iterate over the xpath, search
+        the document for each part of the xpath and grab any attributes and add them to the resulting
+        xpath before returning it.
+        :param document: ElementTree.Element that represents the configuration from which the diff were produced
+        :param xpath: the xpath of the node in question, which may be indexed and have no attributes included
+        :return: the fully normalized xpath which includes all the attributes included and the indexes removed
+        """
+        # Example xpath: /config/mgt-config/users/entry/phash[1]
+        # the xpath will be absolute, change it here to be relative so we can search the document
         relative_xpath = re.sub('^/config/', './', xpath)
+        # split the xpath into it's parts
         parts = relative_xpath.split('/')
+        # xpath is now: ['.', 'mgt-config', 'users', 'entry', 'phash[1]']
+        # begin constructing the new partial xpath. We will iteratively add additional parts, checking each one for
+        # attributes that should be added
         path = ''
         for p in parts:
-
             if p == '.':
                 # skip checking the root node, don't care about attributes here in the xpath
                 path = p
                 continue
+            # add the next part to the previous, adding the '/'
+            # example xpath: ./mgt-config/users/entry
             path = path + '/' + p
             el = document.find(path)
             if el is None:
+                # this should never happen as the xpath was found in the document we are checking
+                # this would indicate a programmatic error somewhere
                 raise SkilletLoaderException('Could not normalize xpath in configuration document!')
 
             if el.attrib != {} and type(el.attrib) is dict:
@@ -746,8 +765,12 @@ class Panoply:
                     path = re.sub(r'\[\d+\]$', f'{attrib_str}', path)
                 else:
                     path = path + attrib_str
+
+                # example xpath is now: ./mgt-config/users/entry[@name="admin"]/phash[1]
             else:
                 path = re.sub(r'\[\d+\]', '', path)
+                # now removing the index from items that do not have attributes
+                # example xpath now: ./mgt-config/users/entry[@name="admin"]/phash
 
         logger.debug(f'returning {path}')
         return path
