@@ -617,7 +617,7 @@ class Panoply:
             elif 'UpdateTextIn' in str(d):
                 snippet = dict()
                 xpath_parts = d.node.split('/')
-                xpath = xpath_parts[:-1]
+                xpath = "/".join(xpath_parts[:-1])
                 tag = xpath_parts[-1]
                 changed_xpath = self.__normalize_xpath(latest_doc, xpath)
                 relative_xpath = re.sub(r'^\./', '/config/', changed_xpath)
