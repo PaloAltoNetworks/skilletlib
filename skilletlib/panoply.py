@@ -616,15 +616,16 @@ class Panoply:
                     logger.debug(f'added {d.node} with value {xpaths[d.node]} ')
             elif 'UpdateTextIn' in str(d):
                 snippet = dict()
-                logger.debug('checking node for text update')
-                logger.debug(d.node)
-                changed_xpath = self.__normalize_xpath(latest_doc, d.node)
+                xpath_parts = d.node.split('/')
+                xpath = xpath_parts[:-1]
+                tag = xpath_parts[-1]
+                changed_xpath = self.__normalize_xpath(latest_doc, xpath)
                 relative_xpath = re.sub(r'^\./', '/config/', changed_xpath)
                 random_name = str(int(random.random() * 1000000))
                 tag = changed_xpath.split('/')[-1]
                 snippet['name'] = f'{tag}-{random_name}'
                 snippet['xpath'] = relative_xpath
-                snippet['element'] = d.text
+                snippet['element'] = f'<{tag}>{d.text}</{tag}>'
                 updated_text_snippets.append(snippet)
 
         # we have found changes in the latest_config
