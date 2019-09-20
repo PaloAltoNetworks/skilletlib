@@ -16,6 +16,7 @@
 
 
 import logging
+import random
 import re
 import sys
 import time
@@ -619,6 +620,9 @@ class Panoply:
                 logger.debug(d.node)
                 changed_xpath = self.__normalize_xpath(latest_doc, d.node)
                 relative_xpath = re.sub(r'^\./', '/config/', changed_xpath)
+                random_name = str(int(random.random() * 1000000))
+                tag = changed_xpath.split('/')[-1]
+                snippet['name'] = f'{tag}-{random_name}'
                 snippet['xpath'] = relative_xpath
                 snippet['element'] = d.text
                 updated_text_snippets.append(snippet)
@@ -650,6 +654,8 @@ class Panoply:
                         continue
 
                 snippet = dict()
+                random_name = str(int(random.random()*1000000))
+                snippet['name'] = f'{f.tag}-{random_name}'
                 snippet['element'] = xml_string.strip()
                 snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
                 # now print out to the end user
