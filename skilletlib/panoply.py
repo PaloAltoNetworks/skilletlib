@@ -608,21 +608,21 @@ class Panoply:
                 if not found:
                     # we have not found this to be a child or peer of another element
                     # therefore this must be a top-level element, let's keep it for future work
+                    logger.debug(f'Appending {d} to list of changes')
                     fx.append(d)
-            elif 'InsertAttr' in str(d):
-                if d.node not in xpaths:
-                    node_target = re.sub(r'\[\d+\]$', '', d.node)
-                    xpaths[d.node] = f'{node_target}[@{d.name}="{d.value}"]'
-                    logger.debug(f'added {d.node} with value {xpaths[d.node]} ')
+            # elif 'InsertAttr' in str(d):
+            #     if d.node not in xpaths:
+            #         node_target = re.sub(r'\[\d+\]$', '', d.node)
+            #         xpaths[d.node] = f'{node_target}[@{d.name}="{d.value}"]'
+            #         logger.debug(f'added {d.node} with value {xpaths[d.node]} ')
             elif 'UpdateTextIn' in str(d):
                 snippet = dict()
-                xpath_parts = d.node.split('/')
+                normalized_xpath = self.__normalize_xpath(latest_doc, d.node)
+                xpath_parts = normalized_xpath.split('/')
                 xpath = "/".join(xpath_parts[:-1])
                 tag = xpath_parts[-1]
-                changed_xpath = self.__normalize_xpath(latest_doc, xpath)
-                relative_xpath = re.sub(r'^\./', '/config/', changed_xpath)
+                relative_xpath = re.sub(r'^\./', '/config/', xpath)
                 random_name = str(int(random.random() * 1000000))
-                tag = changed_xpath.split('/')[-1]
                 snippet['name'] = f'{tag}-{random_name}'
                 snippet['xpath'] = relative_xpath
                 snippet['element'] = f'<{tag}>{d.text}</{tag}>'
@@ -634,7 +634,8 @@ class Panoply:
             for f in fx:
                 # target contains the full xpath, since we have the 'config' element already in 'latest_config'
                 # we need to adjust the xpath to be relative. Also attach the 'tag' to the end of the xpath
-                f_target_str = xpaths[f.target]
+                # f_target_str = xpaths[f.target]
+                f_target_str = f.target
 
                 f_target_str_relative = self.__normalize_xpath(latest_doc, f_target_str)
                 f_target_str_normalized = re.sub(r'^\./', '/config/', f_target_str_relative)
@@ -648,20 +649,26 @@ class Panoply:
                 # so, find all the children of this 'tag' and append them to the xml_string
                 for child_element in changed_element.findall('./'):
                     xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
+
                 if xml_string == '':
-                    if changed_element.text:
-                        xml_string = changed_element.text
-                    else:
-                        continue
+                    # if changed_element.text:
+                    #     xml_string = changed_element.text
+                    # else:
+                    # this is a text only node, we should catch this later with a updateTextIn diff
+                    logger.debug('****************')
+                    logger.debug(f'skipping {f_target_str_normalized}/{f.tag} as this looks like a text only node')
+                    logger.debug('****************')
+                    continue
 
                 snippet = dict()
                 random_name = str(int(random.random()*1000000))
                 snippet['name'] = f'{f.tag}-{random_name}'
-                snippet['element'] = xml_string.strip()
                 snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
+                snippet['element'] = xml_string.strip()
                 # now print out to the end user
                 snippets.append(snippet)
 
+        text_update_snippets_to_include = list()
         if updated_text_snippets:
             found = False
             for ut_snippet in updated_text_snippets:
@@ -671,9 +678,9 @@ class Panoply:
                         found = True
                         break
                 if not found:
-                    logger.debug('Adding a text snippet')
-                    snippets.append(ut_snippet)
+                    text_update_snippets_to_include.append(ut_snippet)
 
+        snippets.extend(text_update_snippets_to_include)
         return snippets
 
     def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
