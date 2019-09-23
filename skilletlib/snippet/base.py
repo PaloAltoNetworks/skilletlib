@@ -78,6 +78,8 @@ class Snippet:
             outputs = self._handle_json_outputs(results)
         elif output_type == 'manual':
             outputs = self._handle_manual_outputs(results)
+        elif output_type == 'text':
+            outputs = self.__handle_text_outputs(results)
 
         return outputs
 
@@ -112,6 +114,32 @@ class Snippet:
         e = Environment(loader=BaseLoader)
         e.filters["md5_hash"] = self.__md5_hash
         return e
+
+    def __handle_text_outputs(self, results: str) -> dict:
+        """
+        Parse the results string as a text blob into a single variable.
+
+        - name: system_info
+          path: /api/?type=op&cmd=<show><system><info></info></system></show>&key={{ api_key }}
+          output_type: text
+          outputs:
+            - name: system_info_as_xml
+
+        :param results: results string from the action
+        :return: dict of outputs, in this case a single entry
+        """
+        snippet_name = self.metadata['name']
+        outputs = dict()
+
+        if 'outputs' not in self.metadata:
+            print('No outputs defined in this snippet')
+            return outputs
+
+        outputs_config = self.metadata.get('outputs', [])
+        first_output = outputs_config[0]
+        output_name = first_output.get('name', snippet_name)
+        outputs[output_name] = results
+        return outputs
 
     def _handle_xml_outputs(self, results: str) -> dict:
         """
