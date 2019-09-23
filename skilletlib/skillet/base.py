@@ -27,7 +27,7 @@ class Skillet:
         if '.meta-cnc' in path:
             meta_cnc_file = Path(path)
             if not meta_cnc_file.exists():
-                raise SkilletLoaderException('Could not find .meta-cnc file as this location')
+                raise SkilletLoaderException(f'Could not find .meta-cnc file as this location: {path}')
         else:
             # we were only passed a directory like '.' or something, try to find a .meta-cnc.yaml or .meta-cnc.yml
             directory = Path(path).absolute()
@@ -43,25 +43,25 @@ class Skillet:
             if not found_meta:
                 raise SkilletLoaderException('Could not find .meta-cnc file at this location')
 
-            snippet_path = str(meta_cnc_file.parent.absolute())
-            try:
-                with meta_cnc_file.open(mode='r') as sc:
-                    raw_service_config = oyaml.safe_load(sc.read())
-                    skillet = self._normalize_skillet_structure(raw_service_config)
-                    skillet['snippet_path'] = snippet_path
-                    return skillet
+        snippet_path = str(meta_cnc_file.parent.absolute())
+        try:
+            with meta_cnc_file.open(mode='r') as sc:
+                raw_service_config = oyaml.safe_load(sc.read())
+                skillet = self._normalize_skillet_structure(raw_service_config)
+                skillet['snippet_path'] = snippet_path
+                return skillet
 
-            except IOError as ioe:
-                logger.error('Could not open metadata file in dir %s' % meta_cnc_file.parent)
-                raise SkilletLoaderException('IOError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
-            except YAMLError as ye:
-                logger.error(ye)
-                raise SkilletLoaderException(
-                    'YAMLError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
-            except Exception as ex:
-                logger.error(ex)
-                raise SkilletLoaderException(
-                    'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+        except IOError as ioe:
+            logger.error('Could not open metadata file in dir %s' % meta_cnc_file.parent)
+            raise SkilletLoaderException('IOError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+        except YAMLError as ye:
+            logger.error(ye)
+            raise SkilletLoaderException(
+                'YAMLError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+        except Exception as ex:
+            logger.error(ex)
+            raise SkilletLoaderException(
+                'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
 
     @staticmethod
     def _normalize_skillet_structure(skillet: dict) -> dict:

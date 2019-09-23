@@ -53,9 +53,11 @@ class PanosSnippet(Snippet):
         :return: dict
         """
         if self.cmd in ('set', 'edit', 'override'):
-            if {'xpath', 'file', 'element'}.issubset(metadata):
+            if {'xpath', 'element'}.issubset(metadata):
                 return metadata
-            err = 'xpath and file attributes are required for set, edit, or override cmds'
+            elif {'xpath', 'file'}.issubset(metadata):
+                return metadata
+            err = 'xpath and either file or element attributes are required for set, edit, or override cmds'
         elif self.cmd in ('show', 'get'):
             if {'xpath'}.issubset(metadata):
                 return metadata
