@@ -30,8 +30,6 @@ class PanosSkillet(Skillet):
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
-                if 'file' not in snippet_def:
-                    continue
                 if 'element' not in snippet_def or snippet_def['element'] == '':
                     if 'file' not in snippet_def:
                         raise SkilletLoaderException(
