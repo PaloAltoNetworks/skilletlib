@@ -52,6 +52,7 @@ class PanosSnippet(Snippet):
         :param metadata: dict
         :return: dict
         """
+        err = f'Unknown cmd {self.cmd}'
         if self.cmd in ('set', 'edit', 'override'):
             if {'xpath', 'element'}.issubset(metadata):
                 return metadata
@@ -78,6 +79,14 @@ class PanosSnippet(Snippet):
             if 'cmd_str' in metadata:
                 return metadata
             err = 'cmd_str attribute is required for op cmd'
+        elif self.cmd == 'validate':
+            if {'test', 'message', 'severity', 'documentation_link'}.issubset(metadata):
+                # configure validation outputs manually if necessary
+                # for validation we only need the output_type set to 'text'
+                metadata['output_type'] = 'validation'
+                return metadata
+
+            err = 'test, message, severity, and documentation_link are required attributes for validate cmd'
 
         raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
@@ -128,8 +137,6 @@ class PanosSnippet(Snippet):
             return new_element
 
         except ParseError as pe:
-            print(pe)
-            print('Could not parse element for cherry picking!')
             raise SkilletLoaderException(f'Could not parse element for cherry picking for snippet: {self.name}')
 
     def cherry_pick_xpath(self, base_xpath: str, cherry_picked_xpath: str, context: dict) -> str:
@@ -207,3 +214,16 @@ class PanosSnippet(Snippet):
 
         print('No key was found here')
         return 'True'
+
+    def handle_output_type_validation(self, results: str):
+
+        output = dict()
+        output['results'] = results
+        output['message'] = self.metadata.get('message')
+        output['severity'] = self.metadata.get('severity')
+        output['documentation_link'] = self.metadata.get('documentation_link')
+
+        o = dict()
+        o[self.name] = output
+        return o
+

@@ -52,11 +52,21 @@ class Snippet:
             print(f'No conditional present, proceeding with skillet: {self.name}')
             return True
 
-        when = self.metadata['when']
-        when_str = '{{%- if {0} -%}} True {{%- else -%}} False {{%- endif -%}}'.format(when)
-        when_template = self._env.from_string(when_str)
-        results = when_template.render(context)
+        results = self.execute_conditional(self.metadata['when'], context)
         print(f'  Conditional Evaluation results: {results} ')
+        return results
+
+    def execute_conditional(self, test: str, context: dict) -> bool:
+        """
+        Evaluate 'test' conditionals and return a bool
+        :param test: string of the conditional to execute
+        :param context: jinja context containing previous outputs and user supplied variables
+        :return: boolean
+        """
+
+        test_str = '{{%- if {0} -%}} True {{%- else -%}} False {{%- endif -%}}'.format(test)
+        test_template = self._env.from_string(test_str)
+        results = test_template.render(context)
         if str(results).strip() == 'True':
             return True
         else:
@@ -64,7 +74,7 @@ class Snippet:
 
     def capture_outputs(self, results: str) -> dict:
         outputs = dict()
-        if 'outputs' not in self.metadata:
+        if 'output_type' not in self.metadata:
             return outputs
 
         # default output type is 'xml' if not defined
@@ -80,6 +90,11 @@ class Snippet:
             outputs = self._handle_manual_outputs(results)
         elif output_type == 'text':
             outputs = self.__handle_text_outputs(results)
+        # sub classes can handle their own output types
+        # see panos/__handle_validation for example
+        elif hasattr(self, f'handle_output_type_{output_type}'):
+            func = getattr(self, f'handle_output_type_{output_type}')
+            outputs = func(results)
 
         return outputs
 
@@ -131,10 +146,13 @@ class Snippet:
         snippet_name = self.metadata['name']
         outputs = dict()
 
-        if 'outputs' not in self.metadata:
-            print('No outputs defined in this snippet')
+        if 'outputs' not in self.metadata or len(self.metadata['outputs']) == 0:
+            # by default, all we need is the output_type = text defined
+            outputs[snippet_name] = results
             return outputs
 
+        # if we have a list of outputs, use the first one and use the custom name if present
+        # otherwise, just use the snippet_name as the key in the outputs dict
         outputs_config = self.metadata.get('outputs', [])
         first_output = outputs_config[0]
         output_name = first_output.get('name', snippet_name)

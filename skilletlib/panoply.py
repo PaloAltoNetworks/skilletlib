@@ -149,12 +149,13 @@ class Panoply:
         except PanXapiError as pxe:
             raise SkilletLoaderException(pxe)
 
-    def execute_cmd(self, cmd: str, params: dict) -> str:
+    def execute_cmd(self, cmd: str, params: dict, context=None) -> str:
         """
         Execute the given cmd using the xapi.
         :param cmd: Valid options are: 'op', 'show', 'get', 'delete', 'set', 'edit', 'override', 'move', 'rename',
-                                       'clone'
+                                       'clone', 'validate'
         :param params: valid parameters for the given cmd type
+        :param context: skillet context
         :return: raw results from the cmd output, raises SkilletLoaderException
         """
         if cmd not in ('op', 'set', 'edit', 'override', 'move', 'rename', 'clone', 'show', 'get', 'delete'):
@@ -547,6 +548,7 @@ class Panoply:
 
         # use the excellent xmldiff library to get a list of changed elements
         # diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
+        # THIS IS BROKEN
         diffs = xmldiff_main.diff_texts(previous_config, latest_config)
         # returned diffs have the following basic structure
         # InsertNode(target='/config/shared[1]', tag='log-settings', position=2)
@@ -700,9 +702,15 @@ class Panoply:
             metadata = snippet.render_metadata(context)
             # check the 'when' conditional against variables currently held in the context
             if snippet.should_execute(context):
-                logger.info(f'  Executing Snippet: {snippet.name}')
-                # execute the command from the snippet definition and return the raw output
-                output = self.execute_cmd(snippet.cmd, metadata)
+                if snippet.cmd == 'validate':
+                    logger.info(f'  Validating Snippet: {snippet.name}')
+                    test = snippet.metadata['test']
+                    output = snippet.execute_conditional(test, context)
+                    logger.info(f'  Validation results were: {output}')
+                else:
+                    logger.info(f'  Executing Snippet: {snippet.name}')
+                    # execute the command from the snippet definition and return the raw output
+                    output = self.execute_cmd(snippet.cmd, metadata, context)
                 # update the context with any captured outputs defined in the snippet metadata
                 context.update(snippet.capture_outputs(output))
 
@@ -760,6 +768,7 @@ class Panoply:
             # add the next part to the previous, adding the '/'
             # example xpath: ./mgt-config/users/entry
             path = path + '/' + p
+            logger.debug(f'Checking path: {path}')
             el = document.find(path)
             if el is None:
                 # this should never happen as the xpath was found in the document we are checking
