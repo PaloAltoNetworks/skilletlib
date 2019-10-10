@@ -74,8 +74,6 @@ class Snippet:
 
     def capture_outputs(self, results: str) -> dict:
         outputs = dict()
-        if 'output_type' not in self.metadata:
-            return outputs
 
         # default output type is 'xml' if not defined
         output_type = self.metadata.get('output_type', 'xml')

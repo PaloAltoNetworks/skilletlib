@@ -712,7 +712,8 @@ class Panoply:
                     # execute the command from the snippet definition and return the raw output
                     output = self.execute_cmd(snippet.cmd, metadata, context)
                 # update the context with any captured outputs defined in the snippet metadata
-                context.update(snippet.capture_outputs(output))
+                returned_output = snippet.capture_outputs(output)
+                context.update(returned_output)
 
             else:
                 # FIXME - we should possibly be able to bail out when a conditional fails
