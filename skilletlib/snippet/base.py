@@ -6,6 +6,7 @@ from xml.etree.ElementTree import ParseError
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
+from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
 from passlib.hash import md5_crypt
 
@@ -56,21 +57,24 @@ class Snippet:
         print(f'  Conditional Evaluation results: {results} ')
         return results
 
-    def execute_conditional(self, test: str, context: dict) -> bool:
+    def execute_conditional(self, test: str, context: dict) -> (bool, None):
         """
         Evaluate 'test' conditionals and return a bool
         :param test: string of the conditional to execute
         :param context: jinja context containing previous outputs and user supplied variables
         :return: boolean
         """
-
-        test_str = '{{%- if {0} -%}} True {{%- else -%}} False {{%- endif -%}}'.format(test)
-        test_template = self._env.from_string(test_str)
-        results = test_template.render(context)
-        if str(results).strip() == 'True':
-            return True
-        else:
-            return False
+        try:
+            test_str = '{{%- if {0} -%}} True {{%- else -%}} False {{%- endif -%}}'.format(test)
+            test_template = self._env.from_string(test_str)
+            results = test_template.render(context)
+            if str(results).strip() == 'True':
+                return True
+            else:
+                return False
+        except UndefinedError as ude:
+            print(ude)
+            return None
 
     def capture_outputs(self, results: str) -> dict:
         outputs = dict()
