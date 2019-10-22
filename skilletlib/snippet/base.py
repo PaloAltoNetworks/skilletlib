@@ -9,6 +9,7 @@ from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
 from passlib.hash import md5_crypt
+from lxml import etree
 
 from skilletlib.exceptions import SkilletLoaderException
 
@@ -204,7 +205,8 @@ class Snippet:
 
         print(f'found results: {results}')
         try:
-            xml_doc = elementTree.fromstring(results)
+            xml_doc = etree.XML(results)
+            # xml_doc = elementTree.fromstring(results)
             if 'outputs' not in self.metadata:
                 print('No outputs defined in this snippet')
                 return outputs
@@ -216,11 +218,14 @@ class Snippet:
 
                 var_name = output['name']
                 if 'capture_pattern' in output or 'capture_value' in output:
-                    capture_pattern = output['capture_pattern']
+                    if 'capture_value' in output:
+                        capture_pattern = output['capture_value']
+                    else:
+                        capture_pattern = output['capture_pattern']
 
                     # by default we will attempt to return the text of the found element
                     return_type = 'text'
-                    entries = xml_doc.findall(capture_pattern)
+                    entries = xml_doc.xpath(capture_pattern)
                     print(f'found entries: {entries}')
                     if len(entries) == 0:
                         outputs[var_name] = ''
@@ -256,7 +261,7 @@ class Snippet:
 
                 elif 'capture_object' in output:
                     capture_pattern = output['capture_object']
-                    entries = xml_doc.findall(capture_pattern)
+                    entries = xml_doc.xpath(capture_pattern)
                     if len(entries) == 0:
                         outputs[var_name] = None
                     elif len(entries) == 1:

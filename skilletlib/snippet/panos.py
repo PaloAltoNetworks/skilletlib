@@ -84,13 +84,16 @@ class PanosSnippet(Snippet):
                 return metadata
             err = 'cmd_str attribute is required for op cmd'
         elif self.cmd == 'validate':
-            if {'test', 'label', 'severity', 'documentation_link'}.issubset(metadata):
+            if {'test', 'label', 'documentation_link'}.issubset(metadata):
                 # configure validation outputs manually if necessary
-                # for validation we only need the output_type set to 'text'
+                # for validation we only need the output_type set to 'validation'
                 metadata['output_type'] = 'validation'
                 return metadata
-
-            err = 'test, label, severity, and documentation_link are required attributes for validate cmd'
+            err = 'test, label, and documentation_link are required attributes for validate cmd'
+        elif self.cmd == 'parse':
+            if {'variable', 'outputs'}.issubset(metadata):
+                return metadata
+            err = 'variable and outputs are required attributes for parse cmd'
 
         raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
@@ -193,8 +196,8 @@ class PanosSnippet(Snippet):
     def __has_config(self, obj: dict, config_path: str) -> bool:
 
         p0 = obj
-        if '/' in config_path:
-            path_elements = config_path.split('/')
+        if '.' in config_path:
+            path_elements = config_path.split('.')
             for p in path_elements:
                 if self.__has_child_node(p0, p):
                     new_p0 = p0[p]
@@ -222,7 +225,7 @@ class PanosSnippet(Snippet):
         output = dict()
         output['results'] = results
         output['label'] = self.metadata.get('label', '')
-        output['severity'] = self.metadata.get('severity', '')
+        output['severity'] = self.metadata.get('severity', 'low')
         output['documentation_link'] = self.metadata.get('documentation_link', '')
 
         o = dict()

@@ -700,13 +700,16 @@ class Panoply:
             logger.error(f'Could not get configuration from device')
             raise SkilletLoaderException('Could not get configuration from the device')
 
-    def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
+    def execute_skillet(self, skillet: Skillet, context: dict) -> dict:
         """
         Executes the given PanosSkillet
         :param skillet: PanosSkillet
         :param context: dict containing all required variables for the given skillet
         :return: modified context containing any captured outputs
         """
+
+        if not self.connected:
+            raise SkilletLoaderException('Must be connected to the device to execute a skillet')
 
         # always update context with latest facts
         context['facts'] = self.facts
@@ -725,6 +728,9 @@ class Panoply:
                     logger.info(f'  Test is: {test}')
                     output = snippet.execute_conditional(test, context)
                     logger.info(f'  Validation results were: {output}')
+                elif snippet.cmd == 'parse':
+                    logger.info(f'  Parsing Variable: {snippet.metadata["variable"]}')
+                    output = context.get(snippet.metadata['variable'], '')
                 else:
                     logger.info(f'  Executing Snippet: {snippet.name}')
                     # execute the command from the snippet definition and return the raw output

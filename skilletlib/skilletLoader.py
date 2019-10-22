@@ -7,6 +7,7 @@ from yaml.error import YAMLError
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.skillet import PanosSkillet
+from skilletlib.skillet import PanValidationSkillet
 from skilletlib.skillet import Skillet
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class SkilletLoader:
         if self.skillet_dict['type'] == 'panos':
             return PanosSkillet(self.skillet_dict)
         elif self.skillet_dict['type'] == 'pan_validation':
-            return PanosSkillet(self.skillet_dict)
+            return PanValidationSkillet(self.skillet_dict)
         else:
             return Skillet(self.skillet_dict)
 

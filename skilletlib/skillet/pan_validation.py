@@ -33,6 +33,9 @@ class PanValidationSkillet(PanosSkillet):
             elif snippet_def['cmd'] == 'set':
                 snippet_def = self.load_element(snippet_def, snippet_path)
 
+            if 'severity' not in snippet_def:
+                snippet_def['severity'] = 'low'
+
             snippet = PanosSnippet(snippet_def)
             snippet_list.append(snippet)
 
