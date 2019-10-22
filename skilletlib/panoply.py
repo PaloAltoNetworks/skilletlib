@@ -711,6 +711,7 @@ class Panoply:
         # always update context with latest facts
         context['facts'] = self.facts
         context['config'] = self.get_configuration()
+        context['config_object'] = xmltodict.parse(context['config'])
 
         for snippet in skillet.get_snippets():
             # render anything that looks like a jinja template in the snippet metadata
