@@ -17,9 +17,13 @@
 
 import xml.etree.ElementTree as elementTree
 from xml.etree.ElementTree import ParseError
+from collections import OrderedDict
 
 from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PanosSnippet(Snippet):
@@ -41,10 +45,10 @@ class PanosSnippet(Snippet):
 
     def add_filters(self):
         if hasattr(self._env, 'filters'):
-            self._env.filters['has_config'] = self.__has_configuration
+            self._env.filters['has_config'] = self.__has_config
             self._env.filters['missing_config'] = self.__missing_configuration
         else:
-            print('NO FILTERS TO APPEND TO')
+            logger.info('NO FILTERS TO APPEND TO')
 
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
@@ -110,7 +114,7 @@ class PanosSnippet(Snippet):
                     meta['element'] = self.render(self.metadata['element'], context)
 
         except TypeError as te:
-            print(f'Could not render metadata for snippet: {self.name}: {te}')
+            logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
 
         return meta
 
@@ -174,46 +178,44 @@ class PanosSnippet(Snippet):
         return '/'.join(xpath_parts[:-1])
 
     @staticmethod
-    def __has_configuration(obj, child_key) -> (str, None):
-
-        print(obj)
-        print(child_key)
+    def __has_child_node(obj, node_name) -> bool:
         if obj is None:
-            print('Object was None')
-            return None
+            return False
 
-        if child_key in obj:
-            print('key was found on object')
-            return 'True'
+        if type(obj) is not dict and type(obj) is not OrderedDict:
+            return False
 
-        for child in obj:
-            print(f'checkkng {child}')
-            if child_key in obj[child]:
-                print('key was found on child object')
-                return 'True'
+        if node_name in obj:
+            return True
 
-        print('No key was found here')
-        return None
+        return False
 
-    @staticmethod
-    def __missing_configuration(obj, child_key) -> (str, None):
+    def __has_config(self, obj: dict, config_path: str) -> bool:
 
-        if obj is None:
-            print('Object was None, missing config')
-            return 'True'
+        p0 = obj
+        if '/' in config_path:
+            path_elements = config_path.split('/')
+            for p in path_elements:
+                if self.__has_child_node(p0, p):
+                    new_p0 = p0[p]
+                    p0 = new_p0
+                else:
+                    return False
 
-        if child_key in obj:
-            print('key was found on object')
-            return None
+            return True
 
-        for child in obj:
-            print(f'checkng {child}')
-            if child_key in obj[child]:
-                print('key was found on child object')
-                return None
+        if self.__has_child_node(obj, config_path):
+            return True
+        else:
+            return False
 
-        print('No key was found here')
-        return 'True'
+    def __missing_configuration(self, obj, child_key) -> bool:
+
+        out = self.__has_config(obj, child_key)
+        if out:
+            return False
+
+        return True
 
     def handle_output_type_validation(self, results: str):
 

@@ -685,6 +685,21 @@ class Panoply:
         snippets.extend(text_update_snippets_to_include)
         return snippets
 
+    def get_configuration(self) -> str:
+        """
+        Get the running configuration from the device if connected
+        :return: configuration xml as a string or a blank string if not connected
+        """
+        try:
+            if self.connected:
+                self.xapi.op(cmd='show config running', cmd_xml=True)
+                return self.xapi.xml_result()
+            else:
+                return ''
+        except PanXapiError:
+            logger.error(f'Could not get configuration from device')
+            raise SkilletLoaderException('Could not get configuration from the device')
+
     def execute_skillet(self, skillet: PanosSkillet, context: dict) -> dict:
         """
         Executes the given PanosSkillet
@@ -695,6 +710,7 @@ class Panoply:
 
         # always update context with latest facts
         context['facts'] = self.facts
+        context['config'] = self.get_configuration()
 
         for snippet in skillet.get_snippets():
             # render anything that looks like a jinja template in the snippet metadata
@@ -705,6 +721,7 @@ class Panoply:
                 if snippet.cmd == 'validate':
                     logger.info(f'  Validating Snippet: {snippet.name}')
                     test = snippet.metadata['test']
+                    logger.info(f'  Test is: {test}')
                     output = snippet.execute_conditional(test, context)
                     logger.info(f'  Validation results were: {output}')
                 else:

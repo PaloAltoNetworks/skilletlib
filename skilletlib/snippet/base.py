@@ -57,7 +57,7 @@ class Snippet:
         print(f'  Conditional Evaluation results: {results} ')
         return results
 
-    def execute_conditional(self, test: str, context: dict) -> (bool, None):
+    def execute_conditional(self, test: str, context: dict) -> bool:
         """
         Evaluate 'test' conditionals and return a bool
         :param test: string of the conditional to execute
@@ -74,7 +74,8 @@ class Snippet:
                 return False
         except UndefinedError as ude:
             print(ude)
-            return None
+            # always return false on error condition
+            return False
 
     def capture_outputs(self, results: str) -> dict:
         outputs = dict()

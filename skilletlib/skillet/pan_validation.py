@@ -18,34 +18,22 @@ from pathlib import Path
 from typing import List
 
 from skilletlib.snippet.panos import PanosSnippet
-from .base import Skillet
-from ..exceptions import SkilletLoaderException
+from .panos import PanosSkillet
 
 
-class PanosSkillet(Skillet):
+class PanValidationSkillet(PanosSkillet):
 
     def get_snippets(self) -> List[PanosSnippet]:
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
-            if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
+            if 'cmd' not in snippet_def:
+                snippet_def['cmd'] = 'validate'
+            elif snippet_def['cmd'] == 'set':
                 snippet_def = self.load_element(snippet_def, snippet_path)
 
             snippet = PanosSnippet(snippet_def)
             snippet_list.append(snippet)
 
         return snippet_list
-
-    @staticmethod
-    def load_element(snippet_def, snippet_path):
-        if 'element' not in snippet_def or snippet_def['element'] == '':
-            if 'file' not in snippet_def:
-                raise SkilletLoaderException(
-                    'YAMLError: Could not parse metadata file for snippet %s' % snippet_def['name'])
-            snippet_file = snippet_path.joinpath(snippet_def['file'])
-            if snippet_file.exists():
-                with open(snippet_file, 'r') as sf:
-                    snippet_def['element'] = sf.read()
-            else:
-                raise SkilletLoaderException('Could not load "file" attribute!')
