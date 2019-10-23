@@ -8,3 +8,8 @@ class LoginException(BaseException):
 
 class PanoplyException(BaseException):
     pass
+
+
+class NodeNotFoundException(BaseException):
+    pass
+
