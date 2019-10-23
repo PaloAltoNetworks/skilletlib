@@ -248,8 +248,12 @@ class PanosSnippet(Snippet):
             logger.error('Ensure you are passing an object here and not a string as from capture_pattern')
             raise SkilletLoaderException('Incorrect object format for get_value_from_path')
 
-        if '.' in config_path:
-            path_elements = config_path.split('.')
+        if '.' in config_path or '/' in config_path:
+            if '.' in config_path:
+                separator = '.'
+            else:
+                separator = '/'
+            path_elements = config_path.split(separator)
             first_path_element = path_elements[0]
             p0 = self.__check_inner_object(obj, first_path_element)
             for p in path_elements:
