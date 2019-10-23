@@ -5,9 +5,10 @@ from pathlib import Path
 import oyaml
 from yaml.error import YAMLError
 
+from skilletlib import Panoply
 from skilletlib.exceptions import SkilletLoaderException
-from skilletlib.skillet import PanosSkillet
 from skilletlib.skillet import PanValidationSkillet
+from skilletlib.skillet import PanosSkillet
 from skilletlib.skillet import Skillet
 
 logger = logging.getLogger(__name__)
@@ -148,3 +149,43 @@ class SkilletLoader:
             skillet['snippets'] = list()
 
         return skillet
+
+    def execute_panos_skillet(self, skillet: PanosSkillet, context: dict, panoply: Panoply) -> dict:
+        """
+        Executes the given PanosSkillet or PanValidationSkillet
+        :param skillet: PanosSkillet
+        :param context: dict containing all required variables for the given skillet
+        :param panoply: Panoply PAN-OS object
+        :return: modified context containing any captured outputs
+        """
+
+        context['config'] = panoply.get_configuration()
+
+        for snippet in skillet.get_snippets():
+            # render anything that looks like a jinja template in the snippet metadata
+            # mostly useful for xpaths in the panos case
+            metadata = snippet.render_metadata(context)
+            # check the 'when' conditional against variables currently held in the context
+            if snippet.should_execute(context):
+                if snippet.cmd == 'validate':
+                    logger.info(f'  Validating Snippet: {snippet.name}')
+                    test = snippet.metadata['test']
+                    logger.info(f'  Test is: {test}')
+                    output = snippet.execute_conditional(test, context)
+                    logger.info(f'  Validation results were: {output}')
+                elif snippet.cmd == 'parse':
+                    logger.info(f'  Parsing Variable: {snippet.metadata["variable"]}')
+                    output = context.get(snippet.metadata['variable'], '')
+                else:
+                    logger.info(f'  Executing Snippet: {snippet.name}')
+                    # execute the command from the snippet definition and return the raw output
+                    output = panoply.execute_cmd(snippet.cmd, metadata, context)
+                # update the context with any captured outputs defined in the snippet metadata
+                returned_output = snippet.capture_outputs(output)
+                context.update(returned_output)
+
+            else:
+                # FIXME - we should possibly be able to bail out when a conditional fails
+                logger.debug(f'  Skipping Snippet: {snippet.name}')
+
+        return context

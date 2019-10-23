@@ -15,13 +15,14 @@
 # Authors: Adam Baumeister, Nathan Embery
 
 
+import logging
 import xml.etree.ElementTree as elementTree
-from xml.etree.ElementTree import ParseError
 from collections import OrderedDict
+from typing import Any
+from xml.etree.ElementTree import ParseError
 
 from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,11 @@ class PanosSnippet(Snippet):
         if hasattr(self._env, 'filters'):
             self._env.filters['has_config'] = self.__has_config
             self._env.filters['missing_config'] = self.__missing_configuration
+            self._env.filters['node_present'] = self.__has_config
+            self._env.filters['node_absent'] = self.__missing_configuration
+            self._env.filters['node_value'] = self.__get_value_from_path
+            self._env.filters['node_attribute_present'] = self.__node_attribute_present
+
         else:
             logger.info('NO FILTERS TO APPEND TO')
 
@@ -193,24 +199,54 @@ class PanosSnippet(Snippet):
 
         return False
 
+    def __node_attribute_present(self, obj: dict, config_path: str, attribute_name: str, attribute_value: str) -> bool:
+
+        if not attribute_name.startswith('@'):
+            attribute_name = f'@{attribute_name}'
+
+        parent_obj = self.__get_value_from_path(obj, config_path)
+
+        if type(parent_obj) is OrderedDict or type(parent_obj) is dict:
+            if attribute_name in parent_obj:
+                if attribute_value == parent_obj[attribute_name]:
+                    return True
+
+        return False
+
     def __has_config(self, obj: dict, config_path: str) -> bool:
 
-        p0 = obj
+        val = self.__get_value_from_path(obj, config_path)
+        if val is None:
+            return False
+
+        return True
+
+    def __get_value_from_path(self, obj: dict, config_path: str) -> Any:
+
+        if type(obj) is not dict and type(obj) is not OrderedDict:
+            logger.error("Supplied object is not an Object")
+            logger.error('Ensure you are passing an object here and not a string as from capture_pattern')
+            raise SkilletLoaderException('Can not get value from string! Incorrect object type passed to node_value')
+
         if '.' in config_path:
             path_elements = config_path.split('.')
+            first_path_element = path_elements[0]
+            p0 = self.__check_inner_object(obj, first_path_element)
             for p in path_elements:
                 if self.__has_child_node(p0, p):
                     new_p0 = p0[p]
                     p0 = new_p0
                 else:
-                    return False
+                    return None
 
-            return True
+            return p0
 
-        if self.__has_child_node(obj, config_path):
-            return True
+        p0 = self.__check_inner_object(obj, config_path)
+
+        if self.__has_child_node(p0, config_path):
+            return p0[config_path]
         else:
-            return False
+            return None
 
     def __missing_configuration(self, obj, child_key) -> bool:
 
@@ -219,6 +255,28 @@ class PanosSnippet(Snippet):
             return False
 
         return True
+
+    @staticmethod
+    def __check_inner_object(obj: dict, child: str) -> dict:
+        """
+        Check inner object for named child dict key
+        We often get a dict object which contains a single key. The value of this key is itself a dict
+        and we need to know if the child key name exists on either the outer dict or the inner dict
+        return the inner dict if the child key name is found there, or punt and return the outer dict
+        otherwise
+        :param obj: dict to check for child key name
+        :param child: name of a key we want to find
+        :return: inner dict if it contains the child key, outer dict otherwise
+        """
+        if child in obj:
+            return obj
+
+        if len(obj.keys()) == 1:
+            inner_obj = obj[list(obj)[0]]
+            if child in inner_obj:
+                return inner_obj
+
+        return obj
 
     def handle_output_type_validation(self, results: str):
 
@@ -231,4 +289,3 @@ class PanosSnippet(Snippet):
         o = dict()
         o[self.name] = output
         return o
-

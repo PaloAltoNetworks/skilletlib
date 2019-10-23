@@ -9,3 +9,4 @@ requests-toolbelt
 jsonpath_ng
 jinja2
 passlib
+lxml

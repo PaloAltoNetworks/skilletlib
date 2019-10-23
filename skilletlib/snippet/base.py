@@ -8,8 +8,8 @@ from jinja2 import BaseLoader
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
-from passlib.hash import md5_crypt
 from lxml import etree
+from passlib.hash import md5_crypt
 
 from skilletlib.exceptions import SkilletLoaderException
 
@@ -116,6 +116,9 @@ class Snippet:
                                                  f'is required for snippet: {name}')
 
         return metadata
+
+    def render_metadata(self, context: dict) -> dict:
+        return context
 
     # define functions for custom jinja filters
     @staticmethod
