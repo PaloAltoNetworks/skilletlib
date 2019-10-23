@@ -210,6 +210,11 @@ class PanosSnippet(Snippet):
             if attribute_name in parent_obj:
                 if attribute_value == parent_obj[attribute_name]:
                     return True
+        elif type(parent_obj) is list:
+            for p in parent_obj:
+                if attribute_name in p:
+                    if attribute_value == p[attribute_name]:
+                        return True
 
         return False
 
@@ -226,7 +231,7 @@ class PanosSnippet(Snippet):
         if type(obj) is not dict and type(obj) is not OrderedDict:
             logger.error("Supplied object is not an Object")
             logger.error('Ensure you are passing an object here and not a string as from capture_pattern')
-            raise SkilletLoaderException('Can not get value from string! Incorrect object type passed to node_value')
+            return None
 
         if '.' in config_path:
             path_elements = config_path.split('.')
