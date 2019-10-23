@@ -205,7 +205,12 @@ class PanosSnippet(Snippet):
         if not attribute_name.startswith('@'):
             attribute_name = f'@{attribute_name}'
 
-        parent_obj = self.__get_value_from_path(obj, config_path)
+        try:
+            parent_obj = self.__get_value_from_path(obj, config_path)
+        except SkilletLoaderException:
+            return False
+        except NodeNotFoundException:
+            return False
 
         if type(parent_obj) is OrderedDict or type(parent_obj) is dict:
             if attribute_name in parent_obj:
