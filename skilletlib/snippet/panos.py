@@ -225,6 +225,8 @@ class PanosSnippet(Snippet):
             return True
         except NodeNotFoundException:
             return False
+        except SkilletLoaderException:
+            return False
 
     def __node_value(self, obj: dict, config_path: str) -> Any:
         try:
