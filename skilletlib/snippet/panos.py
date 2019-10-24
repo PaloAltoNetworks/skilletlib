@@ -20,6 +20,7 @@ import xml.etree.ElementTree as elementTree
 from collections import OrderedDict
 from typing import Any
 from xml.etree.ElementTree import ParseError
+from uuid import uuid4
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import NodeNotFoundException
@@ -54,6 +55,7 @@ class PanosSnippet(Snippet):
             self._env.filters['node_value'] = self.__node_value
             self._env.filters['node_attribute_present'] = self.__node_attribute_present
             self._env.filters['node_attribute_absent'] = self.__node_attribute_absent
+            self._env.filters['append_uuid'] = self.__append_uuid
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -302,6 +304,15 @@ class PanosSnippet(Snippet):
             return False
 
         return True
+
+    def __append_uuid(self, string_input: str) -> str:
+        """
+        Simple filter to append a generated UUID to the end of the given string
+        :param string_input: string to which to append the UUID
+        :return: string with a dash and a string UUID
+        """
+        new_uuid = str(uuid4())
+        return f'{string_input}-{new_uuid}'
 
     @staticmethod
     def __check_inner_object(obj: dict, child: str) -> dict:
