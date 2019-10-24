@@ -186,6 +186,14 @@ class SkilletLoader:
 
             else:
                 # FIXME - we should possibly be able to bail out when a conditional fails
-                logger.debug(f'  Skipping Snippet: {snippet.name}')
+                fail_action = metadata.get('fail_action', 'skip')
+                fail_message = metadata.get('fail_message', 'Aborted due to failed conditional!')
+                if fail_action == 'skip':
+                    logger.debug(f'  Skipping Snippet: {snippet.name}')
+                else:
+                    logger.debug('Conditional failed and found a fail_action')
+                    logger.error(fail_message)
+                    context['fail_message'] = fail_message
+                    return context
 
         return context
