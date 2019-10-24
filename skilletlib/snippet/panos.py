@@ -53,6 +53,7 @@ class PanosSnippet(Snippet):
             self._env.filters['node_absent'] = self.__node_absent
             self._env.filters['node_value'] = self.__node_value
             self._env.filters['node_attribute_present'] = self.__node_attribute_present
+            self._env.filters['node_attribute_absent'] = self.__node_attribute_absent
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -201,7 +202,14 @@ class PanosSnippet(Snippet):
         return False
 
     def __node_attribute_present(self, obj: dict, config_path: str, attribute_name: str, attribute_value: str) -> bool:
-
+        """
+        Ensure a node with the named attribute and value does exist
+        :param obj: obj to check
+        :param config_path: path or child attribute(s) to check
+        :param attribute_name: name of the attribute
+        :param attribute_value: name of the value
+        :return: bool
+        """
         if not attribute_name.startswith('@'):
             attribute_name = f'@{attribute_name}'
 
@@ -223,6 +231,21 @@ class PanosSnippet(Snippet):
                         return True
 
         return False
+
+    def __node_attribute_absent(self, obj: dict, config_path: str, attribute_name: str, attribute_value: str) -> bool:
+        """
+        Ensure a node with the named attribute and value does not exist
+        :param obj: obj to check
+        :param config_path: path or child attribute(s) to check
+        :param attribute_name: name of the attribute
+        :param attribute_value: name of the value
+        :return: bool
+        """
+
+        if self.__node_attribute_present(obj, config_path, attribute_name, attribute_value):
+            return False
+
+        return True
 
     def __node_present(self, obj: dict, config_path: str) -> bool:
         try:
