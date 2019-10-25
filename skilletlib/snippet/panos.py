@@ -53,6 +53,7 @@ class PanosSnippet(Snippet):
             self._env.filters['node_present'] = self.__node_present
             self._env.filters['node_absent'] = self.__node_absent
             self._env.filters['node_value'] = self.__node_value
+            self._env.filters['node_value_contains'] = self.__node_value_contains
             self._env.filters['node_attribute_present'] = self.__node_attribute_present
             self._env.filters['node_attribute_absent'] = self.__node_attribute_absent
             self._env.filters['append_uuid'] = self.__append_uuid
@@ -265,6 +266,21 @@ class PanosSnippet(Snippet):
             return None
         except SkilletLoaderException:
             return None
+
+    def __node_value_contains(self, obj: dict, config_path: str, val_to_test: str) -> bool:
+
+        try:
+            val = self.__get_value_from_path(obj, config_path)
+            if type(val) is str:
+                return val == val_to_test
+            elif type(val) is list or type(val) is dict or type(val) is OrderedDict:
+                return val_to_test in val
+
+            return False
+        except NodeNotFoundException:
+            return False
+        except SkilletLoaderException:
+            return False
 
     def __get_value_from_path(self, obj: dict, config_path: str) -> Any:
 
