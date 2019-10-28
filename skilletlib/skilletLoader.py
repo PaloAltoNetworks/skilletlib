@@ -173,6 +173,10 @@ class SkilletLoader:
                     logger.info(f'  Test is: {test}')
                     output = snippet.execute_conditional(test, context)
                     logger.info(f'  Validation results were: {output}')
+                elif snippet.cmd == 'validate_xml':
+                    logger.info(f'  Validating XML Snippet: {snippet.name}')
+                    output = snippet.compare_element_at_xpath(context['config'], snippet.metadata['element'],
+                                                              snippet.metadata['xpath'], context)
                 elif snippet.cmd == 'parse':
                     logger.info(f'  Parsing Variable: {snippet.metadata["variable"]}')
                     output = context.get(snippet.metadata['variable'], '')

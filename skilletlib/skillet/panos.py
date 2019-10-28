@@ -38,14 +38,17 @@ class PanosSkillet(Skillet):
         return snippet_list
 
     @staticmethod
-    def load_element(snippet_def, snippet_path):
+    def load_element(snippet_def: dict, snippet_path: Path) -> dict:
         if 'element' not in snippet_def or snippet_def['element'] == '':
             if 'file' not in snippet_def:
                 raise SkilletLoaderException(
                     'YAMLError: Could not parse metadata file for snippet %s' % snippet_def['name'])
             snippet_file = snippet_path.joinpath(snippet_def['file'])
             if snippet_file.exists():
-                with open(snippet_file, 'r') as sf:
+                with snippet_file.open() as sf:
                     snippet_def['element'] = sf.read()
             else:
                 raise SkilletLoaderException('Could not load "file" attribute!')
+
+        return snippet_def
+

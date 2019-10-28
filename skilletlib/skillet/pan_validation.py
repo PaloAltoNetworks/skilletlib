@@ -30,6 +30,8 @@ class PanValidationSkillet(PanosSkillet):
         for snippet_def in self.snippet_stack:
             if 'cmd' not in snippet_def:
                 snippet_def['cmd'] = 'validate'
+            elif snippet_def['cmd'] == 'validate_xml':
+                snippet_def = self.load_element(snippet_def, snippet_path)
             elif snippet_def['cmd'] == 'set':
                 snippet_def = self.load_element(snippet_def, snippet_path)
 

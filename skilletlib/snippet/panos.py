@@ -25,6 +25,8 @@ from uuid import uuid4
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import NodeNotFoundException
 from .base import Snippet
+from xmldiff import main as xmldiff_main
+
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +107,12 @@ class PanosSnippet(Snippet):
             if {'variable', 'outputs'}.issubset(metadata):
                 return metadata
             err = 'variable and outputs are required attributes for parse cmd'
+        elif self.cmd == 'validate_xml':
+            if {'xpath'}.issubset(metadata):
+                if 'file' in metadata or 'element' in metadata:
+                    metadata['output_type'] = 'validation'
+                    return metadata
+            err = 'xpath and file or element are required attributes for validate_xml cmd'
 
         raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
@@ -118,8 +126,12 @@ class PanosSnippet(Snippet):
         meta = self.metadata
         try:
             if 'cherry_pick' in self.metadata:
-                meta['element'] = self.cherry_pick_element(self.metadata['element'], context)
-                meta['xpath'] = self.cherry_pick_xpath(self.metadata['xpath'], self.metadata['cherry_pick'], context)
+                meta['element'] = self.cherry_pick_element(self.metadata['element'],
+                                                           self.metadata['cherry_pick'],
+                                                           context)
+                meta['xpath'] = self.cherry_pick_xpath(self.metadata['xpath'],
+                                                       self.metadata['cherry_pick'],
+                                                       context)
             else:
                 if 'xpath' in self.metadata:
                     meta['xpath'] = self.render(self.metadata['xpath'], context)
@@ -132,11 +144,42 @@ class PanosSnippet(Snippet):
 
         return meta
 
-    def cherry_pick_element(self, element, context) -> str:
+    @staticmethod
+    def compare_element_at_xpath(config: str, element: str, xpath: str, context: dict) -> bool:
+        """
+        Grab an xml fragment from the config given at xpath and compare it to this element
+        :param config: XML document string from which to pull the XML element to compare
+        :param element: element to check against
+        :param xpath: xpath to grab an xml fragment from the config for comparison
+        :param context: jinja context used to interpolate any variables that may be present in the template
+        :return: bool true if they match
+        """
+        # render metadata will combine the xpath with the cherry_pick attribute to give us the full xpath
+        # to the element in question. It will also load the element from our source element or source file into the
+        # element attribute
+
+        if element == '' or element is None:
+            logger.warning('Element was blank for validate_xml test!')
+            return False
+
+        config_doc = elementTree.fromstring(config)
+        relative_xpath = xpath.replace('/config/', './')
+        config_element = config_doc.find(relative_xpath)
+
+        config_element_str = elementTree.tostring(config_element).strip()
+        diffs = xmldiff_main.diff_texts(config_element_str, element)
+        if len(diffs) == 0:
+            return True
+
+        return False
+
+    def cherry_pick_element(self, element: str, cherry_pick_path: str, context: dict) -> str:
         """
         Cherry picking allows the skillet builder to pull out specific bits of a larger configuration
         and load only the smaller chunks. This is especially useful when combined with 'when' conditionals
         :param element: string containing the jinja templated xml fragment
+        :param cherry_pick_path: string describing the relative xpath to use to cherry pick an xml node from the
+            element given as a parameter
         :param context: jinja context used to interpolate any variables that may be present in the template
         :return: rendered and cherry_picked element
         """
@@ -146,7 +189,6 @@ class PanosSnippet(Snippet):
         # convert this string into an xml doc we can search for the cherry_pick path
         try:
             element_doc = elementTree.fromstring(f'<xml>{rendered_element}</xml>')
-            cherry_pick_path = self.metadata['cherry_pick']
             cherry_picked_element = element_doc.find(cherry_pick_path)
             if cherry_picked_element is None:
                 raise SkilletLoaderException('Could not locate cherry_pick path in source xml! '
@@ -185,11 +227,20 @@ class PanosSnippet(Snippet):
         elif cherry_picked_xpath.startswith('/'):
             cherry_picked_xpath = cherry_picked_xpath[1:]
 
-        xpath = f'{base_xpath}/{cherry_picked_xpath}'
+        # allow the user to specify the full xpath directly instead of manually breaking it up
+        if base_xpath.endswith(f'/{cherry_picked_xpath}'):
+            xpath = base_xpath
+        else:
+            xpath = f'{base_xpath}/{cherry_picked_xpath}'
+
         rendered_xpath = self.render(xpath, context)
         # remove the last node from the resulting xpath
-        xpath_parts = rendered_xpath.split('/')
-        return '/'.join(xpath_parts[:-1])
+        if self.cmd == 'set':
+            xpath_parts = rendered_xpath.split('/')
+            return '/'.join(xpath_parts[:-1])
+        else:
+            logger.debug('Returning full xpath due to cmd != set')
+            return rendered_xpath
 
     @staticmethod
     def __has_child_node(obj, node_name) -> bool:
