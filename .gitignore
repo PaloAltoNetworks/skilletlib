@@ -1,6 +1,7 @@
 .idea
 venv/
 local_tests/
+docs/build
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
