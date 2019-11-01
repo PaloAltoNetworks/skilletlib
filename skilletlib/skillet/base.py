@@ -13,6 +13,7 @@ class Skillet:
 
         self.skillet_dict = s
         self.name = self.skillet_dict['name']
+        self.label = self.skillet_dict['label']
         self.snippet_stack = self.skillet_dict['snippets']
         self.type = self.skillet_dict['type']
         self.supported_versions = 'not implemented'

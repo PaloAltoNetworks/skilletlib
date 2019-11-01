@@ -1,42 +1,69 @@
 import logging
 from collections import OrderedDict
 from pathlib import Path
+from typing import List
 
 import oyaml
+from yaml.constructor import ConstructorError
 from yaml.error import YAMLError
+from yaml.parser import ParserError
+from yaml.reader import ReaderError
+from yaml.scanner import ScannerError
 
 from skilletlib import Panoply
 from skilletlib.exceptions import SkilletLoaderException
+from skilletlib.exceptions import SkilletNotFoundException
 from skilletlib.skillet import PanValidationSkillet
 from skilletlib.skillet import PanosSkillet
 from skilletlib.skillet import Skillet
+from skilletlib.skillet.workflow import WorkflowSkillet
 
 logger = logging.getLogger(__name__)
 
 
 class SkilletLoader:
-    skillet_dict = dict()
 
-    def load_skillet_dict_from_path(self, skillet_path):
-        self.skillet_dict = self._parse_skillet(skillet_path)
+    all_skillets = List[Skillet]
 
-    def load_skillet_from_path(self, skillet_path):
-        self.skillet_dict = self._parse_skillet(skillet_path)
-        if self.skillet_dict['type'] == 'panos':
-            return PanosSkillet(self.skillet_dict)
-        elif self.skillet_dict['type'] == 'pan_validation':
-            return PanValidationSkillet(self.skillet_dict)
+    def load_skillet_dict_from_path(self, skillet_path: str) -> dict:
+        """
+        Loads the skillet metadata file into a skillet_dict dictionary
+        :param skillet_path: path in which to look for a metadata file
+        :return: skillet dictionary
+        """
+        return self._parse_skillet(skillet_path)
+
+    def load_skillet_from_path(self, skillet_path: (str, Path)) -> Skillet:
+        """
+        Returns a Skillet object from the given path.
+        :param skillet_path: path in which to search for a skillet
+        :return: Skillet object of the correct type
+        """
+        skillet_dict = self._parse_skillet(skillet_path)
+        if skillet_dict['type'] == 'panos':
+            return PanosSkillet(skillet_dict)
+        elif skillet_dict['type'] == 'pan_validation':
+            return PanValidationSkillet(skillet_dict)
         else:
-            return Skillet(self.skillet_dict)
+            return Skillet(skillet_dict)
 
-    def _parse_skillet(self, path: str) -> dict:
-        if '.meta-cnc' in path:
-            meta_cnc_file = Path(path)
-            if not meta_cnc_file.exists():
-                raise SkilletLoaderException(f'Could not find .meta-cnc file as this location: {path}')
+    def _parse_skillet(self, path: (str, Path)) -> dict:
+        if type(path) is str:
+            path_str = path
+            path_obj = Path(path)
+        elif isinstance(path, Path):
+            path_str = str(path)
+            path_obj = path
+        else:
+            raise SkilletLoaderException(f'Invalid path type found in _parse_skillet!')
+
+        if 'meta-cnc' in path_str:
+            meta_cnc_file = path_obj
+            if not path_obj.exists():
+                raise SkilletNotFoundException(f'Could not find .meta-cnc file as this location: {path}')
         else:
             # we were only passed a directory like '.' or something, try to find a .meta-cnc.yaml or .meta-cnc.yml
-            directory = Path(path).absolute()
+            directory = path_obj
             logger.debug(f'using directory {directory}')
             found_meta = False
             for filename in ['.meta-cnc.yaml', '.meta-cnc.yml', 'meta-cnc.yaml', 'meta-cnc.yml']:
@@ -47,7 +74,7 @@ class SkilletLoader:
                     break
 
             if not found_meta:
-                raise SkilletLoaderException('Could not find .meta-cnc file at this location')
+                raise SkilletNotFoundException('Could not find .meta-cnc file at this location')
 
         snippet_path = str(meta_cnc_file.parent.absolute())
         try:
@@ -201,3 +228,107 @@ class SkilletLoader:
                     return context
 
         return context
+
+    @staticmethod
+    def execute_template_skillet(skillet: Skillet, context: dict) -> str:
+        snippets = skillet.get_snippets()
+        snippet = snippets[0]
+        return snippet.template(context)
+
+    def execute_workflow_skillet(self, skillet: WorkflowSkillet, context: dict, panoply: Panoply) -> (dict, str):
+        """
+        Executes a workflow skillet, executing each step in turn. If a template skillet is the last snippet step then
+        return the rendered output from that template. Otherwise, return the combined context
+        :param skillet: WorkflowSkillet to execute
+        :param context: context containing all required variables and user-input for each snippet
+        :param panoply: panoply class to access PAN-OS devices
+        :return: Rendered template string or combined context if a template is not specified as the last step
+        """
+
+        snippets = skillet.get_snippets()
+        num_snippets = len(snippets)
+        count = 0
+        for snippet in snippets:
+            count += 1
+            skillet_name = snippet.name
+            skillet = self.get_skillet_with_name(skillet_name)
+
+            if str(skillet.type).startswith('pan'):
+                context = self.execute_panos_skillet(skillet, context, panoply)
+            elif skillet.type == 'template':
+                template_output = self.execute_template_skillet(skillet, context)
+                if count == num_snippets:
+                    return template_output
+                else:
+                    context[skillet_name] = template_output
+
+            return context
+
+    def get_skillet_with_name(self, skillet_name: str, reload=False):
+
+        if not self.all_skillets:
+            raise SkilletLoaderException('No Skillets have been loaded!')
+
+        for skillet in self.all_skillets:
+            if skillet.name == skillet_name:
+                return skillet
+
+        return None
+
+    def load_all_skillets_from_dir(self, directory: (str, Path)) -> List[Skillet]:
+        """
+        Recursivly iterate through all sub-directories and locate all found skillets
+        Returns a list of Loaded Skillets
+        :param directory: parent directory in which to start iterating
+        :return: list of skillets
+        """
+        if type(directory) is str:
+            d = Path(directory)
+        else:
+            d = directory
+
+        self.all_skillets = self._check_dir(d, list())
+        return self.all_skillets
+
+    def _check_dir(self, directory: Path, skillet_list: list) -> list:
+        """
+        Recursive function to look for all files in the current directory with a name matching '.meta-cnc.yaml'
+        otherwise, iterate through all sub-dirs and skip dirs with name that match '.git', '.venv', and '.terraform'
+        will descend into all other dirs and call itself again.
+        Returns a list of compiled skillets
+        :param directory: PosixPath of directory to begin searching
+        :param skillet_list: combined list of all loaded skillets
+        :return: list of Skillets
+        """
+        logger.debug(f'Checking dir: {directory}')
+        err_condition = False
+        for d in directory.glob('.meta-cnc.y*'):
+            try:
+                skillet = self.load_skillet_from_path(d)
+                skillet_list.append(skillet)
+            except SkilletNotFoundException:
+                err_condition = f'Skillet not found in dir {d.name}'
+            except SkilletLoaderException:
+                err_condition = f'Loader Error for dir {d.name}'
+
+        # Do not descend into sub dirs after a .meta-cnc file has already been found
+        if skillet_list:
+            return skillet_list
+
+        if err_condition:
+            logger.warning(err_condition)
+            return skillet_list
+
+        for d in directory.iterdir():
+            if d.is_file():
+                continue
+            if '.git' in d.name:
+                continue
+            if '.venv' in d.name:
+                continue
+            if '.terraform' in d.name:
+                continue
+            if d.is_dir():
+                skillet_list.extend(self._check_dir(d, list()))
+
+        return skillet_list
