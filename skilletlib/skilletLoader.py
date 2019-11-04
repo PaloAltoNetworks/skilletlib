@@ -41,7 +41,7 @@ class SkilletLoader:
         :return: Skillet object of the correct type
         """
         skillet_dict = self._parse_skillet(skillet_path)
-        if skillet_dict['type'] == 'panos':
+        if skillet_dict['type'] == 'panos' or skillet_dict['type'] == 'panorama':
             return PanosSkillet(skillet_dict)
         elif skillet_dict['type'] == 'pan_validation':
             return PanValidationSkillet(skillet_dict)
