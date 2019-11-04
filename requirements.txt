@@ -10,3 +10,4 @@ jsonpath_ng
 jinja2
 passlib
 lxml
+GitPython

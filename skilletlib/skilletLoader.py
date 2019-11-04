@@ -13,6 +13,7 @@ from yaml.scanner import ScannerError
 from skilletlib import Panoply
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletNotFoundException
+from skilletlib.remotes.git import Git
 from skilletlib.skillet import PanValidationSkillet
 from skilletlib.skillet import PanosSkillet
 from skilletlib.skillet import Skillet
@@ -332,3 +333,12 @@ class SkilletLoader:
                 skillet_list.extend(self._check_dir(d, list()))
 
         return skillet_list
+
+    def load_from_git(self, repo_url, repo_name, repo_branch, local_dir='~/.pan_cnc/skilletlib') -> List[Skillet]:
+        g = Git(repo_url, local_dir)
+        d = g.clone(repo_name)
+        g.branch(repo_branch)
+
+        self.all_skillets = self.load_all_skillets_from_dir(d)
+        return self.all_skillets
+
