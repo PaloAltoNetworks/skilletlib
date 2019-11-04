@@ -2,6 +2,9 @@ from git import Repo
 import shutil
 import os
 from skilletlib.exceptions import SkilletLoaderException
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Git:
@@ -40,11 +43,11 @@ class Git:
 
         if os.path.exists(path):
             self.Repo = Repo(path)
-            print("Updating repository...")
+            logger.debug("Updating repository...")
             self.Repo.remotes.origin.pull()
             return path
         else:
-            print("Cloning into {}".format(path))
+            logger.debug("Cloning into {}".format(path))
             self.Repo = Repo.clone_from(self.repo_url, path)
 
         self.path = path
@@ -56,9 +59,9 @@ class Git:
         :param branch_name: Branch to checkout.
         :return: None
         """
-        print("Checking out: "+branch_name)
+        logger.debug("Checking out: "+branch_name)
         if self.update:
-            print("Updating branch.")
+            logger.debug("Updating branch.")
             self.Repo.remotes.origin.pull()
         self.Repo.git.checkout(branch_name)
 
