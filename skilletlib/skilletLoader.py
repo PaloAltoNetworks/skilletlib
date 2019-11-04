@@ -17,7 +17,9 @@ from skilletlib.remotes.git import Git
 from skilletlib.skillet import PanValidationSkillet
 from skilletlib.skillet import PanosSkillet
 from skilletlib.skillet import Skillet
-from skilletlib.skillet.workflow import WorkflowSkillet
+from skilletlib.skillet import WorkflowSkillet
+from skilletlib.skillet import Python3Skillet
+from skilletlib.skillet import TemplateSkillet
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +43,15 @@ class SkilletLoader:
         :return: Skillet object of the correct type
         """
         skillet_dict = self._parse_skillet(skillet_path)
-        if skillet_dict['type'] == 'panos' or skillet_dict['type'] == 'panorama':
+        skillet_type = skillet_dict['type']
+        if skillet_type == 'panos' or skillet_type == 'panorama' or skillet_type == 'panorama-gpcs':
             return PanosSkillet(skillet_dict)
-        elif skillet_dict['type'] == 'pan_validation':
+        elif skillet_type == 'pan_validation':
             return PanValidationSkillet(skillet_dict)
+        elif skillet_type == 'python3':
+            return Python3Skillet(skillet_dict)
+        elif skillet_type == 'template':
+            return TemplateSkillet(skillet_dict)
         else:
             return Skillet(skillet_dict)
 

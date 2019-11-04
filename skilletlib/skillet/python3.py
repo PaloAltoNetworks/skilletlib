@@ -12,20 +12,21 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Authors: Adam Baumeister, Nathan Embery
+# Authors: Nathan Embery
 
 from typing import List
 
 from skilletlib.snippet.base import Snippet
+from skilletlib.snippet.python3 import Python3Snippet
 from .base import Skillet
 
 
-class WorkflowSkillet(Skillet):
+class Python3Skillet(Skillet):
 
     def get_snippets(self) -> List[Snippet]:
         snippet_list = list()
         for snippet_def in self.snippet_stack:
-            snippet = Snippet(snippet_def)
+            snippet = Python3Snippet(snippet_def)
             snippet_list.append(snippet)
 
         return snippet_list

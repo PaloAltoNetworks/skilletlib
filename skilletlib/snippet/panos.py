@@ -19,19 +19,19 @@ import logging
 import xml.etree.ElementTree as elementTree
 from collections import OrderedDict
 from typing import Any
-from xml.etree.ElementTree import ParseError
 from uuid import uuid4
+from xml.etree.ElementTree import ParseError
 
-from skilletlib.exceptions import SkilletLoaderException
-from skilletlib.exceptions import NodeNotFoundException
-from .base import Snippet
 from xmldiff import main as xmldiff_main
 
+from skilletlib.exceptions import NodeNotFoundException
+from skilletlib.exceptions import SkilletLoaderException
+from .template import TemplateSnippet
 
 logger = logging.getLogger(__name__)
 
 
-class PanosSnippet(Snippet):
+class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
     def __init__(self, metadata: dict):
