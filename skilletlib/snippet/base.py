@@ -24,8 +24,6 @@ class Snippet:
 
         self.metadata = self.sanitize_metadata(metadata)
         self.name = self.metadata['name']
-        self.template_str = ""
-        self.rendered_template = ""
         self._env = self.__init_env()
 
     def should_execute(self, context: dict) -> bool:
