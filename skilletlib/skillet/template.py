@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from typing import List
 
-from skilletlib.snippet.base import Snippet
 from skilletlib.snippet.template import TemplateSnippet
 from .base import Skillet
 
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class TemplateSkillet(Skillet):
 
-    def get_snippets(self) -> List[Snippet]:
+    def get_snippets(self) -> List[TemplateSnippet]:
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)
         snippet_list = list()

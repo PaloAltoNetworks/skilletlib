@@ -1,8 +1,10 @@
-from git import Repo
-import shutil
-import os
-from skilletlib.exceptions import SkilletLoaderException
 import logging
+import os
+import shutil
+
+from git import Repo
+
+from skilletlib.exceptions import SkilletLoaderException
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,7 @@ class Git:
     Git remote
     This class provides an interface to Github repositories containing Skillets or XML snippets.
     """
+
     def __init__(self, repo_url, store=os.getcwd()):
         """
         Initialize a new Git repo object
@@ -59,7 +62,7 @@ class Git:
         :param branch_name: Branch to checkout.
         :return: None
         """
-        logger.debug("Checking out: "+branch_name)
+        logger.debug("Checking out: " + branch_name)
         if self.update:
             logger.debug("Updating branch.")
             self.Repo.remotes.origin.pull()

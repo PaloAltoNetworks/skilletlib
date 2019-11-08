@@ -16,4 +16,3 @@ class PanoplyException(BaseException):
 
 class NodeNotFoundException(BaseException):
     pass
-

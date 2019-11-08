@@ -18,6 +18,8 @@ class Skillet:
         self.supported_versions = 'not implemented'
         self.variables = self.skillet_dict['variables']
         self.path = self.skillet_dict['snippet_path']
+        self.labels = self.skillet_dict['labels']
+        self.collections = self.skillet_dict['labels']['collections']
         self.context = dict()
 
     def get_snippets(self) -> List[Snippet]:

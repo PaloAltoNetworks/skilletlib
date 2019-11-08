@@ -4,11 +4,7 @@ from pathlib import Path
 from typing import List
 
 import oyaml
-from yaml.constructor import ConstructorError
 from yaml.error import YAMLError
-from yaml.parser import ParserError
-from yaml.reader import ReaderError
-from yaml.scanner import ScannerError
 
 from skilletlib import Panoply
 from skilletlib.exceptions import SkilletLoaderException
@@ -16,16 +12,15 @@ from skilletlib.exceptions import SkilletNotFoundException
 from skilletlib.remotes.git import Git
 from skilletlib.skillet import PanValidationSkillet
 from skilletlib.skillet import PanosSkillet
-from skilletlib.skillet import Skillet
-from skilletlib.skillet import WorkflowSkillet
 from skilletlib.skillet import Python3Skillet
+from skilletlib.skillet import Skillet
 from skilletlib.skillet import TemplateSkillet
+from skilletlib.skillet import WorkflowSkillet
 
 logger = logging.getLogger(__name__)
 
 
 class SkilletLoader:
-
     all_skillets = List[Skillet]
 
     def load_skillet_dict_from_path(self, skillet_path: str) -> dict:
@@ -185,7 +180,8 @@ class SkilletLoader:
 
         return skillet
 
-    def execute_panos_skillet(self, skillet: PanosSkillet, context: dict, panoply: Panoply) -> dict:
+    @staticmethod
+    def execute_panos_skillet(skillet: PanosSkillet, context: dict, panoply: Panoply) -> dict:
         """
         Executes the given PanosSkillet or PanValidationSkillet
         :param skillet: PanosSkillet
@@ -238,7 +234,7 @@ class SkilletLoader:
         return context
 
     @staticmethod
-    def execute_template_skillet(skillet: Skillet, context: dict) -> str:
+    def execute_template_skillet(skillet: TemplateSkillet, context: dict) -> str:
         snippets = skillet.get_snippets()
         snippet = snippets[0]
         return snippet.template(context)
@@ -272,7 +268,7 @@ class SkilletLoader:
 
             return context
 
-    def get_skillet_with_name(self, skillet_name: str, reload=False):
+    def get_skillet_with_name(self, skillet_name: str) -> (Skillet, None):
 
         if not self.all_skillets:
             raise SkilletLoaderException('No Skillets have been loaded!')
@@ -341,6 +337,11 @@ class SkilletLoader:
 
         return skillet_list
 
+    def load_skillets_from_git(self, repo_url, repo_name, repo_branch,
+                               local_dir='~/.pan_cnc/skilletlib') -> List[Skillet]:
+
+        return self.load_from_git(repo_url, repo_name, repo_branch, local_dir)
+
     def load_from_git(self, repo_url, repo_name, repo_branch, local_dir='~/.pan_cnc/skilletlib') -> List[Skillet]:
         g = Git(repo_url, local_dir)
         d = g.clone(repo_name)
@@ -349,3 +350,25 @@ class SkilletLoader:
         self.all_skillets = self.load_all_skillets_from_dir(d)
         return self.all_skillets
 
+    def load_all_label_values(self, label_name: str) -> list:
+        """
+        Returns a list of label values defined across all snippets with a given label
+        for example:
+        labels:
+            label_name: label_value
+
+        will add 'label_value' to the list
+
+        :param label_name: name of the label to search for
+        :return: list of strings representing all found label values for given key
+        """
+        labels_list = list()
+        for skillet in self.all_skillets:
+
+            for label_key in skillet.labels:
+                if label_key == label_name:
+                    for label_list_value in skillet.labels[label_name]:
+                        if label_list_value not in labels_list:
+                            labels_list.append(label_list_value)
+
+        return labels_list

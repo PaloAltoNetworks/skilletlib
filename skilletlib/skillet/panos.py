@@ -14,13 +14,13 @@
 
 # Authors: Adam Baumeister, Nathan Embery
 
+import logging
 from pathlib import Path
 from typing import List
-import os
+
 from skilletlib.snippet.panos import PanosSnippet
 from .base import Skillet
 from ..exceptions import SkilletLoaderException
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class PanosSkillet(Skillet):
                 with snippet_file.open() as sf:
                     snippet_def['element'] = sf.read()
             else:
-                #raise SkilletLoaderException('Could not load "file" attribute!')
+                # raise SkilletLoaderException('Could not load "file" attribute!')
                 logger.error(f'Could not load the referenced file for {snippet_def["name"]}')
 
         return snippet_def

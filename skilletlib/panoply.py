@@ -34,7 +34,6 @@ from xmldiff import main as xmldiff_main
 from .exceptions import LoginException
 from .exceptions import SkilletLoaderException
 from .skillet.base import Skillet
-from .skillet.panos import PanosSkillet
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -663,7 +662,7 @@ class Panoply:
                     continue
 
                 snippet = dict()
-                random_name = str(int(random.random()*1000000))
+                random_name = str(int(random.random() * 1000000))
                 snippet['name'] = f'{f.tag}-{random_name}'
                 snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
                 snippet['element'] = xml_string.strip()
