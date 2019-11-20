@@ -12,26 +12,30 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-# Authors: Adam Baumeister, Nathan Embery
+# Authors: Nathan Embery
 
 from typing import List
 
-from skilletlib.skilletLoader import SkilletLoader
-from skilletlib.snippet.workflow import WorkflowSnippet
+from skilletlib.snippet.docker import DockerSnippet
 from .base import Skillet
 
 
-class WorkflowSkillet(Skillet):
+class DockerSkillet(Skillet):
 
-    def __init__(self, skillet_dict, skillet_loader: SkilletLoader):
-        self.skillet_loader = skillet_loader
-        super().__init__(skillet_dict)
+    def __init__(self, s: dict):
+        super().__init__(s)
+        self.snippet_list = List[DockerSnippet]
 
-    def get_snippets(self) -> List[WorkflowSnippet]:
+    def get_snippets(self) -> List[DockerSnippet]:
         snippet_list = list()
         for snippet_def in self.snippet_stack:
-            skillet = self.skillet_loader.get_skillet_with_name(snippet_def['name'])
-            snippet = WorkflowSnippet(snippet_def, skillet, self.skillet_loader)
+            snippet_def['skillet_path'] = self.path
+            snippet = DockerSnippet(snippet_def)
             snippet_list.append(snippet)
 
-        return snippet_list
+        self.snippet_list = snippet_list
+        return self.snippet_list
+
+    def cleanup(self):
+        for snippet in self.snippet_list:
+            snippet.cleanup()

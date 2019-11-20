@@ -18,24 +18,52 @@ import logging
 from pathlib import Path
 from typing import List
 
+import skilletlib
+# from skilletlib.panoply import Panoply
 from skilletlib.snippet.panos import PanosSnippet
 from .base import Skillet
 from ..exceptions import SkilletLoaderException
+from ..exceptions import SkilletValidationException
 
 logger = logging.getLogger(__name__)
 
 
 class PanosSkillet(Skillet):
+    panoply = None
+
+    def initialize_context(self, initial_context: dict) -> dict:
+        """
+        In this panos case, we want to stash the current configuration of the panos device in question in the
+        context, so initial panoply and add the configuration to the initial context then continue
+        :param initial_context:
+        :return:
+        """
+
+        required_fields = {'panos_hostname', 'panos_username', 'panos_password'}
+        if not required_fields.issubset(initial_context):
+            raise SkilletValidationException('Required fields for panos skillet not found in context!')
+
+        hostname = initial_context.get('panos_hostname', None)
+        username = initial_context.get('panos_username', None)
+        password = initial_context.get('panos_password', None)
+        port = initial_context.get('panos_port', '443')
+        self.panoply = skilletlib.Panoply(hostname=hostname, api_username=username, api_password=password,
+                                          api_port=port)
+
+        context = dict()
+        context.update(initial_context)
+        context['config'] = self.panoply.get_configuration()
+
+        return context
 
     def get_snippets(self) -> List[PanosSnippet]:
-        snippet_path_str = self.skillet_dict['snippet_path']
-        snippet_path = Path(snippet_path_str)
+        snippet_path = Path(self.path)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
                 snippet_def = self.load_element(snippet_def, snippet_path)
 
-            snippet = PanosSnippet(snippet_def)
+            snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
 
         return snippet_list

@@ -19,11 +19,13 @@ import logging
 import xml.etree.ElementTree as elementTree
 from collections import OrderedDict
 from typing import Any
+from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
 
 from xmldiff import main as xmldiff_main
 
+from skilletlib import Panoply
 from skilletlib.exceptions import NodeNotFoundException
 from skilletlib.exceptions import SkilletLoaderException
 from .template import TemplateSnippet
@@ -34,7 +36,8 @@ logger = logging.getLogger(__name__)
 class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
-    def __init__(self, metadata: dict):
+    def __init__(self, metadata: dict, panoply: Panoply):
+        self.panoply = panoply
         if 'cmd' not in metadata:
             self.cmd = 'set'
             metadata['cmd'] = 'set'
@@ -47,6 +50,27 @@ class PanosSnippet(TemplateSnippet):
         self.element = metadata.get('element', '')
         super().__init__(self.element, metadata)
         self.add_filters()
+
+    def execute(self, context: dict) -> Tuple[dict, str]:
+        if self.cmd == 'validate':
+            logger.info(f'  Validating Snippet: {self.name}')
+            test = self.metadata['test']
+            logger.info(f'  Test is: {test}')
+            output = self.execute_conditional(test, context)
+            logger.info(f'  Validation results were: {output}')
+        elif self.cmd == 'validate_xml':
+            logger.info(f'  Validating XML Snippet: {self.name}')
+            output = self.compare_element_at_xpath(context['config'], self.metadata['element'],
+                                                   self.metadata['xpath'], context)
+        elif self.cmd == 'parse':
+            logger.info(f'  Parsing Variable: {self.metadata["variable"]}')
+            output = context.get(self.metadata['variable'], '')
+        else:
+            logger.info(f'  Executing Snippet: {self.name}')
+            # execute the command from the snippet definition and return the raw output
+            output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
+
+        return output, 'success'
 
     def add_filters(self):
         if hasattr(self._env, 'filters'):

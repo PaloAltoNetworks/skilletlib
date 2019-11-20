@@ -1,6 +1,9 @@
 import json
 import xml.etree.ElementTree as elementTree
+from abc import ABC
+from abc import abstractmethod
 from base64 import urlsafe_b64encode
+from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
 import xmltodict
@@ -14,17 +17,45 @@ from passlib.hash import md5_crypt
 from skilletlib.exceptions import SkilletLoaderException
 
 
-class Snippet:
+class Snippet(ABC):
     """
     BaseSnippet implements a basic template object snippet
     """
+    # set of required metadata
     required_metadata = {'name'}
+
+    # dict of optional metadata  and their default values
+    optional_metadata = dict()
+
+    # set a default output type. this can be overridden for each SnippetType
+    output_type = 'xml'
 
     def __init__(self, metadata):
 
         self.metadata = self.sanitize_metadata(metadata)
         self.name = self.metadata['name']
         self._env = self.__init_env()
+
+        for k in self.required_metadata:
+            setattr(self, k, self.metadata[k])
+
+        # iterate the optional_metadata dict and set the default values
+        # if they have not been set in the snippet metadata directly
+        for k, v in self.optional_metadata.items():
+            if k in self.metadata:
+                setattr(self, k, self.metadata[k])
+            else:
+                setattr(self, k, v)
+
+    @abstractmethod
+    def execute(self, context: dict) -> Tuple[dict, str]:
+        """
+        Execute this Snippet and return a tuple consisting on the updated context and a string representing
+        success, failure, or running
+        :param context:
+        :return:
+        """
+        return dict(), 'success'
 
     def should_execute(self, context: dict) -> bool:
         """
@@ -64,11 +95,14 @@ class Snippet:
             # always return false on error condition
             return False
 
+    def get_output(self) -> Tuple[str, str]:
+        return '', 'success'
+
     def capture_outputs(self, results: str) -> dict:
         outputs = dict()
 
         # default output type is 'xml' if not defined
-        output_type = self.metadata.get('output_type', 'xml')
+        output_type = self.metadata.get('output_type', self.output_type)
 
         if output_type == 'xml':
             outputs = self._handle_xml_outputs(results)
@@ -314,31 +348,48 @@ class Snippet:
 
             for output in self.metadata['outputs']:
 
-                if 'name' not in output:
-                    continue
+                for i in ('capture_pattern', 'capture_value', 'capture_object'):
+                    if i in output:
+                        capture_pattern = output[i]
+                    else:
+                        continue
 
-                json_object = json.loads(results)
-                var_name = output['name']
-                capture_pattern = output['capture_pattern']
-                jsonpath_expr = parse(capture_pattern)
-                result = jsonpath_expr.find(json_object)
-                if len(result) == 1:
-                    outputs[var_name] = str(result[0].value)
-                else:
-                    # FR #81 - add ability to capture from a list
-                    capture_list = list()
-                    for r in result:
-                        capture_list.append(r.value)
+                    if 'name' not in output:
+                        continue
 
-                    outputs[var_name] = capture_list
+                    # some Skillet types may return us json already, check if results are actually a str like object
+                    # before trying to convert
+                    if type(results) is not str or type(results) is not bytes or type(results) is not bytearray:
+                        json_object = results
+                    else:
+                        json_object = json.loads(results)
+
+                    var_name = output['name']
+
+                    # short cut for just getting all the results
+                    if capture_pattern == '$' or capture_pattern == '.':
+                        outputs[var_name] = json_object
+                        continue
+
+                    jsonpath_expr = parse(capture_pattern)
+                    result = jsonpath_expr.find(json_object)
+                    if len(result) == 1:
+                        outputs[var_name] = str(result[0].value)
+                    else:
+                        # FR #81 - add ability to capture from a list
+                        capture_list = list()
+                        for r in result:
+                            capture_list.append(r.value)
+
+                        outputs[var_name] = capture_list
 
         except ValueError as ve:
             print('Caught error converting results to json')
-            outputs['system'] = str(ve)
+            outputs['fail_message'] = str(ve)
         except Exception as e:
             print('Unknown exception here!')
             print(e)
-            outputs['system'] = str(e)
+            outputs['fail_message'] = str(e)
 
         return outputs
 

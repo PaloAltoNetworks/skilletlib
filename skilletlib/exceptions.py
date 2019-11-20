@@ -6,6 +6,10 @@ class SkilletNotFoundException(SkilletLoaderException):
     pass
 
 
+class SkilletValidationException(BaseException):
+    pass
+
+
 class LoginException(BaseException):
     pass
 

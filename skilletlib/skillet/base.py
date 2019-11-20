@@ -1,12 +1,16 @@
 import logging
+import time
+from abc import ABC
+from abc import abstractmethod
 from typing import List
 
+from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
 
 logger = logging.getLogger(__name__)
 
 
-class Skillet:
+class Skillet(ABC):
 
     def __init__(self, s: dict):
 
@@ -22,6 +26,7 @@ class Skillet:
         self.collections = self.skillet_dict['labels']['collection']
         self.context = dict()
 
+    @abstractmethod
     def get_snippets(self) -> List[Snippet]:
         snippet_list = list()
         for snippet_def in self.snippet_stack:
@@ -38,3 +43,61 @@ class Skillet:
                 self.context[var['name']] = var['default']
 
         return self.context
+
+    @staticmethod
+    def initialize_context(initial_context: dict) -> dict:
+        """
+        Child classes can override this to provide any initialization information in the context
+        :param initial_context: Initial Context from user input, environment vars, etc
+        :return: updated context with initial context items plus any initialization items
+        """
+        return initial_context
+
+    def cleanup(self):
+        pass
+
+    def execute(self, initial_context: dict) -> dict:
+
+        context = dict()
+
+        try:
+            context = self.initialize_context(initial_context)
+
+            for snippet in self.get_snippets():
+                # render anything that looks like a jinja template in the snippet metadata
+                # mostly useful for xpaths in the panos case
+                metadata = snippet.render_metadata(context)
+                # check the 'when' conditional against variables currently held in the context
+                if snippet.should_execute(context):
+                    (output, status) = snippet.execute(context)
+                    running_counter = 0
+                    while status == 'running':
+                        print('Snippet still running...')
+                        time.sleep(5)
+                        (output, status) = snippet.get_output()
+                        running_counter += 1
+                        if running_counter > 60:
+                            raise SkilletLoaderException('Snippet took too long to execute!')
+
+                    returned_output = snippet.capture_outputs(output)
+                    context.update(returned_output)
+
+                else:
+                    fail_action = metadata.get('fail_action', 'skip')
+                    fail_message = metadata.get('fail_message', 'Aborted due to failed conditional!')
+                    if fail_action == 'skip':
+                        logger.debug(f'  Skipping Snippet: {snippet.name}')
+                    else:
+                        logger.debug('Conditional failed and found a fail_action')
+                        logger.error(fail_message)
+                        context['fail_message'] = fail_message
+                        return context
+        except SkilletLoaderException as sle:
+            print(f'Caught Exception during execution: {sle}')
+
+        except Exception as e:
+            print(f'Exception caught: {e}')
+        finally:
+            self.cleanup()
+
+        return context
