@@ -22,16 +22,10 @@ from typing import List
 import oyaml
 from yaml.error import YAMLError
 
-from skilletlib import Panoply
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletNotFoundException
 from skilletlib.remotes.git import Git
-from skilletlib.skillet import PanValidationSkillet
-from skilletlib.skillet import PanosSkillet
-from skilletlib.skillet import Python3Skillet
-from skilletlib.skillet import Skillet
-from skilletlib.skillet import TemplateSkillet
-from skilletlib.skillet import WorkflowSkillet
+from skilletlib.skillet.base import Skillet
 
 logger = logging.getLogger(__name__)
 
@@ -54,17 +48,33 @@ class SkilletLoader:
         :return: Skillet object of the correct type
         """
         skillet_dict = self._parse_skillet(skillet_path)
+        return self.create_skillet(skillet_dict)
+
+    def create_skillet(self, skillet_dict: dict) -> Skillet:
         skillet_type = skillet_dict['type']
         if skillet_type == 'panos' or skillet_type == 'panorama' or skillet_type == 'panorama-gpcs':
+            from skilletlib.skillet.panos import PanosSkillet
             return PanosSkillet(skillet_dict)
         elif skillet_type == 'pan_validation':
+            from skilletlib.skillet.pan_validation import PanValidationSkillet
             return PanValidationSkillet(skillet_dict)
         elif skillet_type == 'python3':
+            from skilletlib.skillet.python3 import Python3Skillet
             return Python3Skillet(skillet_dict)
         elif skillet_type == 'template':
+            from skilletlib.skillet.template import TemplateSkillet
             return TemplateSkillet(skillet_dict)
+        elif skillet_type == 'docker':
+            from skilletlib.skillet.docker import DockerSkillet
+            return DockerSkillet(skillet_dict)
+        elif skillet_type == 'rest':
+            from skilletlib.skillet.rest import RestSkillet
+            return RestSkillet(skillet_dict)
+        elif skillet_type == 'workflow':
+            from skilletlib.skillet.workflow import WorkflowSkillet
+            return WorkflowSkillet(skillet_dict, self)
         else:
-            return Skillet(skillet_dict)
+            raise SkilletLoaderException('Unknown Skillet Type!')
 
     def _parse_skillet(self, path: (str, Path)) -> dict:
         if type(path) is str:
@@ -195,94 +205,6 @@ class SkilletLoader:
             skillet['snippets'] = list()
 
         return skillet
-
-    @staticmethod
-    def execute_panos_skillet(skillet: PanosSkillet, context: dict, panoply: Panoply) -> dict:
-        """
-        Executes the given PanosSkillet or PanValidationSkillet
-        :param skillet: PanosSkillet
-        :param context: dict containing all required variables for the given skillet
-        :param panoply: Panoply PAN-OS object
-        :return: modified context containing any captured outputs
-        """
-
-        context['config'] = panoply.get_configuration()
-
-        for snippet in skillet.get_snippets():
-            # render anything that looks like a jinja template in the snippet metadata
-            # mostly useful for xpaths in the panos case
-            metadata = snippet.render_metadata(context)
-            # check the 'when' conditional against variables currently held in the context
-            if snippet.should_execute(context):
-                if snippet.cmd == 'validate':
-                    logger.info(f'  Validating Snippet: {snippet.name}')
-                    test = snippet.metadata['test']
-                    logger.info(f'  Test is: {test}')
-                    output = snippet.execute_conditional(test, context)
-                    logger.info(f'  Validation results were: {output}')
-                elif snippet.cmd == 'validate_xml':
-                    logger.info(f'  Validating XML Snippet: {snippet.name}')
-                    output = snippet.compare_element_at_xpath(context['config'], snippet.metadata['element'],
-                                                              snippet.metadata['xpath'], context)
-                elif snippet.cmd == 'parse':
-                    logger.info(f'  Parsing Variable: {snippet.metadata["variable"]}')
-                    output = context.get(snippet.metadata['variable'], '')
-                else:
-                    logger.info(f'  Executing Snippet: {snippet.name}')
-                    # execute the command from the snippet definition and return the raw output
-                    output = panoply.execute_cmd(snippet.cmd, metadata, context)
-                # update the context with any captured outputs defined in the snippet metadata
-                returned_output = snippet.capture_outputs(output)
-                context.update(returned_output)
-
-            else:
-                # FIXME - we should possibly be able to bail out when a conditional fails
-                fail_action = metadata.get('fail_action', 'skip')
-                fail_message = metadata.get('fail_message', 'Aborted due to failed conditional!')
-                if fail_action == 'skip':
-                    logger.debug(f'  Skipping Snippet: {snippet.name}')
-                else:
-                    logger.debug('Conditional failed and found a fail_action')
-                    logger.error(fail_message)
-                    context['fail_message'] = fail_message
-                    return context
-
-        return context
-
-    @staticmethod
-    def execute_template_skillet(skillet: TemplateSkillet, context: dict) -> str:
-        snippets = skillet.get_snippets()
-        snippet = snippets[0]
-        return snippet.template(context)
-
-    def execute_workflow_skillet(self, skillet: WorkflowSkillet, context: dict, panoply: Panoply) -> (dict, str):
-        """
-        Executes a workflow skillet, executing each step in turn. If a template skillet is the last snippet step then
-        return the rendered output from that template. Otherwise, return the combined context
-        :param skillet: WorkflowSkillet to execute
-        :param context: context containing all required variables and user-input for each snippet
-        :param panoply: panoply class to access PAN-OS devices
-        :return: Rendered template string or combined context if a template is not specified as the last step
-        """
-
-        snippets = skillet.get_snippets()
-        num_snippets = len(snippets)
-        count = 0
-        for snippet in snippets:
-            count += 1
-            skillet_name = snippet.name
-            skillet = self.get_skillet_with_name(skillet_name)
-
-            if str(skillet.type).startswith('pan'):
-                context = self.execute_panos_skillet(skillet, context, panoply)
-            elif skillet.type == 'template':
-                template_output = self.execute_template_skillet(skillet, context)
-                if count == num_snippets:
-                    return template_output
-                else:
-                    context[skillet_name] = template_output
-
-            return context
 
     def get_skillet_with_name(self, skillet_name: str) -> (Skillet, None):
 
