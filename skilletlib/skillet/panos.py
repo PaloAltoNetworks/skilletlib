@@ -31,39 +31,60 @@ logger = logging.getLogger(__name__)
 class PanosSkillet(Skillet):
     panoply = None
 
+    def __init__(self, metadata: dict, panoply: Panoply = None):
+        """
+        Initialize a new PanosSkillet class.
+        :param metadata: loaded dict from the Skillet YAML file
+        :param panoply: optional panoply object. This can be passed in if the outer application scope has
+        already been in contact with the device for things like checking auth, etc. If not passed in,
+        you can invoke it in 'online' mode by passing in 'panos_username', 'panos_password' and 'panos_hostname' in the
+        context. Otherwise, 'offline' mode requires a 'config' to be passed in via the context.
+        """
+        if panoply is not None:
+            self.panoply = panoply
+        super().__init__(metadata)
+
     def initialize_context(self, initial_context: dict) -> dict:
         """
         In this panos case, we want to stash the current configuration of the panos device in question in the
-        context, so initialize panoply and add the configuration to the initial context then continue
-        :param initial_context:
-        :return:
+        context, check for online mode, offline mode, or an existing panoply object
+        :param initial_context: dict to use to initialize the context
+        :return: context with additional initialized items
         """
 
+        # if the panoply object was not passed in via __init__, then check for online vs offline mode here
         online_required_fields = {'panos_hostname', 'panos_username', 'panos_password'}
+        # which set of fields we find in the contexst will determine online vs offline mode
         offline_required_fields = {'config'}
-
-        if not online_required_fields.issubset(initial_context) \
-                and not offline_required_fields.issubset(initial_context):
-            raise SkilletValidationException('Required fields for panos skillet not found in context!')
 
         context = dict()
         context.update(initial_context)
 
-        if online_required_fields.issubset(initial_context):
-            hostname = initial_context.get('panos_hostname', None)
-            username = initial_context.get('panos_username', None)
-            password = initial_context.get('panos_password', None)
-            port = initial_context.get('panos_port', '443')
-            self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
-                                                      api_port=port)
+        if self.panoply is None:
+            if not online_required_fields.issubset(initial_context) \
+                    and not offline_required_fields.issubset(initial_context):
+                raise SkilletValidationException('Required fields for panos skillet not found in context!')
 
-            context['config'] = self.panoply.get_configuration()
+            if online_required_fields.issubset(initial_context):
+                hostname = initial_context.get('panos_hostname', None)
+                username = initial_context.get('panos_username', None)
+                password = initial_context.get('panos_password', None)
+                port = initial_context.get('panos_port', '443')
+                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
+                                                          api_port=port)
+
+                context['config'] = self.panoply.get_configuration()
+            else:
+                logger.info(f'offline mode detected for {__name__}')
+                # init panoply in offline mode
+                self.panoply = skilletlib.panoply.Panoply()
         else:
-            logger.info(f'offline mode detected for {__name__}')
-            # init panoply in offline mode
-            self.panoply = skilletlib.panoply.Panoply()
+            # we were passed in a panoply object already, check if we are connected and grab the configuration if so
+            if self.panoply.connected:
+                context['config'] = self.panoply.get_configuration()
+            else:
+                raise SkilletLoaderException('Could not get configuration as Panoply is not connected!')
 
-        # 'config' is already in the initial context and it has been copied over
         return context
 
     def get_snippets(self) -> List[PanosSnippet]:
