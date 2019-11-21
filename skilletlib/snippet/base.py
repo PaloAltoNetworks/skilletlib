@@ -94,6 +94,14 @@ class Snippet(ABC):
             print(ude)
             # always return false on error condition
             return False
+        except TypeError as te:
+            print(te)
+            return False
+        except Exception as e:
+            # catch-all - always return false on error condition
+            print(e)
+            print(type(e))
+            return False
 
     def get_output(self) -> Tuple[str, str]:
         return '', 'success'

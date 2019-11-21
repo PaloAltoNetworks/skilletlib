@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
+    # default output_type for each snippet of this type
+    output_type = 'xml'
+
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
         if 'cmd' not in metadata:
