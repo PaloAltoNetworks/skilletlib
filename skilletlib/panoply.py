@@ -47,15 +47,20 @@ class Panoply:
     Panoply is a wrapper around pan-python PanXAPI class to provide additional, commonly used functions
     """
 
-    def __init__(self, hostname, api_username, api_password, api_port=443, serial_number=None, debug=False):
+    def __init__(self, hostname=None, api_username=None, api_password=None,
+                 api_port=None, serial_number=None, debug=False):
         """
-        Initialize a new panos object
+        Initialize a new panoply object
         :param hostname: hostname or ip address of target device`
         :param api_username: username
         :param api_password: password
         :param api_port: port to use for target device
         :param serial_number: Serial number of target device if proxy through panorama
         """
+
+        if api_port is None:
+            api_port = 443
+
         self.hostname = hostname
         self.user = api_username
         self.pw = api_password
@@ -67,10 +72,18 @@ class Panoply:
         self.connected = False
         self.facts = {}
         self.last_error = ''
+        self.offline_mode = False
 
         if debug:
             logger.setLevel(logging.DEBUG)
 
+        if hostname is None and api_username is None and api_password is None:
+            logger.info('No Credentials found for Panoply, using offline mode')
+            self.offline_mode = True
+            return
+
+        # try to connect...
+        self.offline_mode = False
         try:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
                                      port=self.port, serial=self.serial_number)

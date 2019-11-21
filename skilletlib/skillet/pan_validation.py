@@ -21,6 +21,9 @@ from skilletlib.snippet.panos import PanosSnippet
 from .panos import PanosSkillet
 
 
+# from .base import Skillet
+
+
 class PanValidationSkillet(PanosSkillet):
 
     def get_snippets(self) -> List[PanosSnippet]:
@@ -38,7 +41,7 @@ class PanValidationSkillet(PanosSkillet):
             if 'severity' not in snippet_def:
                 snippet_def['severity'] = 'low'
 
-            snippet = PanosSnippet(snippet_def)
+            snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
 
         return snippet_list

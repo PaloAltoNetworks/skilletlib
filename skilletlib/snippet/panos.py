@@ -25,9 +25,9 @@ from xml.etree.ElementTree import ParseError
 
 from xmldiff import main as xmldiff_main
 
-from skilletlib import Panoply
 from skilletlib.exceptions import NodeNotFoundException
 from skilletlib.exceptions import SkilletLoaderException
+from skilletlib.panoply import Panoply
 from .template import TemplateSnippet
 
 logger = logging.getLogger(__name__)

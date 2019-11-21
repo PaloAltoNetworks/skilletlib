@@ -38,8 +38,12 @@
                         <threats>
                             <recurring>
                                 <weekly>
-                                    <day-of-week>{{ ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday','sunday']|random }}</day-of-week>
-                                    <at>{{ ['01','02','03','04','05','06','07','08','09','10','11','12']|random }}:{{ ['00','05','10','15','20','25','30']|random }}</at>
+                                    <day-of-week>{{ ['monday', 'tuesday', 'wednesday', 'thursday', 'friday',
+                                        'saturday','sunday']|random }}
+                                    </day-of-week>
+                                    <at>{{ ['01','02','03','04','05','06','07','08','09','10','11','12']|random }}:{{
+                                        ['00','05','10','15','20','25','30']|random }}
+                                    </at>
                                     <action>download-only</action>
                                 </weekly>
                             </recurring>
