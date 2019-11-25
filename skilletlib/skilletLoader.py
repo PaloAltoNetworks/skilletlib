@@ -33,6 +33,11 @@ logger = logging.getLogger(__name__)
 class SkilletLoader:
     all_skillets = List[Skillet]
 
+    def __init__(self, path=None):
+
+        if path is not None:
+            self.load_all_skillets_from_dir(path)
+
     def load_skillet_dict_from_path(self, skillet_path: str) -> dict:
         """
         Loads the skillet metadata file into a skillet_dict dictionary
