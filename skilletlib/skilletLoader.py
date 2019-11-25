@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class SkilletLoader:
-    all_skillets = List[Skillet]
+    skillets = List[Skillet]
 
     def __init__(self, path=None):
 
@@ -213,10 +213,10 @@ class SkilletLoader:
 
     def get_skillet_with_name(self, skillet_name: str) -> (Skillet, None):
 
-        if not self.all_skillets:
+        if not self.skillets:
             raise SkilletLoaderException('No Skillets have been loaded!')
 
-        for skillet in self.all_skillets:
+        for skillet in self.skillets:
             if skillet.name == skillet_name:
                 return skillet
 
@@ -224,7 +224,7 @@ class SkilletLoader:
 
     def load_all_skillets_from_dir(self, directory: (str, Path)) -> List[Skillet]:
         """
-        Recursivly iterate through all sub-directories and locate all found skillets
+        Recursively iterate through all sub-directories and locate all found skillets
         Returns a list of Loaded Skillets
         :param directory: parent directory in which to start iterating
         :return: list of skillets
@@ -234,8 +234,8 @@ class SkilletLoader:
         else:
             d = directory
 
-        self.all_skillets = self._check_dir(d, list())
-        return self.all_skillets
+        self.skillets = self._check_dir(d, list())
+        return self.skillets
 
     def _check_dir(self, directory: Path, skillet_list: list) -> list:
         """
@@ -290,8 +290,8 @@ class SkilletLoader:
         d = g.clone(repo_name)
         g.branch(repo_branch)
 
-        self.all_skillets = self.load_all_skillets_from_dir(d)
-        return self.all_skillets
+        self.skillets = self.load_all_skillets_from_dir(d)
+        return self.skillets
 
     def load_all_label_values(self, label_name: str) -> list:
         """
@@ -306,7 +306,7 @@ class SkilletLoader:
         :return: list of strings representing all found label values for given key
         """
         labels_list = list()
-        for skillet in self.all_skillets:
+        for skillet in self.skillets:
 
             for label_key in skillet.labels:
                 if label_key == label_name:
