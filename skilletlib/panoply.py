@@ -33,7 +33,7 @@ from xmldiff import main as xmldiff_main
 
 from .exceptions import LoginException
 from .exceptions import SkilletLoaderException
-from .skillet.base import Skillet
+from .skilletLoader import SkilletLoader
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -331,10 +331,15 @@ class Panoply:
             raise SkilletLoaderException('Could not determine sw-version for baseline load')
 
         template_path = Path(__file__).parent.joinpath('assets', skillet_type_dir, skillet_dir)
-        baseline_skillet = Skillet(str(template_path.resolve()))
+        sl = SkilletLoader()
+        baseline_skillet = sl.load_skillet_from_path(str(template_path.resolve()))
         snippets = baseline_skillet.get_snippets()
         snippet = snippets[0]
-        return snippet.template(context)
+        output, status = snippet.execute(context)
+        if status == 'success':
+            return str(output)
+        else:
+            raise SkilletLoaderException('Could not generate baseline config!')
 
     def import_file(self, filename: str, file_contents: (str, bytes), category: str) -> bool:
         """
@@ -711,51 +716,6 @@ class Panoply:
         except PanXapiError:
             logger.error(f'Could not get configuration from device')
             raise SkilletLoaderException('Could not get configuration from the device')
-
-    def execute_skillet(self, skillet: Skillet, context: dict) -> dict:
-        """
-        Executes the given PanosSkillet
-        :param skillet: PanosSkillet
-        :param context: dict containing all required variables for the given skillet
-        :return: modified context containing any captured outputs
-        """
-
-        if not self.connected:
-            raise SkilletLoaderException('Must be connected to the device to execute a skillet')
-
-        # always update context with latest facts
-        context['facts'] = self.facts
-        context['config'] = self.get_configuration()
-        context['config_object'] = xmltodict.parse(context['config'])
-
-        for snippet in skillet.get_snippets():
-            # render anything that looks like a jinja template in the snippet metadata
-            # mostly useful for xpaths in the panos case
-            metadata = snippet.render_metadata(context)
-            # check the 'when' conditional against variables currently held in the context
-            if snippet.should_execute(context):
-                if snippet.cmd == 'validate':
-                    logger.info(f'  Validating Snippet: {snippet.name}')
-                    test = snippet.metadata['test']
-                    logger.info(f'  Test is: {test}')
-                    output = snippet.execute_conditional(test, context)
-                    logger.info(f'  Validation results were: {output}')
-                elif snippet.cmd == 'parse':
-                    logger.info(f'  Parsing Variable: {snippet.metadata["variable"]}')
-                    output = context.get(snippet.metadata['variable'], '')
-                else:
-                    logger.info(f'  Executing Snippet: {snippet.name}')
-                    # execute the command from the snippet definition and return the raw output
-                    output = self.execute_cmd(snippet.cmd, metadata, context)
-                # update the context with any captured outputs defined in the snippet metadata
-                returned_output = snippet.capture_outputs(output)
-                context.update(returned_output)
-
-            else:
-                # FIXME - we should possibly be able to bail out when a conditional fails
-                logger.debug(f'  Skipping Snippet: {snippet.name}')
-
-        return context
 
     @staticmethod
     def __clean_uuid(changed_element: Element) -> Element:
