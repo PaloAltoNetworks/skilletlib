@@ -52,7 +52,7 @@ class PanosSnippet(TemplateSnippet):
         # element should be the 'file' attribute read in as a str
         self.element = metadata.get('element', '')
         super().__init__(self.element, metadata)
-        self.add_filters()
+        # self.add_filters()
 
     def execute(self, context: dict) -> Tuple[dict, str]:
         if self.cmd == 'validate':
@@ -75,7 +75,7 @@ class PanosSnippet(TemplateSnippet):
 
         return output, 'success'
 
-    def add_filters(self):
+    def __add_filters(self) -> None:
         if hasattr(self._env, 'filters'):
             self._env.filters['has_config'] = self.__node_present
             self._env.filters['missing_config'] = self.__node_absent

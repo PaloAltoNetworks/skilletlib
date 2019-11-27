@@ -88,6 +88,10 @@ class PanosSkillet(Skillet):
         return context
 
     def get_snippets(self) -> List[PanosSnippet]:
+        """
+        Every skillet type determines how to load and initialize all of it's snippets
+        :return: a List of PanosSnippets
+        """
         snippet_path = Path(self.path)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
@@ -101,6 +105,23 @@ class PanosSkillet(Skillet):
 
     @staticmethod
     def load_element(snippet_def: dict, snippet_path: Path) -> dict:
+        """
+        This method will load the snippet file found on disk into the 'element' attribute if the element
+        is not already populated. This allows snippets to be 'all-in-one' i.e. there is no requirement for the snippets
+        to be split into seperate files. The meta-cnc.yaml file can contain all the snippets 'inline' in the 'element'
+        attribute if desired.
+        An example snippet def:
+
+          - name: template
+            xpath: /config/devices/entry[@name='localhost.localdomain']/template
+            file: ../snippets/template.xml
+
+        :param snippet_def: the loaded snippet definition from the .meta-cnc.yaml file. Each snippet object in the
+        'snippets' stanza is a snippet_def and is passed in here
+        :param snippet_path: the path on the filesystem where this skillet is located. This is used to resolve
+        relative paths for each snippet. This allows snippet file re-use across skillets.
+        :return: snippet_def with the element populated with the resolved and loaded snippet file contents
+        """
         if 'element' not in snippet_def or snippet_def['element'] == '':
             if 'file' not in snippet_def:
                 raise SkilletLoaderException(

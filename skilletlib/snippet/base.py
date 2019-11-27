@@ -1,3 +1,19 @@
+# Copyright (c) 2018, Palo Alto Networks
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Authors: Nathan Embery
+
 import json
 import xml.etree.ElementTree as elementTree
 from abc import ABC
@@ -21,21 +37,30 @@ class Snippet(ABC):
     """
     BaseSnippet implements a basic template object snippet
     """
-    # set of required metadata
+    # set of required metadata, each snippet will define what attributes are required in the snippet definition
+    # by default, we only require a 'name' attribute, but sub-classes will require more
     required_metadata = {'name'}
 
-    # dict of optional metadata  and their default values
+    # dict of optional metadata  and their default values. These values will be set on the snippet class but
+    # will not throw an exeption is they are not present
     optional_metadata = dict()
 
-    # set a default output type. this can be overridden for each SnippetType
+    # set a default output type. this can be overridden for each SnippetType. This is used to determine the default
+    # output handler to use for each snippet class. This can be set on a per snippet basis, but this allows a
+    # short-cut on each
     output_type = 'xml'
 
     def __init__(self, metadata):
 
+        # first validate all the required fields are present in the metadata (snippet definition)
         self.metadata = self.sanitize_metadata(metadata)
+        # always have a default name, subclasses will set additional fields on the class
         self.name = self.metadata['name']
+        # set up jinja environment and add any custom filters. Snippet sub-classes can override __add_filters
+        # to append additional filters. See the PanosSnippet class for an example
         self._env = self.__init_env()
 
+        # set all the required fields with their values from the snippet definition
         for k in self.required_metadata:
             setattr(self, k, self.metadata[k])
 
@@ -51,9 +76,12 @@ class Snippet(ABC):
     def execute(self, context: dict) -> Tuple[dict, str]:
         """
         Execute this Snippet and return a tuple consisting on the updated context and a string representing
-        success, failure, or running
-        :param context:
-        :return:
+        success, failure, or running.
+
+        Each snippet sub class must override this method!
+
+        :param context: context to use for variable interpolation
+        :return: Tuple containng updated context dictionary and string indicated success or failure
         """
         return dict(), 'success'
 
@@ -104,9 +132,20 @@ class Snippet(ABC):
             return False
 
     def get_output(self) -> Tuple[str, str]:
+        """
+        get_output can be used when a snippet executes async and cannot or will not return output right away
+        snippets that operate async must override this method
+        :return:
+        """
+
         return '', 'success'
 
     def capture_outputs(self, results: str) -> dict:
+        """
+        All snippet output or portions of snippet output can be captured and saved on the context as a new variable
+        :param results: the raw output from the snippet execution
+        :return: a dictionary containing all captured variables
+        """
         outputs = dict()
 
         # default output type is 'xml' if not defined
@@ -130,7 +169,7 @@ class Snippet(ABC):
 
         return outputs
 
-    def sanitize_metadata(self, metadata):
+    def sanitize_metadata(self, metadata: dict) -> dict:
         """
         Ensure the configured metadata is valid for this snippet type
         :param metadata: dict
@@ -146,11 +185,18 @@ class Snippet(ABC):
         return metadata
 
     def render_metadata(self, context: dict) -> dict:
-        return context
+        """
+        Each snippet sub class can override this method to perform jinja variable interpolation on various items
+        in it's snippet definition. For example, the PanosSnippet will check the 'xpath' attribute and perform
+        the required interpolation
+        :param context: context from environment
+        :return: metadata with jinja rendered variables
+        """
+        return self.metadata
 
     # define functions for custom jinja filters
     @staticmethod
-    def __md5_hash(txt) -> str:
+    def __md5_hash(txt: str) -> str:
         """
         Returns the MD5 Hashed secret for use as a password hash in the PAN-OS configuration
         :param txt: text to be hashed
@@ -161,9 +207,21 @@ class Snippet(ABC):
         return md5_crypt.hash(txt)
 
     def __init_env(self) -> Environment:
+        """
+        init the jinja2 environment and add any required filters
+        :return: Jinja2 environment object
+        """
         e = Environment(loader=BaseLoader)
         e.filters["md5_hash"] = self.__md5_hash
+        self.__add_filters()
         return e
+
+    def __add_filters(self) -> None:
+        """
+        Each snippet sub-class can add additional filters. See the PanosSnippet for examples
+        :return:
+        """
+        pass
 
     def __handle_text_outputs(self, results: str) -> dict:
         """
@@ -343,11 +401,20 @@ class Snippet(ABC):
         return outputs
 
     def _handle_json_outputs(self, results: str) -> dict:
-        outputs = dict()
+        """
+        Parses results and returns a dict containing base64 encoded values
 
-        snippet_name = 'unknown'
-        if 'name' in self.metadata:
-            snippet_name = self.metadata['name']
+        output_type: json
+        outputs:
+          - name: salt_auth_token
+            capture_object: '$.return[0].token'
+
+        See here for more jsonpath examples: https://github.com/h2non/jsonpath-ng
+
+        :param results: string as returned from some action, to be parsed as JSON
+        :return: dict containing all outputs found from the capture pattern in each output
+        """
+        outputs = dict()
 
         try:
             if 'outputs' not in self.metadata:
@@ -402,11 +469,12 @@ class Snippet(ABC):
         return outputs
 
     def _handle_manual_outputs(self, results: str) -> dict:
+        """
+        Manually set a value in the context, this could be useful with 'when' conditionals
+        :param results: results from snippet execution, ignored in this method
+        :return: dict containing manually defined name / value pair
+        """
         outputs = dict()
-
-        snippet_name = 'unknown'
-        if 'name' in self.metadata:
-            snippet_name = self.metadata['name']
 
         try:
             if 'outputs' not in self.metadata:
@@ -424,6 +492,6 @@ class Snippet(ABC):
                 outputs[var_name] = value
 
         except KeyError as ke:
-            print(f'Could not locate required attributes for manual output: {ke} in snippet: {snippet_name}')
+            print(f'Could not locate required attributes for manual output: {ke} in snippet: {self.name}')
 
         return outputs
