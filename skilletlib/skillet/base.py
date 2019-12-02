@@ -133,6 +133,7 @@ class Skillet(ABC):
                         logger.error(fail_message)
                         context['fail_message'] = fail_message
                         return context
+
         except SkilletLoaderException as sle:
             logger.error(f'Caught Exception during execution: {sle}')
 
@@ -142,3 +143,13 @@ class Skillet(ABC):
             self.cleanup()
 
         return context
+
+    def get_results(self, context: dict) -> None:
+        results = dict()
+        for s in self.snippet_stack:
+            snippet_name = s.get('name', '')
+            if snippet_name in context:
+                results[snippet_name] = context[snippet_name]
+
+        return results
+

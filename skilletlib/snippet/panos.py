@@ -75,7 +75,7 @@ class PanosSnippet(TemplateSnippet):
 
         return output, 'success'
 
-    def __add_filters(self) -> None:
+    def add_filters(self) -> None:
         if hasattr(self._env, 'filters'):
             self._env.filters['has_config'] = self.__node_present
             self._env.filters['missing_config'] = self.__node_absent

@@ -58,7 +58,7 @@ class Snippet(ABC):
         self.name = self.metadata['name']
         # set up jinja environment and add any custom filters. Snippet sub-classes can override __add_filters
         # to append additional filters. See the PanosSnippet class for an example
-        self._env = self.__init_env()
+        self.__init_env()
 
         # set all the required fields with their values from the snippet definition
         for k in self.required_metadata:
@@ -211,12 +211,11 @@ class Snippet(ABC):
         init the jinja2 environment and add any required filters
         :return: Jinja2 environment object
         """
-        e = Environment(loader=BaseLoader)
-        e.filters["md5_hash"] = self.__md5_hash
-        self.__add_filters()
-        return e
+        self._env = Environment(loader=BaseLoader)
+        self._env.filters["md5_hash"] = self.__md5_hash
+        self.add_filters()
 
-    def __add_filters(self) -> None:
+    def add_filters(self) -> None:
         """
         Each snippet sub-class can add additional filters. See the PanosSnippet for examples
         :return:
