@@ -76,14 +76,15 @@ class Skillet(ABC):
 
         return self.context
 
-    @staticmethod
-    def initialize_context(initial_context: dict) -> dict:
+    def initialize_context(self, initial_context: dict) -> dict:
         """
         Child classes can override this to provide any initialization information in the context
         :param initial_context: Initial Context from user input, environment vars, etc
         :return: updated context with initial context items plus any initialization items
         """
-        return initial_context
+        self.context.update(initial_context)
+        self.update_context(initial_context)
+        return self.context
 
     def cleanup(self):
         pass

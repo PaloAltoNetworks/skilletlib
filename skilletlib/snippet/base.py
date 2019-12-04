@@ -188,7 +188,8 @@ class Snippet(ABC):
                     outputs = self.__handle_xml_outputs(output, results)
                 elif output_type == 'manual':
                     outputs = self.__handle_manual_outputs(output, results)
-
+                elif output_type == 'text':
+                    outputs = self.__handle_text_outputs(output, results)
         # elif output_type == 'base64':
         #     outputs = self._handle_base64_outputs(results)
         # elif output_type == 'json':
@@ -309,7 +310,7 @@ class Snippet(ABC):
         """
         pass
 
-    def __handle_text_outputs(self, results: str) -> dict:
+    def __handle_text_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Parse the results string as a text blob into a single variable.
 
@@ -322,19 +323,8 @@ class Snippet(ABC):
         :param results: results string from the action
         :return: dict of outputs, in this case a single entry
         """
-        snippet_name = self.metadata['name']
         outputs = dict()
-
-        if 'outputs' not in self.metadata or len(self.metadata['outputs']) == 0:
-            # by default, all we need is the output_type = text defined
-            outputs[snippet_name] = results
-            return outputs
-
-        # if we have a list of outputs, use the first one and use the custom name if present
-        # otherwise, just use the snippet_name as the key in the outputs dict
-        outputs_config = self.metadata.get('outputs', [])
-        first_output = outputs_config[0]
-        output_name = first_output.get('name', snippet_name)
+        output_name = output_definition.get('name', self.name)
         outputs[output_name] = results
         return outputs
 

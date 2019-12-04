@@ -20,6 +20,7 @@ class RestSnippet(TemplateSnippet):
     name = ''
     path = ''
 
+    output_type = 'rest'
     # optional metadata items and their default values
     optional_metadata = {
         'operation': 'get',
@@ -79,3 +80,9 @@ class RestSnippet(TemplateSnippet):
                 r = response.text
 
             return r, 'success'
+
+    def handle_output_type_rest(self, results: str):
+
+        output = dict()
+        output[self.name] = results
+        return output

@@ -57,8 +57,7 @@ class PanosSkillet(Skillet):
         # which set of fields we find in the contexst will determine online vs offline mode
         offline_required_fields = {'config'}
 
-        context = dict()
-        context.update(initial_context)
+        context = super().initialize_context(initial_context)
 
         if self.panoply is None:
             if not online_required_fields.issubset(initial_context) \
