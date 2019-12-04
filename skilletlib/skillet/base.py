@@ -100,6 +100,7 @@ class Skillet(ABC):
         """
 
         context = dict()
+        returned_outputs = dict()
 
         try:
             context = self.initialize_context(initial_context)
@@ -121,6 +122,7 @@ class Skillet(ABC):
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
                     returned_output = snippet.capture_outputs(output)
+                    returned_outputs.update(returned_output)
                     context.update(returned_output)
 
                 else:
@@ -131,8 +133,8 @@ class Skillet(ABC):
                     else:
                         logger.debug('Conditional failed and found a fail_action')
                         logger.error(fail_message)
-                        context['fail_message'] = fail_message
-                        return context
+                        returned_outputs['fail_message'] = fail_message
+                        return returned_outputs
 
         except SkilletLoaderException as sle:
             logger.error(f'Caught Exception during execution: {sle}')
@@ -142,7 +144,7 @@ class Skillet(ABC):
         finally:
             self.cleanup()
 
-        return context
+        return self.get_results(returned_outputs)
 
     def get_results(self, context: dict) -> None:
         results = dict()
@@ -152,4 +154,5 @@ class Skillet(ABC):
                 results[snippet_name] = context[snippet_name]
 
         return results
+
 

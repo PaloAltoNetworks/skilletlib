@@ -72,6 +72,17 @@ class Snippet(ABC):
             else:
                 setattr(self, k, v)
 
+        self.context = dict()
+
+    def update_context(self, context: dict) -> None:
+        """
+        This will update the snippet context with the passed in dict.
+        This gets called before render_metadata
+        :param context:
+        :return:
+        """
+        self.context.update(context)
+
     @abstractmethod
     def execute(self, context: dict) -> Tuple[dict, str]:
         """
@@ -146,28 +157,102 @@ class Snippet(ABC):
         :param results: the raw output from the snippet execution
         :return: a dictionary containing all captured variables
         """
-        outputs = dict()
 
-        # default output type is 'xml' if not defined
+        captured_outputs = dict()
+
         output_type = self.metadata.get('output_type', self.output_type)
 
-        if output_type == 'xml':
-            outputs = self._handle_xml_outputs(results)
-        elif output_type == 'base64':
-            outputs = self._handle_base64_outputs(results)
-        elif output_type == 'json':
-            outputs = self._handle_json_outputs(results)
-        elif output_type == 'manual':
-            outputs = self._handle_manual_outputs(results)
-        elif output_type == 'text':
-            outputs = self.__handle_text_outputs(results)
-        # sub classes can handle their own output types
-        # see panos/__handle_validation for example
-        elif hasattr(self, f'handle_output_type_{output_type}'):
+        # check if this snippet type wants to handle it's own outputs
+        if hasattr(self, f'handle_output_type_{output_type}'):
             func = getattr(self, f'handle_output_type_{output_type}')
-            outputs = func(results)
+            return func(results)
 
-        return outputs
+        # otherwise, check all the normal types here
+        if 'outputs' not in self.metadata:
+            return captured_outputs
+
+        for output in self.metadata['outputs']:
+
+            outputs = dict()
+
+            if 'name' not in output:
+                continue
+
+            if 'capture_variable' in output:
+                outputs[output['name']] = self.render(output['capture_variable'], self.context)
+            else:
+                # allow jinja syntax in capture_pattern, capture_value, capture_object etc
+                output = self.__render_output_metadata(output, self.context)
+
+                if output_type == 'xml':
+                    outputs = self.__handle_xml_outputs(output, results)
+                elif output_type == 'manual':
+                    outputs = self.__handle_manual_outputs(output, results)
+
+        # elif output_type == 'base64':
+        #     outputs = self._handle_base64_outputs(results)
+        # elif output_type == 'json':
+        #     outputs = self._handle_json_outputs(results)
+        # elif output_type == 'manual':
+        #     outputs = self._handle_manual_outputs(results)
+        # elif output_type == 'text':
+        #     outputs = self.__handle_text_outputs(results)
+        # # sub classes can handle their own output types
+        # # see panos/__handle_validation for example
+        # elif hasattr(self, f'handle_output_type_{output_type}'):
+        #     func = getattr(self, f'handle_output_type_{output_type}')
+        #     outputs = func(results)
+            captured_outputs.update(outputs)
+            self.context.update(outputs)
+
+        return captured_outputs
+
+    def __render_output_metadata(self, output: dict, context: dict) -> dict:
+        keys = ('capture_value', 'capture_pattern', 'capture_object')
+        for k in keys:
+            if k in output:
+                output[k] = self.render(output[k], context)
+
+        return output
+
+    def __filter_outputs(self, output_definition: dict, output: dict, local_context: dict):
+
+        if 'filter_items' not in output_definition:
+            return output
+
+        # grab the test string to evaluate
+        test_str = output_definition['filter_items']
+
+        # keep a new list of all the items that have matched the test
+        filtered_items = list()
+
+        if type(output) is list:
+            for item in output:
+                local_context['item'] = item
+                results = self.execute_conditional(test_str, local_context)
+                if results:
+                    filtered_items.append(item)
+
+            if len(filtered_items) == 0:
+                output = None
+            elif len(filtered_items) == 1:
+                output = filtered_items[0]
+            else:
+                output = filtered_items
+
+        elif type(output) is str or type(output) is dict:
+            local_context['item'] = output
+            results = self.execute_conditional(test_str, local_context)
+            if results:
+                return output
+
+        return output
+
+    def render(self, template_str: str, context: (dict, None)) -> str:
+        if context is None:
+            context = self.context
+        t = self._env.from_string(template_str)
+        return t.render(context)
 
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
@@ -192,6 +277,8 @@ class Snippet(ABC):
         :param context: context from environment
         :return: metadata with jinja rendered variables
         """
+        self.context.update(context)
+
         return self.metadata
 
     # define functions for custom jinja filters
@@ -206,7 +293,7 @@ class Snippet(ABC):
 
         return md5_crypt.hash(txt)
 
-    def __init_env(self) -> Environment:
+    def __init_env(self) -> None:
         """
         init the jinja2 environment and add any required filters
         :return: Jinja2 environment object
@@ -251,7 +338,7 @@ class Snippet(ABC):
         outputs[output_name] = results
         return outputs
 
-    def _handle_xml_outputs(self, results: str) -> dict:
+    def __handle_xml_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Parse the results string as an XML document
         Example .meta-cnc snippets section:
@@ -271,7 +358,9 @@ class Snippet(ABC):
         :param results: string as returned from some action, to be parsed as XML document
         :return: dict containing all outputs found from the capture pattern in each output
         """
-
+        
+        captured_output = dict()
+        
         def unique_tag_list(elements: list) -> bool:
             tag_list = list()
             for el in elements:
@@ -285,87 +374,82 @@ class Snippet(ABC):
                 # there are unique tags in this list
                 return True
 
-        outputs = dict()
-
-        snippet_name = 'unknown'
-        if 'name' in self.metadata:
-            snippet_name = self.metadata['name']
-
-        print(f'found results: {results}')
         try:
             xml_doc = etree.XML(results)
+                
             # xml_doc = elementTree.fromstring(results)
-            if 'outputs' not in self.metadata:
-                print('No outputs defined in this snippet')
-                return outputs
+            # allow jinja syntax in capture_pattern, capture_value, capture_object etc
 
-            for output in self.metadata['outputs']:
+            local_context = self.context.copy()
+            output = self.__render_output_metadata(output_definition, local_context)
 
-                if 'name' not in output:
-                    continue
+            var_name = output['name']
+            if 'capture_pattern' in output or 'capture_value' in output:
 
-                var_name = output['name']
-                if 'capture_pattern' in output or 'capture_value' in output:
-                    if 'capture_value' in output:
-                        capture_pattern = output['capture_value']
-                    else:
-                        capture_pattern = output['capture_pattern']
+                if 'capture_value' in output:
+                    capture_pattern = output['capture_value']
+                else:
+                    capture_pattern = output['capture_pattern']
 
-                    # by default we will attempt to return the text of the found element
-                    return_type = 'text'
-                    entries = xml_doc.xpath(capture_pattern)
-                    print(f'found entries: {entries}')
-                    if len(entries) == 0:
-                        outputs[var_name] = ''
-                    elif len(entries) == 1:
-                        entry = entries.pop()
-                        if len(entry) == 0:
-                            # this tag has no children, so try to grab the text
-                            if return_type == 'text':
-                                outputs[var_name] = str(entry.text).strip()
-                            else:
-                                outputs[var_name] = entry.tag
+                # by default we will attempt to return the text of the found element
+                return_type = 'text'
+                entries = xml_doc.xpath(capture_pattern)
+                print(f'found entries: {entries}')
+                if len(entries) == 0:
+                    captured_output[var_name] = ''
+                elif len(entries) == 1:
+                    entry = entries.pop()
+                    if len(entry) == 0:
+                        # this tag has no children, so try to grab the text
+                        if return_type == 'text':
+                            captured_output[var_name] = str(entry.text).strip()
                         else:
-                            # we have 1 Element returned, so the user has a fairly specific xpath
-                            # however, this element has children itself, so we can't return a text value
-                            # just return the tag name of this element only
-                            outputs[var_name] = entry.tag
+                            captured_output[var_name] = entry.tag
                     else:
-                        # we have a list of elements returned from the users xpath query
-                        capture_list = list()
-                        # are there unique tags in this list? or is this a list of the same tag names?
-                        if unique_tag_list(entries):
-                            return_type = 'tag'
-                        for entry in entries:
-                            if len(entry) == 0:
-                                if return_type == 'text':
-                                    capture_list.append(str(entry.text).strip())
-                                else:
-                                    capture_list.append(entry.tag)
+                        # we have 1 Element returned, so the user has a fairly specific xpath
+                        # however, this element has children itself, so we can't return a text value
+                        # just return the tag name of this element only
+                        captured_output[var_name] = entry.tag
+                else:
+                    # we have a list of elements returned from the users xpath query
+                    capture_list = list()
+                    # are there unique tags in this list? or is this a list of the same tag names?
+                    if unique_tag_list(entries):
+                        return_type = 'tag'
+                    for entry in entries:
+                        if len(entry) == 0:
+                            if return_type == 'text':
+                                capture_list.append(str(entry.text).strip())
                             else:
                                 capture_list.append(entry.tag)
+                        else:
+                            capture_list.append(entry.tag)
 
-                        outputs[var_name] = capture_list
+                    captured_output[var_name] = capture_list
 
-                elif 'capture_object' in output:
-                    capture_pattern = output['capture_object']
-                    entries = xml_doc.xpath(capture_pattern)
-                    if len(entries) == 0:
-                        outputs[var_name] = None
-                    elif len(entries) == 1:
-                        outputs[var_name] = xmltodict.parse(elementTree.tostring(entries.pop()))
-                    else:
-                        capture_list = list()
-                        for entry in entries:
-                            capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
-                        outputs[var_name] = capture_list
+            elif 'capture_object' in output:
+                capture_pattern = output['capture_object']
+                entries = xml_doc.xpath(capture_pattern)
+
+                if len(entries) == 0:
+                    captured_output[var_name] = None
+                elif len(entries) == 1:
+                    captured_output[var_name] = xmltodict.parse(elementTree.tostring(entries.pop()))
+                else:
+                    capture_list = list()
+                    for entry in entries:
+                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
+                    captured_output[var_name] = capture_list
+
+            # filter selected items here
+            captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
 
         except ParseError:
             print('Could not parse XML document in output_utils')
-            # just return blank outputs here
-            raise SkilletLoaderException(f'Could not parse output as XML in {snippet_name}')
+            # just return blank captured_outputs here
+            raise SkilletLoaderException(f'Could not parse output as XML in {self.name}')
 
-        return outputs
+        return captured_output
 
     def _handle_base64_outputs(self, results: str) -> dict:
         """
@@ -464,6 +548,24 @@ class Snippet(ABC):
             print('Unknown exception here!')
             print(e)
             outputs['fail_message'] = str(e)
+
+        return outputs
+
+    def __handle_manual_outputs(self, output_definition: dict, results: str) -> dict:
+        """
+        Manually set a value in the context, this could be useful with 'when' conditionals
+        :param results: results from snippet execution, ignored in this method
+        :return: dict containing manually defined name / value pair
+        """
+        outputs = dict()
+
+        if 'name' not in output_definition or 'capture_value' not in output_definition:
+            return outputs
+
+        var_name = output_definition['name']
+        value = str(self.render(output_definition['capture_value'], self.context))
+
+        outputs[var_name] = value
 
         return outputs
 

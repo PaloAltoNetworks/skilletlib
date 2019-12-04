@@ -45,3 +45,13 @@ class PanValidationSkillet(PanosSkillet):
             snippet_list.append(snippet)
 
         return snippet_list
+
+    def get_results(self, context: dict) -> None:
+        results = dict()
+        for s in self.snippet_stack:
+            snippet_name = s.get('name', '')
+            cmd = s.get('cmd', '')
+            if snippet_name in context and cmd == 'validate':
+                results[snippet_name] = context[snippet_name]
+
+        return results

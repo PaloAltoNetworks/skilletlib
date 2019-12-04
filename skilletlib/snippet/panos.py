@@ -39,6 +39,9 @@ class PanosSnippet(TemplateSnippet):
     # default output_type for each snippet of this type
     output_type = 'xml'
 
+    # keep the xml results between output capture
+    xml_results = ''
+
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
         if 'cmd' not in metadata:
@@ -68,10 +71,13 @@ class PanosSnippet(TemplateSnippet):
         elif self.cmd == 'parse':
             logger.info(f'  Parsing Variable: {self.metadata["variable"]}')
             output = context.get(self.metadata['variable'], '')
-        else:
+        elif self.cmd == 'set':
             logger.info(f'  Executing Snippet: {self.name}')
             # execute the command from the snippet definition and return the raw output
             output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
+        else:
+            # no-op or unknown op!
+            output = ''
 
         return output, 'success'
 
@@ -87,6 +93,13 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['node_attribute_absent'] = self.__node_attribute_absent
             self._env.filters['append_uuid'] = self.__append_uuid
 
+            # for zube ticket #21
+            self._env.filters['tag_present'] = self.__node_present
+            self._env.filters['tag_absent'] = self.__node_absent
+            self._env.filters['text_value'] = self.__node_value
+            self._env.filters['element_value_contains'] = self.__node_value_contains
+            self._env.filters['attribute_present'] = self.__node_attribute_present
+            self._env.filters['attribute_absent'] = self.__node_attribute_absent
         else:
             logger.info('NO FILTERS TO APPEND TO')
 
@@ -140,6 +153,10 @@ class PanosSnippet(TemplateSnippet):
                     metadata['output_type'] = 'validation'
                     return metadata
             err = 'xpath and file or element are required attributes for validate_xml cmd'
+        elif self.cmd == 'noop':
+            if 'output_type' not in metadata:
+                metadata['output_type'] = 'manual'
+            return metadata
 
         raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
@@ -150,7 +167,11 @@ class PanosSnippet(TemplateSnippet):
         :param context: dict containing key value pairs to
         :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
         """
-        meta = self.metadata
+
+        # execute super render_metadata
+        # this will set the passed context onto self.context
+        meta = super().render_metadata(context)
+
         try:
             if 'cherry_pick' in self.metadata:
                 meta['element'] = self.cherry_pick_element(self.metadata['element'],
@@ -161,10 +182,10 @@ class PanosSnippet(TemplateSnippet):
                                                        context)
             else:
                 if 'xpath' in self.metadata:
-                    meta['xpath'] = self.render(self.metadata['xpath'], context)
+                    meta['xpath'] = self.render(self.metadata['xpath'])
 
                 if 'element' in self.metadata:
-                    meta['element'] = self.render(self.metadata['element'], context)
+                    meta['element'] = self.render(self.metadata['element'])
 
         except TypeError as te:
             logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
@@ -200,7 +221,7 @@ class PanosSnippet(TemplateSnippet):
 
         return False
 
-    def cherry_pick_element(self, element: str, cherry_pick_path: str, context: dict) -> str:
+    def cherry_pick_element(self, element: str, cherry_pick_path: str) -> str:
         """
         Cherry picking allows the skillet builder to pull out specific bits of a larger configuration
         and load only the smaller chunks. This is especially useful when combined with 'when' conditionals
@@ -212,7 +233,7 @@ class PanosSnippet(TemplateSnippet):
         """
 
         # first, we need to render the entire element so we can parse it with xpath
-        rendered_element = self.render(element, context).strip()
+        rendered_element = self.render(element, self.context).strip()
         # convert this string into an xml doc we can search for the cherry_pick path
         try:
             element_doc = elementTree.fromstring(f'<xml>{rendered_element}</xml>')
@@ -226,7 +247,7 @@ class PanosSnippet(TemplateSnippet):
         except ParseError as pe:
             raise SkilletLoaderException(f'Could not parse element for cherry picking for snippet: {self.name}')
 
-    def cherry_pick_xpath(self, base_xpath: str, cherry_picked_xpath: str, context: dict) -> str:
+    def cherry_pick_xpath(self, base_xpath: str, cherry_picked_xpath: str) -> str:
         """
         When cherry picking is active, we are only going to push a smaller portion of the xml fragment. As such,
         we need to combine the base xpath for the xml file and the xpath to the cherry_picked node.
@@ -242,7 +263,6 @@ class PanosSnippet(TemplateSnippet):
 
         :param base_xpath: base xpath for the xml fragment
         :param cherry_picked_xpath: relative xpath for cherry picking a portion of the xml fragment
-        :param context: jinja context
         :return: combined and rendered xpath
         """
 
@@ -260,7 +280,7 @@ class PanosSnippet(TemplateSnippet):
         else:
             xpath = f'{base_xpath}/{cherry_picked_xpath}'
 
-        rendered_xpath = self.render(xpath, context)
+        rendered_xpath = self.render(xpath, self.context)
         # remove the last node from the resulting xpath
         if self.cmd == 'set':
             xpath_parts = rendered_xpath.split('/')

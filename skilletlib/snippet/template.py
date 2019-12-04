@@ -22,9 +22,4 @@ class TemplateSnippet(Snippet):
     def template(self, context) -> str:
         return self.execute(context)[0]
 
-    def render(self, template_str, context) -> str:
-        if not context:
-            context = {}
 
-        t = self._env.from_string(template_str)
-        return t.render(context)
