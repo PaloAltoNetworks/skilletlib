@@ -1,5 +1,5 @@
 #
-# Example Verify an XML Tag is present
+# Example When Conditional
 #
 # In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
 # can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how

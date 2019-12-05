@@ -26,7 +26,13 @@ from .panos import PanosSkillet
 
 class PanValidationSkillet(PanosSkillet):
 
+    snippet_list = list()
+
     def get_snippets(self) -> List[PanosSnippet]:
+
+        if len(self.snippet_list) > 0:
+            return self.snippet_list
+
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)
         snippet_list = list()
@@ -44,14 +50,27 @@ class PanValidationSkillet(PanosSkillet):
             snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
 
+        self.snippet_list = snippet_list
         return snippet_list
 
-    def get_results(self, context: dict) -> None:
+    def get_results(self, context: dict) -> dict:
         results = dict()
-        for s in self.snippet_stack:
-            snippet_name = s.get('name', '')
-            cmd = s.get('cmd', '')
+        for s in self.get_snippets():
+            snippet_name = s.name
+            cmd = s.cmd
             if snippet_name in context and cmd == 'validate':
+                if 'results' in context[snippet_name]:
+                    result = context[snippet_name]['results']
+                    if not results:
+                        fail_message = s.metadata.get('fail_message', 'Snippet Validation results were {{ result }}')
+                        context[snippet_name]['output_message'] = s.render(fail_message, context)
+                    elif results:
+                        pass_message = s.metadata.get('pass_message', 'Snippet Validation results were {{ result }}')
+                        context[snippet_name]['output_message'] = s.render(pass_message, context)
+                    else:
+                        context[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+
                 results[snippet_name] = context[snippet_name]
 
         return results
+

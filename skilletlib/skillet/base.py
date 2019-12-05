@@ -126,17 +126,6 @@ class Skillet(ABC):
                     returned_outputs.update(returned_output)
                     context.update(returned_output)
 
-                else:
-                    fail_action = metadata.get('fail_action', 'skip')
-                    fail_message = metadata.get('fail_message', 'Aborted due to failed conditional!')
-                    if fail_action == 'skip':
-                        logger.debug(f'  Skipping Snippet: {snippet.name}')
-                    else:
-                        logger.debug('Conditional failed and found a fail_action')
-                        logger.error(fail_message)
-                        returned_outputs['fail_message'] = fail_message
-                        return returned_outputs
-
         except SkilletLoaderException as sle:
             logger.error(f'Caught Exception during execution: {sle}')
 

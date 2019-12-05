@@ -37,6 +37,8 @@ snippets:
 
   - name: ensure_interface_was_found
     label: Ensures the interface was found
+    fail_message: This thing {{ here }} failed
+    fail_action:
     test: |
       (
         interface_with_ip is defined

@@ -36,6 +36,12 @@ logger = logging.getLogger(__name__)
 class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
+    # optional metadata that may be overridden in the snippet definition / metadata
+    optional_metadata = {
+        'fail_message': 'Snippet Validation Failed',
+        'pass_message': 'Snippet Validation Passed'
+    }
+
     # default output_type for each snippet of this type
     output_type = 'xml'
 
@@ -109,6 +115,8 @@ class PanosSnippet(TemplateSnippet):
         :param metadata: dict
         :return: dict
         """
+        metadata = super().sanitize_metadata(metadata)
+
         err = f'Unknown cmd {self.cmd}'
         if self.cmd in ('set', 'edit', 'override'):
             if {'xpath', 'element'}.issubset(metadata):
