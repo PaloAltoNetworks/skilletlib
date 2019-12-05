@@ -34,13 +34,7 @@ snippets:
       - name: update_schedule_object
         capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
 
-  - name: update_schedule_configured
-    label: Ensure Update Schedules are Configured
-    test: update_schedule_object is not none
-    documentation_link: https://iron-skillet.readthedocs.io
-
   - name: wildfire_not_daily
-    when: update_schedule_object is not none
     label: Ensure Wildfire Updates are NOT scheduled daily
     test: update_schedule_object| tag_absent('update-schedule.wildfire.recurring.daily')
     documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
