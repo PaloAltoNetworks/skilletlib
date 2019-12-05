@@ -8,6 +8,7 @@ with open('config.xml', 'r') as config:
     context['config'] = config.read()
 
 out = d.execute(context)
+print(out)
 for k, v in d.get_results(out).items():
     if 'results' in v:
         r = str(v['results'])

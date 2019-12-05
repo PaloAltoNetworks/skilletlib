@@ -72,10 +72,13 @@ class Snippet(ABC):
         # iterate the optional_metadata dict and set the default values
         # if they have not been set in the snippet metadata directly
         for k, v in self.optional_metadata.items():
+            if v is None:
+                continue
             if k in self.metadata:
                 setattr(self, k, self.metadata[k])
             else:
                 setattr(self, k, v)
+                self.metadata[k] = v
 
         self.context = dict()
 

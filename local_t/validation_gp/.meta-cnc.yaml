@@ -31,6 +31,7 @@ snippets:
     when: update_schedule_object is not none
     label: Ensure Statistics Service is enabled
     test: update_schedule_object| node_present('update-schedule.statistics-service')
+    fail_message: '{{ update_schedule_object }}'
     documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
 
   - name: update_schedule_threats_configured
