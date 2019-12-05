@@ -52,9 +52,16 @@ def test_tag_absent():
     load_and_execute_skillet(skillet_path)
 
 
+def test_when_conditional():
+    skillet_path = '../example_skillets/when_conditional/'
+    load_and_execute_skillet(skillet_path)
+
+
 if __name__ == '__main__':
     test_capture_value()
     test_capture_object()
     test_output_capture_filter()
     test_tag_present()
     test_tag_absent()
+    test_when_conditional()
+
