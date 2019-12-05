@@ -1,0 +1,45 @@
+name: example-capture-filtering
+label: Example Of how to use 'filter_items' with object capturing
+
+description: |
+  This example Skillet shows how to parse and validate a config using the 'filter_items' attribute in output capturing.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    variable: config
+    outputs:
+      - name: gp_gateway_local
+        capture_object: /config/devices/entry/network/tunnel/global-protect-gateway
+        filter_items: item | tag_present('entry.local-address')
+      - name: gp_local_interface
+        capture_variable: "{{ gp_gateway_local | node_value('entry.local-address.interface') }}"
+      - name: gp_interface_zone
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/zone/entry
+        filter_items: item | node_value('entry.network.layer3.member') == gp_local_interface
+      - name: gp_interface_zone_name
+        capture_variable: "{{ gp_interface_zone | node_value('entry.@name') }}"
+      - name: policies_with_gp_zone
+        capture_object: /config/devices/entry/vsys/entry/rulebase/security/rules/entry
+        filter_items: item | node_value('entry.to.member') == gp_interface_zone_name
+
+  - name: ensure_gp_gateway_zone_in_policy
+    label: Ensures the Global Protect Interface is in a Zone and a Policy
+    test: |
+      (
+        policies_with_gp_zone | length > 1
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-telemetry-telemetry
+

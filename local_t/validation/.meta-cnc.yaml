@@ -1,0 +1,89 @@
+name: validate-something-06FA23C1-BB8C-407D-B61A-B0FB8D89180E
+label: Validate Some Stuff
+
+description: |
+  This skillet does a basic validation
+
+type: pan_validation
+labels:
+  collection: Experimental Skillets
+
+variables:
+  - name: FW_NAME
+    description: Some Parameter
+    default: yes
+    type_hint: text
+
+snippets:
+  - name: show_device_system
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_configured
+    label: Ensure Update Schedules are Configured
+    test: update_schedule_object is not none
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  - name: update_schedule_stats_service_configured
+    when: update_schedule_object is not none
+    label: Ensure Statistics Service is enabled
+    test: update_schedule_object| node_present('update-schedule.statistics-service')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: update_schedule_threats_configured
+    when: update_schedule_object is not none
+    label: Ensure Threats is enabled
+    test: update_schedule_object| node_present('threats.recurring.weekly')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: update_schedule_threats_configured_alternate
+    when: update_schedule_object is not none
+    label: Ensure Threats is enabled alternate syntax
+    test: update_schedule_object| node_present('update-schedule.threats.recurring.weekly')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: parse_test
+    label: Capturing System Values
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_system
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/ip-address
+
+  - name: ensure_wildfire_check_1_min
+    when: update_schedule_object is not none
+    label: Ensure Wildfire Checks every 1 minute
+    test: update_schedule_object | has_config('update-schedule.wildfire.recurring.every-min')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: ensure_ip_address
+    label: Ensure IP Address is configured
+    test: device_system | node_value('ip-address') == '10.10.10.10'
+    severity: high
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: parse_test_2
+    label: Capturing Profile Values
+    cmd: parse
+    variable: config
+    outputs:
+      - name: network_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/network/profiles/monitor-profile
+
+  - name: check_profile_exists
+    when: network_profiles is not none
+    label: Ensure Named profile exists
+    test: network_profiles | node_attribute_present('entry', 'name', 'default')
+    severity: high
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: check_profile_exists_negative
+    when: network_profiles is not none
+    label: Ensure Bogus Named profile exists
+    test: network_profiles | node_attribute_present('entry', 'name', 'nowayjose')
+    severity: high
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+

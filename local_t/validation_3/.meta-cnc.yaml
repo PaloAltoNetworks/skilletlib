@@ -1,0 +1,381 @@
+name: validate-IronSkillet-bae945bc-c667-4e56-a3fc-73bbb5afbe0d
+label: Validate IronSkillet NGFW config
+
+description: |
+  This skillet does a basic validation for IronSkillet day one configuration
+
+type: pan_validation
+labels:
+  collection:
+    - IronSkillet
+    - Validation
+
+variables:
+  - name: FW_NAME
+    description: Some Parameter
+    default: yes
+    type_hint: text
+
+snippets:
+
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the xml elements referenced for validations using the full config file
+      - name: telemetry
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/statistics-service
+      - name: threats_update
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/threats
+      - name: wf_update
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/wildfire
+      - name: av_update
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule/anti-virus
+      - name: snmp_version
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/snmp-setting/access-setting/version
+      - name: dns_servers
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/dns-setting/servers
+      - name: ntp_servers
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/ntp-servers
+      - name: login_banner
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/login-banner
+      - name: timezone
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/timezone
+      - name: password_complexity
+        capture_object: /config/mgt-config/password-complexity
+      - name: zone_protect_profile
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile
+      - name: security_rule_outbound_edl
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules/entry[@name='Outbound Block Rule']
+
+  - name: security_rules_outbound_edl
+    label: check for IronSkillet outbound EDL block rule member
+    test: ('panw-bulletproof-ip-list' in security_rule_outbound_edl | node_value('destination.member'))
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-telemetry-telemetry
+
+  - name: zone_protect_profile
+    label: create and use recommended zone protection
+    test: zone_protect_profile | node_attribute_present('entry', 'name', 'Recommended_Zone_Protection')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: telemetry_fully_enabled
+    label: enable all telemetry attributes
+    test: |
+      (
+      telemetry | node_value('application-reports') == 'yes'
+      and telemetry | node_value('threat-prevention-reports') == 'yes'
+      and telemetry | node_value('threat-prevention-pcap') == 'yes'
+      and telemetry | node_value('passive-dns-monitoring') == 'yes'
+      and telemetry | node_value('url-reports') == 'yes'
+      and telemetry | node_value('health-performance-reports') == 'yes'
+      and telemetry | node_value('passive-dns-monitoring') == 'yes'
+      and telemetry | node_value('file-identification-reports') == 'yes'
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: ensure_threats_check_30_min
+    label: Ensure Threats Checks every 30 minutes
+    test: threats_update | node_present('recurring.every-30-mins')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: ensure_av_check_hourly
+    label: Ensure AV update Checks every hour
+    test: av_update | node_present('recurring.hourly')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: ensure_wildfire_check_1_min
+    label: Ensure Wildfire Checks every 1 minute
+    test: wf_update | node_present('recurring.every-min')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: snmp_v3
+    label: Use SNMPv3
+    test: snmp_version | node_present('v3')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: dns_servers
+    label: configure primary and secondary dns servers
+    test: |
+      (
+      dns_servers | node_present('primary')
+      and dns_servers | node_present('secondary')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: ntp_servers
+    label: configure primary and secondary ntp servers
+    test: |
+      (
+      ntp_servers | node_present('primary-ntp-server.ntp-server-address')
+      and ntp_servers | node_present('secondary-ntp-server.ntp-server-address')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: login_banner
+    label: configure login banner
+    test: login_banner | node_present('login-banner')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: timezone
+    label: set timezone to UTC
+    test: timezone | node_value('timezone') == 'UTC'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  # this is a section of parse using a higher level object reference instead of multiple, granular objects
+  # the test checks use the dot notation to walk down the object tree to find children and values
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: device_setting
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting
+
+  - name: commit_lock
+    label: auto acquire commit lock enabled
+    test: device_setting | node_value('management.auto-acquire-commit-lock') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: strip_xff
+    label: strip x-forward-for should be enabled
+    test: device_setting | node_value('ctd.strip-x-fwd-for') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: xff_userid
+    label: use xff in userid
+    test: device_setting | node_value('ctd.x-forwarded-for') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: http_range
+    label: disable http partial response
+    test: device_setting | node_value('ctd.allow-http-range') == 'no'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: tcp_bypass_exceed_queue
+    label: disable Forward segments exceeding TCP content inspection queue
+    test: device_setting | node_value('ctd.tcp-bypass-exceed-queue') == 'no'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: udp_bypass_exceed_queue
+    label: disable Forward segments exceeding UDP content inspection queue
+    test: device_setting | node_value('ctd.udp-bypass-exceed-queue') == 'no'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: app_bypass_exceed_queue
+    label: disable Forward segments exceeding TCP App-ID inspection queue
+    test: device_setting | node_value('application.bypass-exceed-queue') == 'no'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: log_high_dp_load
+    label: Enable Log on High DP Load should be enabled
+    test: device_setting | node_value('management.enable-log-high-dp-load') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: max_rows_csv_export
+    label: set max rows in log csv export to max
+    test: device_setting | node_value('management.max-rows-in-csv-export') == '1048576'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: api_key_lifetime
+    label: set api key lifetime
+    test: device_setting | node_present('management.api.key.lifetime')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: admin_lockout_strict
+    label: set admin lockout IronSkillet or better failed attempts and time
+    test: |
+      (
+      device_setting | node_value('management.admin-lockout.failed-attempts') | int <=5
+      and device_setting | node_value('management.admin-lockout.lockout-time') | int >= 30
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: idle_timeout
+    label: configure idle timeout
+    test: device_setting | node_present('management.idle-timeout')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: wf_filesize_limits
+    label: configure WF file size limits
+    test: device_setting | node_present('wildfire.file-size-limit')
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  # local granular parse to look at specific attributes in the tree - file type
+  - name: wf_granular_parse
+    cmd: parse
+    variable: config
+    outputs:
+      - name: wf_limit_archive
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/entry[@name='archive']
+      - name: wf_limit_linux
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/entry[@name='linux']
+      - name: wf_limit_script
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire/file-size-limit/entry[@name='script']
+      - name: wf_report
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/setting/wildfire
+
+  - name: wf_new_type_limits
+    when: device_setting | node_present('wildfire.file-size-limit')
+    label: check limits for new WF file types
+    test: |
+      (
+      wf_limit_archive | node_value('size-limit') == '10'
+      and wf_limit_linux | node_value('size-limit') == '2'
+      and wf_limit_script | node_value('size-limit') == '2000'
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: wf_report_benign_grayware
+    label: enable reports for benign and grayware WF verdicts
+    test: |
+      (
+      wf_report | node_value('report-benign-file') == 'yes'
+      and wf_report | node_value('report-grayware-file') == 'yes'
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: config_rematch
+    label: enable session rematch for new security policies
+    test: device_setting | node_value('config.rematch') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: enable_app_block_page
+    label: enable application block page
+    test: device_setting | node_value('application.notify-user') == 'yes'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: disable_log_suppression
+    label: disable log suppression
+    test: device_setting | node_value('logging.log-suppression') == 'no'
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: prevent_tcp_evasions
+    label: configure TCP settings to prevent malware evasions
+    test: |
+      (
+      device_setting | node_value('tcp.urgent-data') == 'clear'
+      and device_setting | node_value('tcp.drop-zero-flag') == 'yes'
+      and device_setting | node_value('tcp.bypass-exceed-oo-queue') == 'no'
+      and device_setting | node_value('tcp.check-timestamp-option') == 'yes'
+      and device_setting | node_value('tcp.strip-mptcp-option') == 'yes'
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: password_complexity
+    label: configure strong password complexity
+    test: |
+      (
+      password_complexity | node_value('enabled') == 'yes'
+      and password_complexity | node_value('minimum-length') == '12'
+      and password_complexity | node_value('minimum-uppercase-letters') == '1'
+      and password_complexity | node_value('minimum-lowercase-letters') == '1'
+      and password_complexity | node_value('minimum-numeric-letters') == '1'
+      and password_complexity | node_value('minimum-special-characters') == '1'
+      and password_complexity | node_value('block-username-inclusion') == 'yes'
+      and password_complexity | node_value('password-history-count') == '24'
+      and password_complexity | node_value('new-password-differs-by-characters') == '3'
+      and password_complexity | node_value('password-change.expiration-period') == '90'
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  # sectional grouping of all the profile checks: security, decrypt, logging
+  - name: profile_objects
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the object related profile information and match configured names
+      - name: av_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus
+      - name: vp_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability
+      - name: as_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware
+      - name: url_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering
+      - name: fb_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/file-blocking
+      - name: wf_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/wildfire-analysis
+      - name: profile_group
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group
+      - name: profile_decryption
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/decryption
+      - name: profile_logging
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles
+
+  - name: av_profile_check
+    label: check for IronSkillet named AV profiles
+    test: |
+      (
+      av_profiles | node_attribute_present('entry', 'name', 'Outbound-AV')
+      and av_profiles | node_attribute_present('entry', 'name', 'Inbound-AV')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: vp_profile_check
+    label: check for IronSkillet named Vulnerability profiles
+    test: |
+      (
+      vp_profiles | node_attribute_present('entry', 'name', 'Outbound-VP')
+      and vp_profiles | node_attribute_present('entry', 'name', 'Inbound-VP')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: as_profile_check
+    label: check for IronSkillet named anti-spyware profiles
+    test: |
+      (
+      as_profiles | node_attribute_present('entry', 'name', 'Outbound-AS')
+      and as_profiles | node_attribute_present('entry', 'name', 'Inbound-AS')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: url_profile_check
+    label: check for IronSkillet named URL filtering profiles
+    test: |
+      (
+      url_profiles | node_attribute_present('entry', 'name', 'Outbound-URL')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: fb_profile_check
+    label: check for IronSkillet named file-blocking profiles
+    test: |
+      (
+      fb_profiles | node_attribute_present('entry', 'name', 'Outbound-FB')
+      and fb_profiles | node_attribute_present('entry', 'name', 'Inbound-FB')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: wf_profile_check
+    label: check for IronSkillet named Wildfire profiles
+    test: |
+      (
+      wf_profiles | node_attribute_present('entry', 'name', 'Outbound-WF')
+      and wf_profiles | node_attribute_present('entry', 'name', 'Inbound-WF')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: profile_group_check
+    label: check for IronSkillet named profile groups
+    test: |
+      (
+      profile_group | node_attribute_present('entry', 'name', 'Outbound')
+      and profile_group | node_attribute_present('entry', 'name', 'default')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: profile_decryption
+    label: check for IronSkillet recommended decryption profile
+    test: |
+      (
+      profile_decryption | node_attribute_present('entry', 'name', 'Recommended_Decryption_Profile')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html
+
+  - name: profile_logging
+    label: check for IronSkillet default logging profile
+    test: |
+      (
+      profile_logging | node_attribute_present('entry', 'name', 'default')
+      )
+    documentation_link: https://iron-skillet.readthedocs.io/en/docs_master/overview.html

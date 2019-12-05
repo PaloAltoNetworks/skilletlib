@@ -1,0 +1,271 @@
+name: validate-IronSkillet-v90-bae945bc-c667-4e56-a3fc-73bbb5afbe0e
+label: IronSkillet - check named attributes to avoid merge conflicts
+
+description: |
+  This skillet checks the running config for IronSkillet conflicting object names
+
+type: pan_validation
+labels:
+  collection:
+    - IronSkillet
+    - Validation
+
+variables:
+  - name: FW_NAME
+    description: Some Parameter
+    default: yes
+    type_hint: text
+
+snippets:
+
+  - name: device_config_file
+    cmd: parse
+    variable: config
+    outputs:
+      - name: zone_protect_profile
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/network/profiles/zone-protection-profile
+
+  - name: zone_protect_profile
+    label: no zone protection profile name conflicts
+    test: zone_protect_profile | node_attribute_absent('entry', 'name', 'Recommended_Zone_Protection')
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#zone-protection
+
+  # sectional grouping of all the profile checks: security, decrypt, logging
+  - name: profile_objects
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the object related profile information and match configured names
+      - name: av_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/virus
+      - name: vp_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/vulnerability
+      - name: as_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/spyware
+      - name: url_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/url-filtering
+      - name: fb_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/file-blocking
+      - name: wf_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/wildfire-analysis
+      - name: profile_group
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profile-group
+      - name: profile_decryption
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/profiles/decryption
+      - name: profile_logging
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles
+
+  - name: av_profile_check
+    label: no AV profile name conflicts
+    test: |
+      (
+      av_profiles | node_attribute_absent('entry', 'name', 'Outbound-AV')
+      and av_profiles | node_attribute_absent('entry', 'name', 'Inbound-AV')
+      and av_profiles | node_attribute_absent('entry', 'name', 'Internal-AV')
+      and av_profiles | node_attribute_absent('entry', 'name', 'Exception-AV')
+      and av_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-AV')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#object-security-profiles-antivirus-blocking
+
+  - name: vp_profile_check
+    label: no vulnerability profile name conflicts
+    test: |
+      (
+      vp_profiles | node_attribute_absent('entry', 'name', 'Outbound-VP')
+      and vp_profiles | node_attribute_absent('entry', 'name', 'Inbound-VP')
+      and vp_profiles | node_attribute_absent('entry', 'name', 'Internal-VP')
+      and vp_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-VP')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#vulnerability
+
+  - name: as_profile_check
+    label: no anti-spyware profile name conflicts
+    test: |
+      (
+      as_profiles | node_attribute_absent('entry', 'name', 'Outbound-AS')
+      and as_profiles | node_attribute_absent('entry', 'name', 'Inbound-AS')
+      and as_profiles | node_attribute_absent('entry', 'name', 'Internal-AS')
+      and as_profiles | node_attribute_absent('entry', 'name', 'Exception-AS')
+      and as_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-AS')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#anti-spyware
+
+  - name: url_profile_check
+    label: no URL filtering profile name conflicts
+    test: |
+      (
+      url_profiles | node_attribute_absent('entry', 'name', 'Outbound-URL')
+      and url_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-URL')
+      and url_profiles | node_attribute_absent('entry', 'name', 'Exception-URL')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#url-filtering
+
+  - name: fb_profile_check
+    label: no file blocking profile name conflicts
+    test: |
+      (
+      fb_profiles | node_attribute_absent('entry', 'name', 'Outbound-FB')
+      and fb_profiles | node_attribute_absent('entry', 'name', 'Inbound-FB')
+      and fb_profiles | node_attribute_absent('entry', 'name', 'Internal-FB')
+      and fb_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-FB')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#file-blocking
+
+  - name: wf_profile_check
+    label: no wildfire profile name conflicts
+    test: |
+      (
+      wf_profiles | node_attribute_absent('entry', 'name', 'Outbound-WF')
+      and wf_profiles | node_attribute_absent('entry', 'name', 'Inbound-WF')
+      and wf_profiles | node_attribute_absent('entry', 'name', 'Internal-WF')
+      and wf_profiles | node_attribute_absent('entry', 'name', 'Alert-Only-WF')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#wildfire-analysis
+
+  - name: profile_group_check
+    label: no profile group name conflicts
+    test: |
+      (
+      profile_group | node_attribute_absent('entry', 'name', 'Outbound')
+      and profile_group | node_attribute_absent('entry', 'name', 'Inbound')
+      and profile_group | node_attribute_absent('entry', 'name', 'Internal')
+      and profile_group | node_attribute_absent('entry', 'name', 'Alert-Only')
+      and profile_group | node_attribute_absent('entry', 'name', 'default')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#security-profile-groups
+
+  - name: profile_decryption
+    label: no decryption profile name conflicts
+    test: |
+      (
+      profile_decryption | node_attribute_absent('entry', 'name', 'Recommended_Decryption_Profile')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#decryption-profile
+
+  - name: profile_logging
+    label: no logging profile name conflicts
+    test: |
+      (
+      profile_logging | node_attribute_absent('entry', 'name', 'default')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#object-log-forwarding-default
+
+ # sectional grouping of all the rulebase policies: decryption and security
+  - name: rules
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the object related profile information and match configured names
+      - name: security_rules
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules
+      - name: decryption_rules
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/decryption/rules
+
+  - name: security_rules
+    label: no security rule name conflicts
+    test: |
+      (
+      security_rules | node_attribute_absent('entry', 'name', 'Outbound Block Rule')
+      and security_rules | node_attribute_absent('entry', 'name', 'Inbound Block Rule')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#ironskillet-security-policies
+
+  - name: decryption_rules
+    label: no decryption rule name conflicts
+    test: |
+      (
+      decryption_rules | node_attribute_absent('entry', 'name', 'NO-Decrypt URL Categories')
+      and decryption_rules | node_attribute_absent('entry', 'name', 'NO-Decrypt Rule')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#ironskillet-decryption-policies
+
+# sectional grouping of referenced objects: tags and address
+  - name: ref_objects
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the object related profile information and match configured names
+      - name: address
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/address
+      - name: tags
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag
+
+  - name: tags
+    label: no tag name conflicts
+    test: |
+      (
+      tags | node_attribute_absent('entry', 'name', 'Outbound')
+      and tags | node_attribute_absent('entry', 'name', 'Inbound')
+      and tags | node_attribute_absent('entry', 'name', 'Internal')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#ironskillet-tag-objects
+
+  - name: address
+    label: no address object name conflicts
+    test: |
+      (
+      address | node_attribute_absent('entry', 'name', 'Sinkhole-IPv4')
+      and address | node_attribute_absent('entry', 'name', 'Sinkhole-IPv6')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#ironskillet-address-objects
+
+# sectional grouping for logging, alerts, and reporting
+  - name: notifications
+    cmd: parse
+    variable: config
+    outputs:
+      # capture all the object related profile information and match configured names
+      - name: log_settings
+        capture_object: /config/shared/log-settings
+      - name: reports
+        capture_object: /config/shared/reports
+      - name: report_groups
+        capture_object: /config/shared/report-group
+      - name: email_scheduler
+        capture_object: /config/shared/email-scheduler
+
+  - name: email_profile
+    label: no email profile name conflicts
+    test: |
+      (
+      log_settings | node_attribute_absent('email.entry', 'name', 'Sample_Email_Profile')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-server-profiles-email
+
+  - name: syslog_profile
+    label: no syslog profile name conflicts
+    test: |
+      (
+      log_settings | node_attribute_absent('syslog.entry', 'name', 'Sample_Syslog_Profile')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-server-profiles-syslog
+
+  - name: reports
+    label: no report name conflicts
+    test: |
+      (
+      reports | node_attribute_absent('entry', 'name', 'Host-visit malicious sites plus')
+      and reports | node_attribute_absent('entry', 'name', 'Hosts visit malicious sites')
+      and reports | node_attribute_absent('entry', 'name', 'Hosts visit questionable sites')
+      and reports | node_attribute_absent('entry', 'name', 'Host-visit quest sites plus')
+      and reports | node_attribute_absent('entry', 'name', 'Wildfire malicious verdicts')
+      and reports | node_attribute_absent('entry', 'name', 'Wildfire verdicts SMTP')
+      and reports | node_attribute_absent('entry', 'name', 'Clients sinkholed')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#ironskillet-custom-reports
+
+  - name: report_group
+    label: no report group name conflicts
+    test: |
+      (
+      report_groups | node_attribute_absent('entry', 'name', 'Possible Compromise')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#report-groups
+
+  - name: email_scheduler
+    label: no email scheduler name conflicts
+    test: |
+      (
+      email_scheduler | node_attribute_absent('entry', 'name', 'Possible Compromise')
+      )
+    documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#monitor-pdf-reports-email-scheduler

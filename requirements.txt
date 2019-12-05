@@ -12,3 +12,4 @@ passlib
 lxml
 GitPython
 docker
+pytest

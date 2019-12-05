@@ -1,0 +1,22 @@
+name: python_test_0123123
+label: 000.3 python docker test
+description: python docker test
+type: docker
+extends:
+
+labels:
+  collection: experimental
+
+variables:
+  - name: FW_NAME
+    description: Firewall hostname
+    default: panos-01
+    type_hint: text
+
+# snippets used for api configuration including xpath and element as file name
+# files will load in the order listed
+snippets:
+  - name: python_test
+    image: python:3.7-alpine
+    tag: latest
+    cmd: python3 ./hello_world.py

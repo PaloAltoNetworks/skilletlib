@@ -1,0 +1,46 @@
+#
+# Example Verify an XML Tag is absent
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-tag-absent
+label: Example of how to use 'tag_absent'
+
+description: |
+  This example Skillet shows how to parse and validate a config using the 'tag_absent' filter.
+  This is useful when you want to verify a feature is not currently configured or that a tag is not present
+  in the configuration.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: show_device_system
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_configured
+    label: Ensure Update Schedules are Configured
+    test: update_schedule_object is not none
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  - name: wildfire_not_daily
+    when: update_schedule_object is not none
+    label: Ensure Wildfire Updates are NOT scheduled daily
+    test: update_schedule_object| tag_absent('update-schedule.wildfire.recurring.daily')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing

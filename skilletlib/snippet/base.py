@@ -22,15 +22,20 @@ from base64 import urlsafe_b64encode
 from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
+import logging
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
+from jinja2.exceptions import TemplateAssertionError
 from jsonpath_ng import parse
 from lxml import etree
 from passlib.hash import md5_crypt
 
 from skilletlib.exceptions import SkilletLoaderException
+from skilletlib.exceptions import SkilletValidationException
+
+logger = logging.getLogger(__name__)
 
 
 class Snippet(ABC):
@@ -103,15 +108,15 @@ class Snippet(ABC):
         :return: boolean
         """
 
-        print(f'Checking snippet: {self.name}')
+        logger.debug(f'Checking snippet: {self.name}')
 
         if 'when' not in self.metadata:
             # always execute when no when conditional is present
-            print(f'No conditional present, proceeding with skillet: {self.name}')
+            logger.debug(f'No conditional present, proceeding with skillet: {self.name}')
             return True
 
         results = self.execute_conditional(self.metadata['when'], context)
-        print(f'  Conditional Evaluation results: {results} ')
+        logger.debug(f'  Conditional Evaluation results: {results} ')
         return results
 
     def execute_conditional(self, test: str, context: dict) -> bool:
@@ -130,16 +135,19 @@ class Snippet(ABC):
             else:
                 return False
         except UndefinedError as ude:
-            print(ude)
+            logger.error(ude)
             # always return false on error condition
             return False
         except TypeError as te:
-            print(te)
+            logger.error(te)
             return False
+        except TemplateAssertionError as tae:
+            logger.error(tae)
+            raise SkilletValidationException('Malformed Jinja expression!')
         except Exception as e:
-            # catch-all - always return false on error condition
-            print(e)
-            print(type(e))
+            # catch-all - always return false on other error conditions
+            logger.error(e)
+            logger.error(type(e))
             return False
 
     def get_output(self) -> Tuple[str, str]:
@@ -384,7 +392,7 @@ class Snippet(ABC):
                 # by default we will attempt to return the text of the found element
                 return_type = 'text'
                 entries = xml_doc.xpath(capture_pattern)
-                print(f'found entries: {entries}')
+                logger.debug(f'found entries: {entries}')
                 if len(entries) == 0:
                     captured_output[var_name] = ''
                 elif len(entries) == 1:
@@ -435,7 +443,7 @@ class Snippet(ABC):
             captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
 
         except ParseError:
-            print('Could not parse XML document in output_utils')
+            logger.error('Could not parse XML document in output_utils')
             # just return blank captured_outputs here
             raise SkilletLoaderException(f'Could not parse output as XML in {self.name}')
 
@@ -456,7 +464,7 @@ class Snippet(ABC):
 
         try:
             if 'outputs' not in self.metadata:
-                print(f'No output defined in this snippet {snippet_name}')
+                logger.info(f'No output defined in this snippet {snippet_name}')
                 return outputs
 
             for output in self.metadata['outputs']:
@@ -491,7 +499,7 @@ class Snippet(ABC):
 
         try:
             if 'outputs' not in self.metadata:
-                print('No outputs defined in this snippet')
+                logger.info('No outputs defined in this snippet')
                 return outputs
 
             for output in self.metadata['outputs']:
@@ -532,11 +540,11 @@ class Snippet(ABC):
                         outputs[var_name] = capture_list
 
         except ValueError as ve:
-            print('Caught error converting results to json')
+            logger.error('Caught error converting results to json')
             outputs['fail_message'] = str(ve)
         except Exception as e:
-            print('Unknown exception here!')
-            print(e)
+            logger.error('Unknown exception here!')
+            logger.error(e)
             outputs['fail_message'] = str(e)
 
         return outputs
@@ -569,7 +577,7 @@ class Snippet(ABC):
 
         try:
             if 'outputs' not in self.metadata:
-                print('No outputs defined in this snippet')
+                logger.info('No outputs defined in this snippet')
                 return outputs
 
             for output in self.metadata['outputs']:
@@ -583,6 +591,6 @@ class Snippet(ABC):
                 outputs[var_name] = value
 
         except KeyError as ke:
-            print(f'Could not locate required attributes for manual output: {ke} in snippet: {self.name}')
+            logger.error(f'Could not locate required attributes for manual output: {ke} in snippet: {self.name}')
 
         return outputs

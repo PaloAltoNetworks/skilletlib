@@ -1,0 +1,18 @@
+name: workflow_test_step_02
+label: Workflow Test Step 02
+description: Simple test of the workflow system
+type: template
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+  - name: minion
+    description: Node
+    default: compute-01.c.vistoq-demo.internal
+    type_hint: text
+
+snippets:
+  - name: render_response
+    file: output.j2
+

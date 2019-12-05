@@ -1,0 +1,20 @@
+[{
+    "client": "local",
+    "tgt": "{{ minion }}",
+    "fun": "state.apply",
+    "arg": ["kvm.create_ngfw"],
+    "kwarg": {
+                "test": "True",
+                "pillar": {
+                    "panos_img": "{{ panos_img }}",
+                    "vm_name": "{{ vm_name }}",
+                    "left_interface_bridge": "{{ left_bridge }}",
+                    "right_interface_bridge": "{{ right_bridge }}",
+                    "admin_username": "{{ admin_username }}",
+                    "admin_password": "{{ admin_password }}",
+                    "vm_auth_key": "{{ vm_auth_key }}",
+                    "panorama_ip": "{{ panorama_ip }}",
+                    "auth_key": "{{ auth_key }}"
+                }
+        }
+}]

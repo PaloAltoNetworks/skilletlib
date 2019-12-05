@@ -1,0 +1,62 @@
+name: provision_firewall
+label: Provision Firewall
+description: Provisions a PAN-OS NGFW using the provisioner service
+type: rest
+extends:
+labels:
+  collection:
+    - POC Skillets
+    - Salt Skillets
+
+variables:
+  - name: minion
+    description: Node
+    default: compute-01.c.vistoq-demo.internal
+    type_hint: text
+  - name: panos_img
+    description: PAN-OS Version
+    default: PA-VM-KVM-8.1.8.qcow2
+    type_hint: dropdown
+    dd_list:
+      - key: PAN-OS 8.1.8
+        value: PA-VM-KVM-8.1.8.qcow2
+      - key: PAN-OS 9.0.3
+        value: panos_9.0.img
+  - name: vm_name
+    description: Firewall Hostname
+    default: panos-01
+    type_hint: text
+  - name: left_bridge
+    description: Untrust Bridge
+    default: ingress
+    type_hint: text
+  - name: right_bridge
+    description: Trust Bridge
+    default: egress
+    type_hint: text
+  - name: admin_username
+    description: Administrator Username
+    default: admin
+    type_hint: text
+  - name: admin_password
+    description: Administrator Password
+    default: admin
+    type_hint: password
+  - name: auth_key
+    description: Auth Code
+    default: 000000
+    type_hint: text
+
+snippets:
+  - name: salt_login
+    path: 'https://{{ provisioner_host }}:{{ provisioner_port }}/login'
+    operation: post
+    payload: auth.j2
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+  - name: provision_ngfw
+    path: 'https://{{ provisioner_host }}:{{ provisioner_port }}'
+    payload: payload.j2
+    operation: post
+    headers:
+      Content-Type: application/json

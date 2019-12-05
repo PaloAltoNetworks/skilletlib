@@ -1,0 +1,48 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-capture-object
+label: Example of how to use capture_object
+
+description: |
+  This example Skillet shows how to parse and validate a config using output capturing. This example converts the
+  xml elements at the given xpath into an object. We can then use this object in jinja expressions to validate the
+  configuration.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    variable: config
+    outputs:
+      - name: system_object
+        capture_object: /config/devices/entry/deviceconfig/system
+
+  - name: ensure_hostname_is_set
+    label: Ensures the deviceconfig system element was converted into an object and the hostname matches
+    test: system_object | node_value('hostname') == 'skillet_test_hostname'
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
+  - name: ensure_timezoone_is_set
+    label: Ensures the deviceconfig system element was converted into an object and the timezone matches
+    test: system_object | node_value('timezone') == 'US/Eastern'
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
+
+

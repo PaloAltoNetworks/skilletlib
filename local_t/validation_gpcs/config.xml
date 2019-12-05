@@ -1,0 +1,4009 @@
+<?xml version="1.0"?>
+<config version="9.0.0" urldb="paloaltonetworks">
+  <mgt-config>
+    <devices/>
+    <users>
+      <entry name="ercaswell">
+        <phash>$1$vucxngvq$nCQrrPLo3dRhwduX16YN0/</phash>
+        <permissions>
+          <role-based>
+            <superuser>yes</superuser>
+          </role-based>
+        </permissions>
+        <preferences>
+          <saved-log-query>
+            <system>
+              <entry name="global protect">
+                <query>( subtype eq globalprotect )</query>
+              </entry>
+            </system>
+          </saved-log-query>
+        </preferences>
+      </entry>
+      <entry name="afischbach">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$ktghmqvl$aMQZy355tI5vI5y8il47F1</phash>
+      </entry>
+      <entry name="mgrenier">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$nunrerqb$fbE79dqR3I.6l8dxB5fu1.</phash>
+      </entry>
+      <entry name="evin">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$opxrkpft$bMrxQ0bxwpah/uLgqA7zE.</phash>
+      </entry>
+      <entry name="sangam">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$yosogfbu$2ABd9SGH.n7l5jJV79uW8/</phash>
+      </entry>
+      <entry name="Apandey">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$qsklyqkx$ANcktYje8RFB3DdWTSJaw.</phash>
+      </entry>
+      <entry name="nsampson">
+        <permissions>
+          <role-based>
+            <superreader>yes</superreader>
+          </role-based>
+        </permissions>
+        <phash>$1$ojduqarc$BuHaKp6WxV23g7uRVFMbe0</phash>
+      </entry>
+    </users>
+  </mgt-config>
+  <shared>
+    <content-preview>
+      <application>
+        <entry id="10310" minver="7.1.0" name="balbix" ori_country="USA" ori_language="English">
+          <category>business-systems</category>
+          <subcategory>general-business</subcategory>
+          <technology>client-server</technology>
+          <description>Balbix BreachControl platform uses specialized AI algorithms to discover and analyze the enterprise attack surface to give a 100x more accurate view of breach risk. Sensors, connectors, and collectors deployed across your network continuously discover and monitor the devices, apps, and users across 100+ attack vectors.</description>
+          <appident>yes</appident>
+          <vulnerability-ident>yes</vulnerability-ident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>no</able-to-transfer-file>
+          <has-known-vulnerability>yes</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <cachable>no</cachable>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <parent-app>web20_parrent_app</parent-app>
+          <is-saas>yes</is-saas>
+          <saas minver="8.1.0">
+            <is-data-breaches>no</is-data-breaches>
+            <is-ip-based-restrictions>no</is-ip-based-restrictions>
+            <is-poor-financial-viability>no</is-poor-financial-viability>
+            <is-poor-terms-of-service>no</is-poor-terms-of-service>
+          </saas>
+          <references>
+            <entry name="Balbix">
+              <link>https://www.balbix.com</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/443,80</member>
+            </port>
+          </default>
+          <use-applications>
+            <member>ssl</member>
+            <member>web-browsing</member>
+          </use-applications>
+          <applicable-decoders>
+            <member>http</member>
+            <member>ssl</member>
+          </applicable-decoders>
+          <risk>1</risk>
+          <preview>yes</preview>
+        </entry>
+        <entry id="2203" minver="8.1.0" name="betternetvpn" ori_country="USA" ori_language="English">
+          <category>networking</category>
+          <subcategory>encrypted-tunnel</subcategory>
+          <technology>browser-based</technology>
+          <description>Betternet VPN is a totally free service that allows you to unblock all filtered websites in your country, surf the web anonymously and access geo-restricted content everywhere.</description>
+          <appident>yes</appident>
+          <spyware-ident>yes</spyware-ident>
+          <vulnerability-ident>yes</vulnerability-ident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>no</able-to-transfer-file>
+          <has-known-vulnerability>yes</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <cachable>no</cachable>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <references>
+            <entry name="betternet">
+              <link>http://betternet.co</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/80,443</member>
+            </port>
+          </default>
+          <use-applications>
+            <member>ssl</member>
+            <member>web-browsing</member>
+          </use-applications>
+          <applicable-decoders>
+            <member>http</member>
+            <member>ssl</member>
+          </applicable-decoders>
+          <risk>1</risk>
+          <preview>yes</preview>
+        </entry>
+        <entry id="10311" minver="7.1.0" name="monday" ori_country="USA" ori_language="English">
+          <category>collaboration</category>
+          <subcategory>social-business</subcategory>
+          <technology>browser-based</technology>
+          <description>Monday.com is a team management application.  It excels at work management, delivering highly flexible planning and tracking capabilities.</description>
+          <appident>yes</appident>
+          <virus-ident>yes</virus-ident>
+          <spyware-ident>yes</spyware-ident>
+          <file-type-ident>yes</file-type-ident>
+          <vulnerability-ident>yes</vulnerability-ident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>yes</able-to-transfer-file>
+          <has-known-vulnerability>yes</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <data-ident>yes</data-ident>
+          <cachable>no</cachable>
+          <file-forward>yes</file-forward>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <parent-app>zendesk-base</parent-app>
+          <is-saas>yes</is-saas>
+          <saas minver="8.1.0">
+            <is-data-breaches>no</is-data-breaches>
+            <is-ip-based-restrictions>no</is-ip-based-restrictions>
+            <is-poor-financial-viability>no</is-poor-financial-viability>
+            <is-poor-terms-of-service>no</is-poor-terms-of-service>
+          </saas>
+          <references>
+            <entry name="Monday">
+              <link>https://monday.com</link>
+            </entry>
+            <entry name="Wikipedia">
+              <link>https://en.wikipedia.org/wiki/Monday.com</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/80,443</member>
+            </port>
+          </default>
+          <use-applications>
+            <member>ssl</member>
+            <member>web-browsing</member>
+          </use-applications>
+          <risk>2</risk>
+          <preview>yes</preview>
+        </entry>
+        <entry id="10312" minver="7.1.0" name="stanag-4406" ori_country="USA" ori_language="English">
+          <category>networking</category>
+          <subcategory>infrastructure</subcategory>
+          <technology>network-protocol</technology>
+          <description>STANAG 4406 is the NATO standard for Military Messaging based on X.400. STANAG 4406 defines a number of functional and security features to support formal military messaging. It is particularly important for High Grade Messaging, where features of X.400 to support high reliability are used. This AppID identify the traffic for stanag-4406 military messaging over P772 Message traffic.</description>
+          <appident>yes</appident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>no</able-to-transfer-file>
+          <has-known-vulnerability>no</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <cachable>no</cachable>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <references>
+            <entry name="isode">
+              <link>https://www.isode.com/products/m-switch-x400-military.html</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/102</member>
+            </port>
+          </default>
+          <use-applications minver="5.0.0">
+            <member minver="5.0.0">cotp</member>
+          </use-applications>
+          <applicable-decoders>
+            <member>cotp</member>
+          </applicable-decoders>
+          <risk>1</risk>
+          <preview>yes</preview>
+        </entry>
+        <entry id="10309" minver="7.1.0" name="stanag-5066" ori_country="USA" ori_language="English">
+          <category>networking</category>
+          <subcategory>infrastructure</subcategory>
+          <technology>network-protocol</technology>
+          <description>STANAG 5066 (Profile for High Frequency (HF) Radio Data Communication) is a NATO Standardization Agreement specification to enable applications to communicate efficiently over HF radio. STANAG 5066 provides peer protocols that operate above an HF modem and below the application level. STANAG 5066 includes the mandatory SIS (Subnet Interface Sublayer) protocol that enables an application to connect to an HF modem through a STANAG 5066 server over TCP/IP.  This AppID identify the traffic for stanag-5066 protocol.</description>
+          <alg>yes</alg>
+          <appident>yes</appident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>no</able-to-transfer-file>
+          <has-known-vulnerability>no</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <cachable>no</cachable>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <references>
+            <entry name="Isode">
+              <link>https://www.isode.com/whitepapers/stanag-5066.html</link>
+            </entry>
+            <entry name="Wikipedia">
+              <link>https://en.wikipedia.org/wiki/STANAG_5066</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/5066</member>
+            </port>
+          </default>
+          <risk>1</risk>
+          <preview>yes</preview>
+        </entry>
+        <entry id="10304" minver="7.1.0" name="sync" ori_country="USA" ori_language="English">
+          <category>general-internet</category>
+          <subcategory>file-sharing</subcategory>
+          <technology>browser-based</technology>
+          <description>Sync is used to store, share and access files.  This app identifies the traffic from sync from web application and desktop client.</description>
+          <appident>yes</appident>
+          <spyware-ident>yes</spyware-ident>
+          <vulnerability-ident>yes</vulnerability-ident>
+          <evasive-behavior>no</evasive-behavior>
+          <consume-big-bandwidth>no</consume-big-bandwidth>
+          <used-by-malware>no</used-by-malware>
+          <able-to-transfer-file>yes</able-to-transfer-file>
+          <has-known-vulnerability>yes</has-known-vulnerability>
+          <tunnel-other-application>no</tunnel-other-application>
+          <prone-to-misuse>no</prone-to-misuse>
+          <pervasive-use>no</pervasive-use>
+          <per-direction-regex>no</per-direction-regex>
+          <deny-action>drop-reset</deny-action>
+          <data-ident>yes</data-ident>
+          <cachable>no</cachable>
+          <file-forward>yes</file-forward>
+          <can-disable>yes</can-disable>
+          <new-appid>yes</new-appid>
+          <parent-app>web20_parrent_app</parent-app>
+          <references>
+            <entry name="Sync">
+              <link>https://www.sync.com/</link>
+            </entry>
+          </references>
+          <default>
+            <port>
+              <member>tcp/80,443</member>
+            </port>
+          </default>
+          <use-applications>
+            <member>ssl</member>
+            <member>web-browsing</member>
+          </use-applications>
+          <implicit-use-applications>
+            <member>ssl</member>
+            <member>web-browsing</member>
+          </implicit-use-applications>
+          <applicable-decoders>
+            <member>http</member>
+            <member>ssl</member>
+          </applicable-decoders>
+          <risk>2</risk>
+          <preview>yes</preview>
+        </entry>
+      </application>
+      <application-type>
+        <category/>
+        <technology/>
+      </application-type>
+    </content-preview>
+  </shared>
+  <devices>
+    <entry name="localhost.localdomain">
+      <deviceconfig>
+        <system>
+          <update-server>updates.paloaltonetworks.com</update-server>
+          <update-schedule>
+            <threats>
+              <recurring>
+                <weekly>
+                  <day-of-week>wednesday</day-of-week>
+                  <at>01:02</at>
+                  <action>download-only</action>
+                </weekly>
+              </recurring>
+            </threats>
+          </update-schedule>
+          <timezone>US/Eastern</timezone>
+          <service>
+            <disable-telnet>yes</disable-telnet>
+            <disable-http>yes</disable-http>
+          </service>
+          <type>
+            <dhcp-client>
+              <send-hostname>yes</send-hostname>
+              <send-client-id>no</send-client-id>
+              <accept-dhcp-hostname>no</accept-dhcp-hostname>
+              <accept-dhcp-domain>no</accept-dhcp-domain>
+            </dhcp-client>
+          </type>
+          <hostname>Ed-Prisma-Panorama</hostname>
+          <dns-setting>
+            <servers>
+              <primary>8.8.8.8</primary>
+              <secondary>8.8.4.4</secondary>
+            </servers>
+          </dns-setting>
+          <ntp-servers>
+            <primary-ntp-server>
+              <ntp-server-address>time-a-g.nist.gov</ntp-server-address>
+              <authentication-type>
+                <none/>
+              </authentication-type>
+            </primary-ntp-server>
+            <secondary-ntp-server>
+              <ntp-server-address>time-b-g.nist.gov</ntp-server-address>
+              <authentication-type>
+                <none/>
+              </authentication-type>
+            </secondary-ntp-server>
+          </ntp-servers>
+        </system>
+        <setting>
+          <management>
+            <storage-partition>
+              <internal/>
+            </storage-partition>
+            <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>
+            <initcfg>
+              <type>
+                <dhcp-client>
+                  <send-hostname>yes</send-hostname>
+                  <send-client-id>no</send-client-id>
+                  <accept-dhcp-hostname>no</accept-dhcp-hostname>
+                  <accept-dhcp-domain>no</accept-dhcp-domain>
+                </dhcp-client>
+              </type>
+              <hostname>Ed-Prisma-Panorama</hostname>
+              <username>ercaswell</username>
+            </initcfg>
+          </management>
+        </setting>
+      </deviceconfig>
+      <plugins version="1.4.0">
+        <cloud_services version="1.4.0">
+          <service-connection>
+            <service-subnet>10.15.1.0/24</service-subnet>
+            <infra-bgp-as>65534</infra-bgp-as>
+            <internal-dns-list total-count="1" count="1">
+              <entry name="otisfieldlab-com">
+                <domain-name>
+                  <member>otisfieldlab.com</member>
+                </domain-name>
+                <primary>192.168.0.1</primary>
+              </entry>
+            </internal-dns-list>
+            <template-stack>Service_Conn_Template_Stack</template-stack>
+            <device-group>Service_Conn_Device_Group</device-group>
+            <onboarding>
+              <entry name="Azure-Service-1">
+                <protocol>
+                  <bgp>
+                    <enable>yes</enable>
+                    <peer-as>65530</peer-as>
+                    <peer-ip-address>10.30.1.1</peer-ip-address>
+                  </bgp>
+                </protocol>
+                <region>us-northeast</region>
+                <ipsec-tunnel>Azure-Service-1</ipsec-tunnel>
+                <secondary-wan-enabled>no</secondary-wan-enabled>
+              </entry>
+              <entry name="Azure-Service-2">
+                <protocol>
+                  <bgp>
+                    <enable>yes</enable>
+                    <peer-as>65530</peer-as>
+                    <peer-ip-address>10.31.1.1</peer-ip-address>
+                  </bgp>
+                </protocol>
+                <region>us-east-1</region>
+                <ipsec-tunnel>Azure-Service-2</ipsec-tunnel>
+                <secondary-wan-enabled>no</secondary-wan-enabled>
+              </entry>
+            </onboarding>
+          </service-connection>
+          <pbf __recordInfo="{&quot;permission&quot;:&quot;readwrite&quot;,&quot;xpathId&quot;:&quot;plugin&quot;}">
+            <rules/>
+          </pbf>
+          <mobile-users>
+            <template-stack>Mobile_User_Template_Stack</template-stack>
+            <device-group>Mobile_User_Device_Group</device-group>
+            <trusted-zones>
+              <member>Mobile-User-Trust</member>
+            </trusted-zones>
+            <onboarding>
+              <entry name="eds.lab.gpcloudservice.com">
+                <portal-hostname>
+                  <default-domain>
+                    <hostname>eds</hostname>
+                  </default-domain>
+                </portal-hostname>
+                <ip-pools>
+                  <entry name="americas">
+                    <ip-pool>
+                      <member>10.100.0.0/23</member>
+                    </ip-pool>
+                  </entry>
+                </ip-pools>
+                <dns-servers>
+                  <entry name="americas"/>
+                </dns-servers>
+                <authentication-profile>ed-mobile-local</authentication-profile>
+                <authentication-override-certificate>Authentication Cookie Cert</authentication-override-certificate>
+                <global-protect-portal>GlobalProtect_Portal</global-protect-portal>
+                <global-protect-gateway>GlobalProtect_External_Gateway</global-protect-gateway>
+                <deployment>
+                  <region>
+                    <entry name="americas">
+                      <locations>
+                        <member>us-east-2</member>
+                        <member>us-northeast</member>
+                      </locations>
+                    </entry>
+                  </region>
+                </deployment>
+                <manual-gateway>
+                  <region>
+                    <entry name="americas">
+                      <locations>
+                        <member>us-east-2</member>
+                        <member>us-northeast</member>
+                      </locations>
+                    </entry>
+                  </region>
+                </manual-gateway>
+              </entry>
+            </onboarding>
+          </mobile-users>
+          <remote-networks>
+            <overlapped-subnets>no</overlapped-subnets>
+            <template-stack>Remote_Network_Template_Stack</template-stack>
+            <device-group>Remote_Network_Device_Group</device-group>
+            <trusted-zones>
+              <member>remote-trust</member>
+            </trusted-zones>
+            <onboarding>
+              <entry name="Remote-Lab">
+                <protocol>
+                  <bgp>
+                    <enable>no</enable>
+                  </bgp>
+                </protocol>
+                <subnets>
+                  <member>10.1.1.0/24</member>
+                </subnets>
+                <region>us-northeast</region>
+                <license-type>FWAAS-50Mbps</license-type>
+                <ipsec-tunnel>Eds-Lab</ipsec-tunnel>
+                <secondary-wan-enabled>no</secondary-wan-enabled>
+              </entry>
+            </onboarding>
+          </remote-networks>
+        </cloud_services>
+      </plugins>
+      <template>
+        <entry name="Service_Conn_Template">
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+          <description>Service Connection Template (Use the Cloud Services plugin to edit)</description>
+          <config>
+            <devices>
+              <entry name="localhost.localdomain">
+                <vsys>
+                  <entry name="vsys1"/>
+                </vsys>
+                <deviceconfig>
+                  <setting>
+                    <logging>
+                      <logging-service-forwarding>
+                        <logging-service-regions>americas</logging-service-regions>
+                        <enable>yes</enable>
+                      </logging-service-forwarding>
+                    </logging>
+                  </setting>
+                </deviceconfig>
+                <network>
+                  <ike>
+                    <crypto-profiles>
+                      <ike-crypto-profiles>
+                        <entry name="CloudGenix-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Citrix-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha256</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Riverbed-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group2</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="SilverPeak-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group14</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="CiscoISR-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                            <member>group2</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>aes-192-cbc</member>
+                            <member>aes-128-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="CiscoASA-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                            <member>md5</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                            <member>group2</member>
+                            <member>group1</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>3des</member>
+                            <member>des</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Generic-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                            <member>md5</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                            <member>group19</member>
+                            <member>group14</member>
+                            <member>group5</member>
+                            <member>group2</member>
+                            <member>group1</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>aes-192-cbc</member>
+                            <member>aes-128-cbc</member>
+                            <member>3des</member>
+                            <member>des</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Azure-Service">
+                          <hash>
+                            <member>sha256</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Azure-Service-2">
+                          <hash>
+                            <member>sha1</member>
+                          </hash>
+                          <dh-group>
+                            <member>group14</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                      </ike-crypto-profiles>
+                      <ipsec-crypto-profiles>
+                        <entry name="CloudGenix-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group20</dh-group>
+                        </entry>
+                        <entry name="Citrix-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha256</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Riverbed-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="SilverPeak-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group14</dh-group>
+                        </entry>
+                        <entry name="CiscoISR-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha1</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-128-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group5</dh-group>
+                        </entry>
+                        <entry name="CiscoASA-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                              <member>sha384</member>
+                              <member>sha256</member>
+                              <member>sha1</member>
+                              <member>md5</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-gcm</member>
+                              <member>aes-128-gcm</member>
+                              <member>aes-256-cbc</member>
+                              <member>aes-192-cbc</member>
+                              <member>3des</member>
+                              <member>des</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Generic-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                              <member>sha384</member>
+                              <member>sha256</member>
+                              <member>sha1</member>
+                              <member>md5</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-gcm</member>
+                              <member>aes-128-gcm</member>
+                              <member>aes-256-cbc</member>
+                              <member>aes-192-cbc</member>
+                              <member>aes-128-cbc</member>
+                              <member>3des</member>
+                              <member>des</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Azure-ipsec">
+                          <esp>
+                            <authentication>
+                              <member>sha256</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-128-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group20</dh-group>
+                        </entry>
+                        <entry name="Azure-Service-2">
+                          <esp>
+                            <authentication>
+                              <member>sha1</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group14</dh-group>
+                        </entry>
+                      </ipsec-crypto-profiles>
+                    </crypto-profiles>
+                    <gateway>
+                      <entry name="CloudGenix-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CloudGenix-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Citrix-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Citrix-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Riverbed-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Riverbed-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="SilverPeak-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>SilverPeak-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="CiscoISR-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoISR-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoISR-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev2</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>no</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="CiscoASA-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoASA-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoASA-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev1</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Generic-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Generic-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Generic-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev1</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Azure-Service-2">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==8GLfoI4BpTXvWrw0yLrfvJNDfjI=Uk4XVSrSENtKAH57v85Zlg==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Azure-Service-2</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Azure-Service-2</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev2-preferred</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <ip>40.84.46.144</ip>
+                        </peer-address>
+                        <peer-id>
+                          <id>10.14.1.5</id>
+                          <type>ipaddr</type>
+                        </peer-id>
+                        <local-id>
+                          <id>34.100.67.178</id>
+                          <type>ipaddr</type>
+                        </local-id>
+                      </entry>
+                      <entry name="Azure-Service-1">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==8GLfoI4BpTXvWrw0yLrfvJNDfjI=Uk4XVSrSENtKAH57v85Zlg==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Azure-Service</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Azure-Service</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev2-preferred</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <ip>40.70.207.33</ip>
+                        </peer-address>
+                        <local-id>
+                          <id>34.100.65.83</id>
+                          <type>ipaddr</type>
+                        </local-id>
+                        <peer-id>
+                          <id>10.14.1.4</id>
+                          <type>ipaddr</type>
+                        </peer-id>
+                      </entry>
+                    </gateway>
+                  </ike>
+                  <tunnel>
+                    <ipsec>
+                      <entry name="CloudGenix-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CloudGenix-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CloudGenix-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Citrix-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Citrix-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Citrix-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Riverbed-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Riverbed-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Riverbed-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="SilverPeak-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="SilverPeak-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>SilverPeak-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="CiscoISR-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CiscoISR-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CiscoISR-IPSec-Crypto-Default</ipsec-crypto-profile>
+                          <proxy-id>
+                            <entry name="ProxyID">
+                              <protocol>
+                                <any/>
+                              </protocol>
+                            </entry>
+                          </proxy-id>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="CiscoASA-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CiscoASA-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CiscoASA-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Generic-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Generic-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Generic-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Azure-Service-2">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Azure-Service-2"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Azure-Service-2</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>yes</enable>
+                          <destination-ip>10.14.2.5</destination-ip>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Azure-Service-1">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Azure-Service-1"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Azure-ipsec</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>yes</enable>
+                          <destination-ip>10.14.2.4</destination-ip>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                    </ipsec>
+                  </tunnel>
+                  <qos>
+                    <profile>
+                      <entry name="test"/>
+                    </profile>
+                  </qos>
+                </network>
+              </entry>
+            </devices>
+            <shared>
+              <log-settings>
+                <system>
+                  <match-list>
+                    <entry name="system-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </system>
+              </log-settings>
+              <certificate/>
+              <ssl-decrypt>
+                <forward-trust-certificate/>
+                <forward-untrust-certificate/>
+              </ssl-decrypt>
+            </shared>
+          </config>
+        </entry>
+        <entry name="Mobile_User_Template">
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+          <description> Template (Use the Cloud Services plugin to edit)</description>
+          <config>
+            <devices>
+              <entry name="localhost.localdomain">
+                <vsys>
+                  <entry name="vsys1">
+                    <zone>
+                      <entry name="Mobile-User-Trust">
+                        <network>
+                          <tap/>
+                        </network>
+                      </entry>
+                      <entry name="Mobile-User-Untrust">
+                        <network>
+                          <tap/>
+                        </network>
+                      </entry>
+                    </zone>
+                    <authentication-profile>
+                      <entry name="ed-mobile-local">
+                        <multi-factor-auth>
+                          <mfa-enable>no</mfa-enable>
+                        </multi-factor-auth>
+                        <method>
+                          <local-database/>
+                        </method>
+                        <allow-list>
+                          <member>all</member>
+                        </allow-list>
+                      </entry>
+                    </authentication-profile>
+                    <global-protect>
+                      <global-protect-portal>
+                        <entry name="GlobalProtect_Portal">
+                          <portal-config>
+                            <local-address>
+                              <interface>-</interface>
+                              <ip/>
+                            </local-address>
+                            <ssl-tls-service-profile>-</ssl-tls-service-profile>
+                            <client-auth>
+                              <entry name="Any-saml">
+                                <user-credential-or-client-cert-required>no</user-credential-or-client-cert-required>
+                                <os>Any</os>
+                                <authentication-profile>saml-portal</authentication-profile>
+                                <authentication-message>Enter login credentials</authentication-message>
+                                <username-label>Username</username-label>
+                                <password-label>Password</password-label>
+                              </entry>
+                            </client-auth>
+                            <custom-login-page>factory-default</custom-login-page>
+                            <custom-home-page>factory-default</custom-home-page>
+                            <certificate-profile>pre-logon-profile</certificate-profile>
+                            <config-selection>
+                              <certificate-profile>pre-logon-profile</certificate-profile>
+                            </config-selection>
+                          </portal-config>
+                          <client-config>
+                            <configs>
+                              <entry name="any user">
+                                <hip-collection>
+                                  <max-wait-time>20</max-wait-time>
+                                  <collect-hip-data>yes</collect-hip-data>
+                                </hip-collection>
+                                <gateways>
+                                  <external>
+                                    <list>
+                                      <entry name="GP cloud service">
+                                        <fqdn>gpcloudservice.com</fqdn>
+                                        <priority-rule>
+                                          <entry name="Any">
+                                            <priority>1</priority>
+                                          </entry>
+                                        </priority-rule>
+                                        <manual>yes</manual>
+                                      </entry>
+                                    </list>
+                                    <cutoff-time>5</cutoff-time>
+                                  </external>
+                                </gateways>
+                                <authentication-override>
+                                  <cookie-encrypt-decrypt-cert>Authentication Cookie Cert</cookie-encrypt-decrypt-cert>
+                                  <generate-cookie>no</generate-cookie>
+                                </authentication-override>
+                                <source-user>
+                                  <member>any</member>
+                                </source-user>
+                                <os>
+                                  <member>any</member>
+                                </os>
+                                <agent-ui>
+                                  <max-agent-user-overrides>0</max-agent-user-overrides>
+                                  <agent-user-override-timeout>0</agent-user-override-timeout>
+                                </agent-ui>
+                                <gp-app-config>
+                                  <config>
+                                    <entry name="connect-method">
+                                      <value>
+                                        <member>pre-logon-then-on-demand</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="refresh-config-interval">
+                                      <value>
+                                        <member>24</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="agent-user-override">
+                                      <value>
+                                        <member>allowed</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="client-upgrade">
+                                      <value>
+                                        <member>prompt</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="use-sso">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="logout-remove-sso">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="krb-auth-fail-fallback">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="retry-tunnel">
+                                      <value>
+                                        <member>30</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="retry-timeout">
+                                      <value>
+                                        <member>5</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="enforce-globalprotect">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="captive-portal-exception-timeout">
+                                      <value>
+                                        <member>0</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="traffic-blocking-notification-delay">
+                                      <value>
+                                        <member>15</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="display-traffic-blocking-notification-msg">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="traffic-blocking-notification-msg">
+                                      <value>
+                                        <member>&lt;div style="font-family:'Helvetica Neue';"&gt;&lt;h1 style="color:red;text-align:center; margin: 0; font-size: 30px;"&gt;Notice&lt;/h1&gt;&lt;p style="margin: 0;font-size: 15px; line-height: 1.2em;"&gt;To access the network, you must first connect to GlobalProtect.&lt;/p&gt;&lt;/div&gt;</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="allow-traffic-blocking-notification-dismissal">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="display-captive-portal-detection-msg">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="captive-portal-detection-msg">
+                                      <value>
+                                        <member>&lt;div style="font-family:'Helvetica Neue';"&gt;&lt;h1 style="color:red;text-align:center; margin: 0; font-size: 30px;"&gt;Captive Portal Detected&lt;/h1&gt;&lt;p style="margin: 0; font-size: 15px; line-height: 1.2em;"&gt;GlobalProtect has temporarily permitted network access for you to connect to the Internet. Follow instructions from your internet provider.&lt;/p&gt;&lt;p style="margin: 0; font-size: 15px; line-height: 1.2em;"&gt;If you let the connection time out, open GlobalProtect and click Connect to try again.&lt;/p&gt;&lt;/div&gt;</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="captive-portal-notification-delay">
+                                      <value>
+                                        <member>5</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="certificate-store-lookup">
+                                      <value>
+                                        <member>user-and-machine</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="scep-certificate-renewal-period">
+                                      <value>
+                                        <member>7</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="retain-connection-smartcard-removal">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="enable-advanced-view">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="enable-do-not-display-this-welcome-page-again">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="rediscover-network">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="resubmit-host-info">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="can-change-portal">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="can-continue-if-portal-cert-invalid">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="show-agent-icon">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="user-switch-tunnel-rename-timeout">
+                                      <value>
+                                        <member>0</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="pre-logon-tunnel-rename-timeout">
+                                      <value>
+                                        <member>-1</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="preserve-tunnel-upon-user-logoff-timeout">
+                                      <value>
+                                        <member>0</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="show-system-tray-notifications">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="ipsec-failover-ssl">
+                                      <value>
+                                        <member>0</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="max-internal-gateway-connection-attempts">
+                                      <value>
+                                        <member>0</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="portal-timeout">
+                                      <value>
+                                        <member>30</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="connect-timeout">
+                                      <value>
+                                        <member>60</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="receive-timeout">
+                                      <value>
+                                        <member>30</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="enforce-dns">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="flush-dns">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="proxy-multiple-autodetect">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="use-proxy">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="wsc-autodetect">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="mfa-enabled">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="mfa-listening-port">
+                                      <value>
+                                        <member>4501</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="mfa-notification-msg">
+                                      <value>
+                                        <member>You have attempted to access a protected resource that requires additional authentication. Proceed to authenticate at</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="ipv6-preferred">
+                                      <value>
+                                        <member>yes</member>
+                                      </value>
+                                    </entry>
+                                    <entry name="init-panel">
+                                      <value>
+                                        <member>no</member>
+                                      </value>
+                                    </entry>
+                                  </config>
+                                </gp-app-config>
+                                <save-user-credentials>0</save-user-credentials>
+                                <portal-2fa>no</portal-2fa>
+                                <manual-only-gateway-2fa>no</manual-only-gateway-2fa>
+                                <internal-gateway-2fa>no</internal-gateway-2fa>
+                                <auto-discovery-external-gateway-2fa>no</auto-discovery-external-gateway-2fa>
+                                <mdm-enrollment-port>443</mdm-enrollment-port>
+                              </entry>
+                            </configs>
+                            <agent-user-override-key>-AQ==9EIXqBFzhp4IZxdTxSVTZG/12Vs=iH76LFLerpHJ1S680bBopQ==</agent-user-override-key>
+                            <root-ca>
+                              <entry name="Eds lab CA">
+                                <install-in-cert-store>no</install-in-cert-store>
+                              </entry>
+                            </root-ca>
+                          </client-config>
+                          <clientless-vpn>
+                            <hostname>eds.lab.gpcloudservice.com</hostname>
+                            <dns-proxy>CloudDefault</dns-proxy>
+                            <login-lifetime>
+                              <hours>3</hours>
+                            </login-lifetime>
+                            <inactivity-logout>
+                              <minutes>30</minutes>
+                            </inactivity-logout>
+                            <apps-to-user-mapping>
+                              <entry name="Eds LAB">
+                                <source-user>
+                                  <member>any</member>
+                                </source-user>
+                                <applications>
+                                  <member>Eds Lab</member>
+                                </applications>
+                                <enable-custom-app-URL-address-bar>yes</enable-custom-app-URL-address-bar>
+                              </entry>
+                            </apps-to-user-mapping>
+                            <security-zone>Mobile-User-Trust</security-zone>
+                          </clientless-vpn>
+                          <satellite-config>
+                            <client-certificate>
+                              <local/>
+                            </client-certificate>
+                          </satellite-config>
+                        </entry>
+                      </global-protect-portal>
+                      <global-protect-gateway>
+                        <entry name="GlobalProtect_External_Gateway">
+                          <client-auth>
+                            <entry name="Gateway-saml">
+                              <os>Any</os>
+                              <authentication-profile>saml-gateway</authentication-profile>
+                              <authentication-message>Enter login credentials</authentication-message>
+                              <user-credential-or-client-cert-required>no</user-credential-or-client-cert-required>
+                              <username-label>Username</username-label>
+                              <password-label>Password</password-label>
+                            </entry>
+                          </client-auth>
+                          <remote-user-tunnel-configs>
+                            <entry name="DEFAULT">
+                              <split-tunneling>
+                                <include-domains>
+                                  <list/>
+                                </include-domains>
+                                <exclude-domains>
+                                  <list/>
+                                </exclude-domains>
+                                <access-route/>
+                                <exclude-access-route/>
+                                <include-applications/>
+                                <exclude-applications/>
+                              </split-tunneling>
+                              <authentication-override>
+                                <cookie-encrypt-decrypt-cert>Authentication Cookie Cert</cookie-encrypt-decrypt-cert>
+                                <generate-cookie>no</generate-cookie>
+                              </authentication-override>
+                              <source-address>
+                                <ip-address/>
+                                <region/>
+                              </source-address>
+                              <source-user>
+                                <member>any</member>
+                              </source-user>
+                              <authentication-server-ip-pool/>
+                              <ip-pool/>
+                              <os>
+                                <member>any</member>
+                              </os>
+                              <retrieve-framed-ip-address>no</retrieve-framed-ip-address>
+                              <no-direct-access-to-local-network>no</no-direct-access-to-local-network>
+                            </entry>
+                          </remote-user-tunnel-configs>
+                          <ssl-tls-service-profile>-</ssl-tls-service-profile>
+                          <tunnel-mode>yes</tunnel-mode>
+                          <remote-user-tunnel>-</remote-user-tunnel>
+                          <roles>
+                            <entry name="default">
+                              <login-lifetime>
+                                <days>30</days>
+                              </login-lifetime>
+                              <inactivity-logout>
+                                <hours>3</hours>
+                              </inactivity-logout>
+                              <disconnect-on-idle>
+                                <minutes>180</minutes>
+                              </disconnect-on-idle>
+                            </entry>
+                          </roles>
+                          <certificate-profile>pre-logon-profile</certificate-profile>
+                        </entry>
+                      </global-protect-gateway>
+                      <clientless-app>
+                        <entry name="ubuntu">
+                          <description>ubuntu</description>
+                          <application-home-url>http://10.14.2.6</application-home-url>
+                        </entry>
+                        <entry name="Eds Lab Panorama">
+                          <description>Eds Panorama</description>
+                          <application-home-url>https://40.70.65.216</application-home-url>
+                        </entry>
+                        <entry name="Eds Service Primary VM-300">
+                          <description>Azure VM-300 Primary Service Connection</description>
+                          <application-home-url>https://52.167.41.164/</application-home-url>
+                        </entry>
+                        <entry name="google">
+                          <application-home-url>https://google.com</application-home-url>
+                        </entry>
+                      </clientless-app>
+                      <clientless-app-group>
+                        <entry name="Eds Lab">
+                          <members>
+                            <member>ubuntu</member>
+                            <member>Eds Lab Panorama</member>
+                            <member>Eds Service Primary VM-300</member>
+                            <member>google</member>
+                          </members>
+                        </entry>
+                      </clientless-app-group>
+                    </global-protect>
+                  </entry>
+                  <entry name="Mobile_User_Device_Group">
+                    <certificate/>
+                  </entry>
+                </vsys>
+                <network>
+                  <tunnel>
+                    <global-protect-gateway>
+                      <entry name="GlobalProtect_External_Gateway-N">
+                        <local-address>
+                          <interface>-</interface>
+                          <ip/>
+                        </local-address>
+                        <tunnel-interface>-</tunnel-interface>
+                        <client>
+                          <exclude-video-traffic>
+                            <applications/>
+                            <enabled>no</enabled>
+                          </exclude-video-traffic>
+                        </client>
+                        <ipsec>
+                          <third-party-client>
+                            <enable>no</enable>
+                          </third-party-client>
+                        </ipsec>
+                        <ip-pool/>
+                      </entry>
+                    </global-protect-gateway>
+                  </tunnel>
+                </network>
+                <deviceconfig>
+                  <setting>
+                    <ssl-decrypt>
+                      <notify-user>yes</notify-user>
+                    </ssl-decrypt>
+                  </setting>
+                </deviceconfig>
+              </entry>
+            </devices>
+            <shared>
+              <log-settings>
+                <system>
+                  <match-list>
+                    <entry name="system-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </system>
+                <userid>
+                  <match-list>
+                    <entry name="userid-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </userid>
+                <hipmatch>
+                  <match-list>
+                    <entry name="hipmatch-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </hipmatch>
+              </log-settings>
+              <certificate>
+                <entry name="Authentication Cookie CA">
+                  <subject-hash>58b6369c</subject-hash>
+                  <issuer-hash>58b6369c</issuer-hash>
+                  <not-valid-before>Aug 13 16:36:26 2019 GMT</not-valid-before>
+                  <issuer>/CN=Authentication Cookie CA</issuer>
+                  <not-valid-after>Aug 10 16:36:26 2029 GMT</not-valid-after>
+                  <common-name>Authentication Cookie CA</common-name>
+                  <expiry-epoch>1881074186</expiry-epoch>
+                  <ca>yes</ca>
+                  <subject>/CN=Authentication Cookie CA</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIC5jCCAc6gAwIBAgIJAPVYw4yxxp87MA0GCSqGSIb3DQEBCwUAMCMxITAfBgNV
+BAMTGEF1dGhlbnRpY2F0aW9uIENvb2tpZSBDQTAeFw0xOTA4MTMxNjM2MjZaFw0y
+OTA4MTAxNjM2MjZaMCMxITAfBgNVBAMTGEF1dGhlbnRpY2F0aW9uIENvb2tpZSBD
+QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAL7S37ajoIKJ49PzSLGz
+8GL3sZnimCYAeSHeb5Xk2ck0M0RLp+SCrm8uc+Pm+XgcUIpW2+QXb0nMRAGvEQvX
+b+l2wKZ9qbpuB5YUN1jz0Hk/WxUMFuLLk6XSoZ6faedNLuoczflMN3Fps3O5qQiK
+J/ukIORUpoSq4VHUDK6z1DUjg3HJoMTeprSvoPP86PsNNtgXw7ZHyt95vy2fW9s2
+ipPfKK4pvndXKG9xHjhA4ttiSOjCqfoqF9/CyfvGtWToJe4ESN9J6yZjxoxtsDjF
+PtR1W5gusHnCtA0GhwJdo5Gze1nrpK/i6/MdW8onbDcQyfQ8+EeU49qMGIwe+fFc
+8kkCAwEAAaMdMBswDAYDVR0TBAUwAwEB/zALBgNVHQ8EBAMCAgQwDQYJKoZIhvcN
+AQELBQADggEBAHnsDzH6+3Ccv4wW8k8+pkK9IqNmoPgo/UJP20JO+PCBjHK094W6
+4FR2dDGvyHLjtVTeGAsqNkMIl0M0bsw2+ouSLm5n+eL6P7NIVtE4VI1HdTBGnLP+
+Hc0jWOnyp4Quuk10U07gmgq62VH/b1dHbi8ZW76SfJ7ZMG9d9LnI79YGbkxX9hLV
+1dTvojWYE5P9WP3uKvJQG3LPnrUOmz7NVOt9iDUHJMt4yOFs/65NJnJTnDRB93P0
+iYcQnS2bV50nHUbYjar6UHdizXzNLSDsQq7mU2V9S2ZhGrfSQOv3UfqUJLKaMt4P
+u8Zpc/+WWTwlYPht9EaxTNhWMF6fMFxlMG8=
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                  <private-key>-AQ==HxxKJuhg4F79yUYM8Ai8lYZdaD8=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</private-key>
+                </entry>
+                <entry name="Authentication Cookie Cert">
+                  <subject-hash>250129f3</subject-hash>
+                  <issuer-hash>58b6369c</issuer-hash>
+                  <not-valid-before>Aug 13 16:36:29 2019 GMT</not-valid-before>
+                  <issuer>/CN=Authentication Cookie CA</issuer>
+                  <not-valid-after>Aug 12 16:36:29 2021 GMT</not-valid-after>
+                  <common-name>Authentication Cookie Cert</common-name>
+                  <expiry-epoch>1628786189</expiry-epoch>
+                  <ca>no</ca>
+                  <subject>/CN=Authentication Cookie Cert</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIDMzCCAhugAwIBAgIEQAPzSzANBgkqhkiG9w0BAQsFADAjMSEwHwYDVQQDExhB
+dXRoZW50aWNhdGlvbiBDb29raWUgQ0EwHhcNMTkwODEzMTYzNjI5WhcNMjEwODEy
+MTYzNjI5WjAlMSMwIQYDVQQDExpBdXRoZW50aWNhdGlvbiBDb29raWUgQ2VydDCC
+ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOJYG4y0pUWWg7hNpuLipijy
+GKCXdhE2RhfjWCeyPMg/fkVQeIukf8fGqNr4AvUJa/UZv0ZTcKNGIJqYn/ISbK6R
+pOzEFNxcjFUwGDY5IyWEy2bduKvpac1BidtjuiSo8UCYNC5Gmfat35CcyV0WaVDK
+qikAqV/6+g4OXLqcIyhNPNoW/04FX1o+g7WLnxlBZ3TG/QnbFHRQ8gy88qnXt/f/
+EQG7Fd0TGsK+G5h6G1q7keyF2eyyzvk2xRsEGOCpM7cDCxWU95fUBc1YRtcqXRcy
+SCRsTAuLFnUBDTgVEgcGfswwBlFFCuzxlOi4qK3c1vaYRb7Ja6G1i6RwOO1wyZsC
+AwEAAaNtMGswCQYDVR0TBAIwADALBgNVHQ8EBAMCA7gwJwYDVR0lBCAwHgYIKwYB
+BQUHAwEGCCsGAQUFBwMCBggrBgEFBQcDBTAJBgNVHSMEAjAAMB0GA1UdDgQWBBQ2
+JnmWADUBOw5e1hRIhisLbn/+sTANBgkqhkiG9w0BAQsFAAOCAQEAqKolNU+OL5pJ
+1BqwnQXeI8HM00tuWIkPl5xQ0/ACUHN1ZEcmFCJOJ24sB/D3j1kdR/+f8Yn8eulV
+kXw/UiIbIlGtd3z1Ml1XQG7JHEbZQdW4NGb1mAgtxvosgOxKrwwwkxaPObUlN1Cb
+4mbXuLgMDfbfxagbWqdX5YE0wNNSKcqHsMUcUpOH1Rui1zgMBmLCbHhLFOSUFpoL
+xI5cQiFwaXwvcQOmEb+sfSLWgEmWVfrNRtgUjmFvMqJlpWfWnc4I/9Gr6qwbhW67
+ytV+u3eAU8lPnp52IARDXmYGfCTeM/WI4xX/qu67h+TeFLmmZPY2tNjjVJYjJCYG
+58Vx2PPdMw==
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                  <private-key>-AQ==R5b2hoWxS6snO2j+l6Mj0xQGsyc=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</private-key>
+                </entry>
+                <entry name="Eds lab CA">
+                  <subject-hash>1e071d35</subject-hash>
+                  <issuer-hash>1e071d35</issuer-hash>
+                  <not-valid-before>Aug 31 11:52:08 2019 GMT</not-valid-before>
+                  <issuer>/CN=lab.gpcloudservice.com</issuer>
+                  <not-valid-after>Aug 30 11:52:08 2020 GMT</not-valid-after>
+                  <common-name>lab.gpcloudservice.com</common-name>
+                  <expiry-epoch>1598788328</expiry-epoch>
+                  <ca>yes</ca>
+                  <subject>/CN=lab.gpcloudservice.com</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIC4jCCAcqgAwIBAgIJALIynxYnuh0WMA0GCSqGSIb3DQEBCwUAMCExHzAdBgNV
+BAMTFmxhYi5ncGNsb3Vkc2VydmljZS5jb20wHhcNMTkwODMxMTE1MjA4WhcNMjAw
+ODMwMTE1MjA4WjAhMR8wHQYDVQQDExZsYWIuZ3BjbG91ZHNlcnZpY2UuY29tMIIB
+IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0d7z7doiNecAnHVWPY1ryU7N
+YZ0nZ4Z88UFiAMcDiRRfwc7eqxVkHZh4teKJABwE8vhfHIp/a4w3LaKMkQlSEiyG
+bxi6KLJpl24YoHVqMdoow6r3ErDmuJ1mjHkdL9aJwR/fKRMML/EM45wWsSncxhIg
+5IK2Ea3mxKuZS6+SWZYCzlCN955kDnVFJ4AVJ5r1/zs3UhlbyV+7ZFRKRtpFym1P
+T9sW9XKM0bx3KVaX3g+Ei+oXa42iQNDrSlS/83vX8uiELYXGVL0JSkC+W8Ljocw+
+TZzHTalcdcpsCYtlVOHlE/fdOMk5pgkF6Iczaxl0FOutnXW0LRU0fcAgPMwNswID
+AQABox0wGzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwICBDANBgkqhkiG9w0BAQsF
+AAOCAQEAyDgly8lsFWsfDlOXRfX0FLt+bmXZ6nXrarjLq9CIPUddN+mN9zoDBDrB
+GYn9HRRkZT3YPFfP4APcM8gqc8HkagH//AP6EgIKyaL05tLqVIaHO5KDYKRWIAvD
+Wl48svN86IkjJaZ+iheMm/DDpBBACKhFtySml6E0PFAe/BiIdSu8cIkF1OW4uu6X
+B7HjWICqoK0Epo7OajO09Is2xmQn3Jm+xF8hXTzgSvWSUU9YlMVNclxiOtjUYwnq
+fueqFyX19WfqhFJco5ya4o22JxWyoK0Qvro1ORdrU1Ea82AMhS5+drJrmdr8xrqr
+/keyrI6+qkww/cV3eJgi9XTGu7eCqA==
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                  <private-key>-AQ==wHCSHE/Ril9xvVsVqY4UIHnza+k=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</private-key>
+                </entry>
+                <entry name="pre logon">
+                  <subject-hash>20dad2ef</subject-hash>
+                  <issuer-hash>1e071d35</issuer-hash>
+                  <not-valid-before>Sep  3 11:41:24 2019 GMT</not-valid-before>
+                  <issuer>/CN=lab.gpcloudservice.com</issuer>
+                  <not-valid-after>Sep  2 11:41:24 2020 GMT</not-valid-after>
+                  <common-name>pre.lab.gpcloudservice.com</common-name>
+                  <expiry-epoch>1599046884</expiry-epoch>
+                  <ca>no</ca>
+                  <subject>/CN=pre.lab.gpcloudservice.com</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIDMTCCAhmgAwIBAgIEQAPzYDANBgkqhkiG9w0BAQsFADAhMR8wHQYDVQQDExZs
+YWIuZ3BjbG91ZHNlcnZpY2UuY29tMB4XDTE5MDkwMzExNDEyNFoXDTIwMDkwMjEx
+NDEyNFowJTEjMCEGA1UEAxMacHJlLmxhYi5ncGNsb3Vkc2VydmljZS5jb20wggEi
+MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC4fZR83Ffrgy6GKJmClV14l9BX
+MHTBqYhssxoSwZYN2oJNcz9xLbC6Tt1I74MigYzcpt3h0sqjAuTEbmkE37hj8KAh
+wmKsaDYu4avx6JOwNoIIauyDg5+KKhoGxGkuRNCidO1EdwD3qSMfqBlVLj3/6+Yi
+XLMcJf+2WnHcd2MfWoM/7Q3rlYRMVmBvYNsZaYyTVZERXQST0gfUyq3JrThy9ajv
+fXxCHXNd3gYqKHGVE1jPfJkWwmH/Kpu6O33DpNIOABLsczoBtu6R/xV5jJh0xgeg
+WbiPOnkuGpjzzAuhQo8JsSADAq7dn5jtW4m2fLFRw1v16HqFiMYq7J6j/l9ZAgMB
+AAGjbTBrMAkGA1UdEwQCMAAwCwYDVR0PBAQDAgO4MCcGA1UdJQQgMB4GCCsGAQUF
+BwMBBggrBgEFBQcDAgYIKwYBBQUHAwUwCQYDVR0jBAIwADAdBgNVHQ4EFgQUfomg
+eeoA36Ae3iu8+uCVpayyAogwDQYJKoZIhvcNAQELBQADggEBACZ4TtQqazY1hrGl
+HzN33QJ2v5DLGIKohtM3DUcGIVaSuOdkwetGYxSOCHjjBnMOTFP8MxKn7jFOMY8f
+AaarEsgpmMgCPBQ7lH/x0u7RXz6jsK8br1OVqeGgNxg6rlb72evA6NxGL/cnQCJI
+EC//eYUJviuYdHwvu/VnG99e3zj93PUc34BFOHJmfsHjM8TEdzLHojAjg/XXsC1h
+qZJnnaeH5934kTfMgIzW1lepXrmXO2ltorPoAtAlPi746sjxIjagIyv2Vx4oCksD
+2LE6lvoz7m/8Rd1aePs/orEd6f7GuQ2/LakuEPEUSJiDMMxNKa1cCU1KqVrsSCCK
+zsRdDG8=
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                  <private-key>-AQ==lF7TZW8NP/26XcEx4ER2J1nekNg=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</private-key>
+                </entry>
+                <entry name="crt.Okta-Portal.shared">
+                  <subject-hash>8931310a</subject-hash>
+                  <issuer-hash>8931310a</issuer-hash>
+                  <not-valid-before>Aug 26 16:48:01 2019 GMT</not-valid-before>
+                  <issuer>/C=US/ST=California/L=San Francisco/O=Okta/OU=SSOProvider/CN=dev-508078/emailAddress=info@okta.com</issuer>
+                  <not-valid-after>Aug 26 16:49:00 2029 GMT</not-valid-after>
+                  <common-name>dev-508078</common-name>
+                  <expiry-epoch>1882457340</expiry-epoch>
+                  <ca>no</ca>
+                  <subject>/C=US/ST=California/L=San Francisco/O=Okta/OU=SSOProvider/CN=dev-508078/emailAddress=info@okta.com</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIDpDCCAoygAwIBAgIGAWzO1LB0MA0GCSqGSIb3DQEBCwUAMIGSMQswCQYDVQQG
+EwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj
+bzENMAsGA1UECgwET2t0YTEUMBIGA1UECwwLU1NPUHJvdmlkZXIxEzARBgNVBAMM
+CmRldi01MDgwNzgxHDAaBgkqhkiG9w0BCQEWDWluZm9Ab2t0YS5jb20wHhcNMTkw
+ODI2MTY0ODAxWhcNMjkwODI2MTY0OTAwWjCBkjELMAkGA1UEBhMCVVMxEzARBgNV
+BAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM
+BE9rdGExFDASBgNVBAsMC1NTT1Byb3ZpZGVyMRMwEQYDVQQDDApkZXYtNTA4MDc4
+MRwwGgYJKoZIhvcNAQkBFg1pbmZvQG9rdGEuY29tMIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEAj4qYQbhGb37k115sfhuIOi13ZC9sNzfItTwrmrK2NUkk
+doqCWuK60ynRmoRi1uba+fT+BqWnrLkz+JQy3cLe6ifwaC4N0yfUvpmMRo/slU6/
+nXZrDENraHcbicmzp2lPSxIVyfCqx6Pb4HMjPHocZUaOOTnCHRx+hqmwNEty3opn
+oj2i73BFsBrrtBx8UfTG/VniajqzIK4mwemlehRcNPCPhNwJN71xA1SyyQQ8E772
+gTpbPodvwAP8uEy6dG5IgMCnCt2MglBEkhlJsv0y/k9cVfTyZzeBCpV3OE4kmOxI
+SMwTDtNCK4VZcCVZTzf/BKhfl8FHPP5cbjhe0SMnywIDAQABMA0GCSqGSIb3DQEB
+CwUAA4IBAQAYPBdeu7mvLS8C5JNk91Y2BjgGyl89zCmuDS9568DC/1+hWgc5Xem4
+ldS/IF1CebC3rTdJFTDsCav8iaL2n+8orIzSxIu6XlpEXtvImAwVKftGnsUDr4q4
+gb8pPolS3avBcLQjJF9w9A6BIqNCjTbcTpJzONZ9u9gPM1sVPzMzT00BjTX3Xr1Z
+IslBrm5Q0oDF2a32JM6buwx3OEmOA2uUVvUHny916rjy9dE2AbYojQBgWTs/7A0c
+2LKARTgwgGVeHwR50nRu5edfWDbqPB074hSECEEc5JWLwSPezAYaxGvQBqWoPGha
+DCsN1tI1QS18EeU69A4JDwkRM/bARmlC
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                </entry>
+                <entry name="crt.Okta-Gateway.shared">
+                  <subject-hash>8931310a</subject-hash>
+                  <issuer-hash>8931310a</issuer-hash>
+                  <not-valid-before>Aug 26 16:48:01 2019 GMT</not-valid-before>
+                  <issuer>/C=US/ST=California/L=San Francisco/O=Okta/OU=SSOProvider/CN=dev-508078/emailAddress=info@okta.com</issuer>
+                  <not-valid-after>Aug 26 16:49:00 2029 GMT</not-valid-after>
+                  <common-name>dev-508078</common-name>
+                  <expiry-epoch>1882457340</expiry-epoch>
+                  <ca>no</ca>
+                  <subject>/C=US/ST=California/L=San Francisco/O=Okta/OU=SSOProvider/CN=dev-508078/emailAddress=info@okta.com</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIDpDCCAoygAwIBAgIGAWzO1LB0MA0GCSqGSIb3DQEBCwUAMIGSMQswCQYDVQQG
+EwJVUzETMBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNj
+bzENMAsGA1UECgwET2t0YTEUMBIGA1UECwwLU1NPUHJvdmlkZXIxEzARBgNVBAMM
+CmRldi01MDgwNzgxHDAaBgkqhkiG9w0BCQEWDWluZm9Ab2t0YS5jb20wHhcNMTkw
+ODI2MTY0ODAxWhcNMjkwODI2MTY0OTAwWjCBkjELMAkGA1UEBhMCVVMxEzARBgNV
+BAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xDTALBgNVBAoM
+BE9rdGExFDASBgNVBAsMC1NTT1Byb3ZpZGVyMRMwEQYDVQQDDApkZXYtNTA4MDc4
+MRwwGgYJKoZIhvcNAQkBFg1pbmZvQG9rdGEuY29tMIIBIjANBgkqhkiG9w0BAQEF
+AAOCAQ8AMIIBCgKCAQEAj4qYQbhGb37k115sfhuIOi13ZC9sNzfItTwrmrK2NUkk
+doqCWuK60ynRmoRi1uba+fT+BqWnrLkz+JQy3cLe6ifwaC4N0yfUvpmMRo/slU6/
+nXZrDENraHcbicmzp2lPSxIVyfCqx6Pb4HMjPHocZUaOOTnCHRx+hqmwNEty3opn
+oj2i73BFsBrrtBx8UfTG/VniajqzIK4mwemlehRcNPCPhNwJN71xA1SyyQQ8E772
+gTpbPodvwAP8uEy6dG5IgMCnCt2MglBEkhlJsv0y/k9cVfTyZzeBCpV3OE4kmOxI
+SMwTDtNCK4VZcCVZTzf/BKhfl8FHPP5cbjhe0SMnywIDAQABMA0GCSqGSIb3DQEB
+CwUAA4IBAQAYPBdeu7mvLS8C5JNk91Y2BjgGyl89zCmuDS9568DC/1+hWgc5Xem4
+ldS/IF1CebC3rTdJFTDsCav8iaL2n+8orIzSxIu6XlpEXtvImAwVKftGnsUDr4q4
+gb8pPolS3avBcLQjJF9w9A6BIqNCjTbcTpJzONZ9u9gPM1sVPzMzT00BjTX3Xr1Z
+IslBrm5Q0oDF2a32JM6buwx3OEmOA2uUVvUHny916rjy9dE2AbYojQBgWTs/7A0c
+2LKARTgwgGVeHwR50nRu5edfWDbqPB074hSECEEc5JWLwSPezAYaxGvQBqWoPGha
+DCsN1tI1QS18EeU69A4JDwkRM/bARmlC
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                </entry>
+              </certificate>
+              <local-user-database>
+                <user>
+                  <entry name="ercaswell">
+                    <phash>$1$nkrxttmo$LpJhJgxjyiarbiMON4Pga.</phash>
+                  </entry>
+                  <entry name="kwelshons">
+                    <phash>$1$igkdlwnm$60T/IHpS.c47A0Ru59G/k.</phash>
+                  </entry>
+                </user>
+              </local-user-database>
+              <ssl-decrypt>
+                <forward-trust-certificate>
+                  <rsa>Eds lab CA</rsa>
+                </forward-trust-certificate>
+                <forward-untrust-certificate>
+                  <rsa>Eds lab CA</rsa>
+                </forward-untrust-certificate>
+              </ssl-decrypt>
+              <server-profile>
+                <saml-idp>
+                  <entry name="Okta-Portal">
+                    <entity-id>http://www.okta.com/exk17c62acm2n98dd357</entity-id>
+                    <sso-bindings>post</sso-bindings>
+                    <sso-url>https://dev-508078.okta.com/app/paloaltonetworksdev508078_edsprismaportal_1/exk17c62acm2n98dd357/sso/saml</sso-url>
+                    <slo-bindings>post</slo-bindings>
+                    <slo-url>https://dev-508078.okta.com/app/paloaltonetworksdev508078_edsprismaportal_1/exk17c62acm2n98dd357/slo/saml</slo-url>
+                    <want-auth-requests-signed>no</want-auth-requests-signed>
+                    <validate-idp-certificate>no</validate-idp-certificate>
+                    <certificate>crt.Okta-Portal.shared</certificate>
+                    <max-clock-skew>900</max-clock-skew>
+                  </entry>
+                  <entry name="Okta-Gateway">
+                    <entity-id>http://www.okta.com/exk17ccwmsOvimxhO357</entity-id>
+                    <sso-bindings>post</sso-bindings>
+                    <sso-url>https://dev-508078.okta.com/app/paloaltonetworksdev508078_edsprismagateways_1/exk17ccwmsOvimxhO357/sso/saml</sso-url>
+                    <slo-bindings>post</slo-bindings>
+                    <slo-url>https://dev-508078.okta.com/app/paloaltonetworksdev508078_edsprismagateways_1/exk17ccwmsOvimxhO357/slo/saml</slo-url>
+                    <want-auth-requests-signed>no</want-auth-requests-signed>
+                    <validate-idp-certificate>no</validate-idp-certificate>
+                    <certificate>crt.Okta-Gateway.shared</certificate>
+                  </entry>
+                </saml-idp>
+              </server-profile>
+              <authentication-profile>
+                <entry name="pre-logon">
+                  <multi-factor-auth>
+                    <mfa-enable>no</mfa-enable>
+                  </multi-factor-auth>
+                  <method>
+                    <local-database/>
+                  </method>
+                  <allow-list>
+                    <member>all</member>
+                  </allow-list>
+                  <username-modifier>%USERINPUT%</username-modifier>
+                </entry>
+                <entry name="saml-portal">
+                  <multi-factor-auth>
+                    <mfa-enable>no</mfa-enable>
+                  </multi-factor-auth>
+                  <method>
+                    <saml-idp>
+                      <server-profile>Okta-Portal</server-profile>
+                      <attribute-name-username>username</attribute-name-username>
+                    </saml-idp>
+                  </method>
+                  <allow-list>
+                    <member>all</member>
+                  </allow-list>
+                  <username-modifier>%USERINPUT%</username-modifier>
+                </entry>
+                <entry name="saml-gateway">
+                  <multi-factor-auth>
+                    <mfa-enable>no</mfa-enable>
+                  </multi-factor-auth>
+                  <method>
+                    <saml-idp>
+                      <server-profile>Okta-Gateway</server-profile>
+                      <attribute-name-username>username</attribute-name-username>
+                    </saml-idp>
+                  </method>
+                  <allow-list>
+                    <member>all</member>
+                  </allow-list>
+                  <username-modifier>%USERINPUT%</username-modifier>
+                </entry>
+              </authentication-profile>
+              <certificate-profile>
+                <entry name="pre-logon-profile">
+                  <CA>
+                    <entry name="Eds lab CA"/>
+                  </CA>
+                </entry>
+              </certificate-profile>
+            </shared>
+          </config>
+        </entry>
+        <entry name="Remote_Network_Template">
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+          <description> Template (Use the Cloud Services plugin to edit)</description>
+          <config>
+            <devices>
+              <entry name="localhost.localdomain">
+                <vsys>
+                  <entry name="vsys1">
+                    <zone>
+                      <entry name="remote-trust">
+                        <network>
+                          <tap/>
+                        </network>
+                      </entry>
+                      <entry name="remote-untrust">
+                        <network>
+                          <tap/>
+                        </network>
+                      </entry>
+                    </zone>
+                  </entry>
+                </vsys>
+                <network>
+                  <ike>
+                    <crypto-profiles>
+                      <ike-crypto-profiles>
+                        <entry name="CloudGenix-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Citrix-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha256</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Riverbed-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group2</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="SilverPeak-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group14</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="CiscoISR-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                            <member>group2</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>aes-192-cbc</member>
+                            <member>aes-128-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="CiscoASA-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                            <member>md5</member>
+                          </hash>
+                          <dh-group>
+                            <member>group5</member>
+                            <member>group2</member>
+                            <member>group1</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>3des</member>
+                            <member>des</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Generic-IKE-Crypto-Default">
+                          <hash>
+                            <member>sha512</member>
+                            <member>sha384</member>
+                            <member>sha256</member>
+                            <member>sha1</member>
+                            <member>md5</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                            <member>group19</member>
+                            <member>group14</member>
+                            <member>group5</member>
+                            <member>group2</member>
+                            <member>group1</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                            <member>aes-192-cbc</member>
+                            <member>aes-128-cbc</member>
+                            <member>3des</member>
+                            <member>des</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                        <entry name="Eds-Lab-IKE">
+                          <hash>
+                            <member>sha512</member>
+                          </hash>
+                          <dh-group>
+                            <member>group20</member>
+                          </dh-group>
+                          <encryption>
+                            <member>aes-256-cbc</member>
+                          </encryption>
+                          <lifetime>
+                            <hours>8</hours>
+                          </lifetime>
+                        </entry>
+                      </ike-crypto-profiles>
+                      <ipsec-crypto-profiles>
+                        <entry name="CloudGenix-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group20</dh-group>
+                        </entry>
+                        <entry name="Citrix-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha256</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Riverbed-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="SilverPeak-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group14</dh-group>
+                        </entry>
+                        <entry name="CiscoISR-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha1</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-128-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group5</dh-group>
+                        </entry>
+                        <entry name="CiscoASA-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                              <member>sha384</member>
+                              <member>sha256</member>
+                              <member>sha1</member>
+                              <member>md5</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-gcm</member>
+                              <member>aes-128-gcm</member>
+                              <member>aes-256-cbc</member>
+                              <member>aes-192-cbc</member>
+                              <member>3des</member>
+                              <member>des</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Generic-IPSec-Crypto-Default">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                              <member>sha384</member>
+                              <member>sha256</member>
+                              <member>sha1</member>
+                              <member>md5</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-gcm</member>
+                              <member>aes-128-gcm</member>
+                              <member>aes-256-cbc</member>
+                              <member>aes-192-cbc</member>
+                              <member>aes-128-cbc</member>
+                              <member>3des</member>
+                              <member>des</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group2</dh-group>
+                        </entry>
+                        <entry name="Eds-Lab-Crypto">
+                          <esp>
+                            <authentication>
+                              <member>sha512</member>
+                            </authentication>
+                            <encryption>
+                              <member>aes-256-cbc</member>
+                            </encryption>
+                          </esp>
+                          <lifetime>
+                            <hours>1</hours>
+                          </lifetime>
+                          <dh-group>group20</dh-group>
+                        </entry>
+                      </ipsec-crypto-profiles>
+                    </crypto-profiles>
+                    <gateway>
+                      <entry name="CloudGenix-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CloudGenix-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Citrix-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Citrix-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Riverbed-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Riverbed-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="SilverPeak-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>SilverPeak-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                          </ikev2>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="CiscoISR-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoISR-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoISR-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev2</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>no</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="CiscoASA-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoASA-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>CiscoASA-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev1</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Generic-IKE-Gateway-Default">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==vhFqkPiEJgbUtLco1BqESFMKU+M=vVDXkqplwjVl4eDbW0eGYQ==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Generic-IKE-Crypto-Default</ike-crypto-profile>
+                            <exchange-mode>aggressive</exchange-mode>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Generic-IKE-Crypto-Default</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev1</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                      </entry>
+                      <entry name="Eds-Lab">
+                        <authentication>
+                          <pre-shared-key>
+                            <key>-AQ==8GLfoI4BpTXvWrw0yLrfvJNDfjI=Uk4XVSrSENtKAH57v85Zlg==</key>
+                          </pre-shared-key>
+                        </authentication>
+                        <protocol>
+                          <ikev1>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Eds-Lab-IKE</ike-crypto-profile>
+                          </ikev1>
+                          <ikev2>
+                            <dpd>
+                              <enable>yes</enable>
+                            </dpd>
+                            <ike-crypto-profile>Eds-Lab-IKE</ike-crypto-profile>
+                          </ikev2>
+                          <version>ikev2-preferred</version>
+                        </protocol>
+                        <protocol-common>
+                          <nat-traversal>
+                            <enable>yes</enable>
+                          </nat-traversal>
+                          <fragmentation>
+                            <enable>no</enable>
+                          </fragmentation>
+                          <passive-mode>yes</passive-mode>
+                        </protocol-common>
+                        <local-address>
+                          <interface>vlan</interface>
+                        </local-address>
+                        <peer-address>
+                          <dynamic/>
+                        </peer-address>
+                        <local-id>
+                          <id>ecaswell@paloaltonetworks.com</id>
+                          <type>ufqdn</type>
+                        </local-id>
+                        <peer-id>
+                          <id>ercaswell@live.com</id>
+                          <type>ufqdn</type>
+                        </peer-id>
+                      </entry>
+                    </gateway>
+                  </ike>
+                  <tunnel>
+                    <ipsec>
+                      <entry name="CloudGenix-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CloudGenix-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CloudGenix-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Citrix-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Citrix-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Citrix-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Riverbed-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Riverbed-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Riverbed-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="SilverPeak-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="SilverPeak-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>SilverPeak-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="CiscoISR-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CiscoISR-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CiscoISR-IPSec-Crypto-Default</ipsec-crypto-profile>
+                          <proxy-id>
+                            <entry name="ProxyID">
+                              <protocol>
+                                <any/>
+                              </protocol>
+                            </entry>
+                          </proxy-id>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="CiscoASA-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="CiscoASA-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>CiscoASA-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Generic-IPSec-Tunnel-Default">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Generic-IKE-Gateway-Default"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Generic-IPSec-Crypto-Default</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>no</enable>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                      <entry name="Eds-Lab">
+                        <auto-key>
+                          <ike-gateway>
+                            <entry name="Eds-Lab"/>
+                          </ike-gateway>
+                          <ipsec-crypto-profile>Eds-Lab-Crypto</ipsec-crypto-profile>
+                        </auto-key>
+                        <tunnel-monitor>
+                          <enable>yes</enable>
+                          <destination-ip>10.1.1.10</destination-ip>
+                        </tunnel-monitor>
+                        <tunnel-interface>tunnel</tunnel-interface>
+                      </entry>
+                    </ipsec>
+                  </tunnel>
+                </network>
+                <deviceconfig>
+                  <setting>
+                    <ssl-decrypt>
+                      <notify-user>yes</notify-user>
+                    </ssl-decrypt>
+                  </setting>
+                </deviceconfig>
+              </entry>
+            </devices>
+            <shared>
+              <log-settings>
+                <system>
+                  <match-list>
+                    <entry name="system-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </system>
+                <userid>
+                  <match-list>
+                    <entry name="userid-gpcs-default">
+                      <filter>All Logs</filter>
+                      <send-to-panorama>yes</send-to-panorama>
+                    </entry>
+                  </match-list>
+                </userid>
+              </log-settings>
+              <certificate>
+                <entry name="ssl-decrypt">
+                  <subject-hash>ce798423</subject-hash>
+                  <issuer-hash>ce798423</issuer-hash>
+                  <not-valid-before>Aug 29 14:59:57 2019 GMT</not-valid-before>
+                  <issuer>/CN=eds.lab.gpcloudervice.com</issuer>
+                  <not-valid-after>Aug 28 14:59:57 2020 GMT</not-valid-after>
+                  <common-name>eds.lab.gpcloudervice.com</common-name>
+                  <expiry-epoch>1598626797</expiry-epoch>
+                  <ca>yes</ca>
+                  <subject>/CN=eds.lab.gpcloudervice.com</subject>
+                  <public-key>-----BEGIN CERTIFICATE-----
+MIIC6DCCAdCgAwIBAgIJALN91OzQsz6KMA0GCSqGSIb3DQEBCwUAMCQxIjAgBgNV
+BAMTGWVkcy5sYWIuZ3BjbG91ZGVydmljZS5jb20wHhcNMTkwODI5MTQ1OTU3WhcN
+MjAwODI4MTQ1OTU3WjAkMSIwIAYDVQQDExllZHMubGFiLmdwY2xvdWRlcnZpY2Uu
+Y29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtCAKT/QmAweE0Ouc
+BSy3pLURoOOmwCfmDG6bsYIZQ9ClOcOl2u7yi4F9pvvgtWiwRThN7O6zCmrxJodx
+lejz4dQTxoFaGFeG5wviXwdtKtClDL9Dsoev+Wf2sM+oscP0vejuVymf+LBfvKGH
+PzsES5IArdJRKglnBc0DjROrmaKMjFqnzXqyIufqgWx0WQfJ73kJlfA8iPyifiVD
+YTCLg/wDqDbw2YFhHkW812GfRniLuX2tz9l3nV9TvIausjvZc266Ih0s8dF0Ivrk
+0rKvxc1AssbJhvFqgfYaq53OJgn21Lw/aLaM2Okp3DbhWM8TcJlbKL6hTsY6d/0E
+OiPTBQIDAQABox0wGzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwICBDANBgkqhkiG
+9w0BAQsFAAOCAQEAP7i9Gz7rZPmsIXqbQfPkX1qLMr8VFw6Jj5Z6n1JaDzp7tMef
+Anx2e03/R8bAkob/EU2HAxwqmDBc4JKnqB6nQyFRofuCSm1nIgVu9fb6pP0e/mLy
+UnZvbkRZhdC9ZnTcEuZn/t/w1WjqeiSjX19whaVihWXOb6Cwop85RD8HRZlE7kMl
+PBFxnllNjnwY0rbWZjq54WNGIbAabtdnQJY1R/oPMXOcb/AKXcbPRAOz5JGiqfDg
+Ca/betj7GrTqJowrBabthAroy8AmkvBito2mlq/tGGInW073S5P42hny+TakN1W+
+Dm5jMPNo57FEqgfUZbkb6pp7uQ/136xniMdySA==
+-----END CERTIFICATE-----
+</public-key>
+                  <algorithm>RSA</algorithm>
+                  <private-key>-AQ==B7/YSXO+tG0cw+3a+qsdv/uHI80=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</private-key>
+                </entry>
+              </certificate>
+              <ssl-decrypt>
+                <forward-trust-certificate>
+                  <rsa>ssl-decrypt</rsa>
+                </forward-trust-certificate>
+                <forward-untrust-certificate>
+                  <rsa>ssl-decrypt</rsa>
+                </forward-untrust-certificate>
+              </ssl-decrypt>
+            </shared>
+          </config>
+        </entry>
+      </template>
+      <template-stack>
+        <entry name="Service_Conn_Template_Stack">
+          <templates>
+            <member>Service_Conn_Template</member>
+          </templates>
+          <description>Service Connection Template Stack (Use the Cloud Services plugin to edit)</description>
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+        </entry>
+        <entry name="Mobile_User_Template_Stack">
+          <templates>
+            <member>Mobile_User_Template</member>
+          </templates>
+          <description> Template Stack (Use the Cloud Services plugin to edit)</description>
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+        </entry>
+        <entry name="Remote_Network_Template_Stack">
+          <templates>
+            <member>Remote_Network_Template</member>
+          </templates>
+          <description> Template Stack (Use the Cloud Services plugin to edit)</description>
+          <settings>
+            <default-vsys>vsys1</default-vsys>
+          </settings>
+        </entry>
+      </template-stack>
+      <device-group>
+        <entry name="Service_Conn_Device_Group">
+          <description>Service Connection Device Group (Use the Cloud Services plugin to edit)</description>
+          <devices/>
+        </entry>
+        <entry name="Mobile_User_Device_Group">
+          <description> Device Group (Use the Cloud Services plugin to edit)</description>
+          <devices/>
+          <log-settings>
+            <profiles>
+              <entry name="Mobile User Logging">
+                <match-list>
+                  <entry name="Mobile-Auth">
+                    <log-type>auth</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Data">
+                    <log-type>data</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Threat">
+                    <log-type>threat</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Traffic">
+                    <log-type>traffic</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Tunnel">
+                    <log-type>tunnel</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Url">
+                    <log-type>url</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="Mobile-Wildfire">
+                    <log-type>wildfire</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                </match-list>
+              </entry>
+            </profiles>
+          </log-settings>
+          <pre-rulebase>
+            <security>
+              <rules>
+                <entry name="pre-logon" uuid="0dfb84c2-c4fe-404b-8a2b-3094d92e6c9d">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Trust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>10.14.2.6</member>
+                  </destination>
+                  <source-user>
+                    <member>pre-logon</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="high-risk" uuid="54d4b3f2-eca0-43c3-a02d-d646932d3e86">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>panw-highrisk-ip-list</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>deny</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="known-malicous" uuid="1f951073-978e-4743-b1e1-3f32289f4e63">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>panw-known-ip-list</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>deny</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="ssl-web-browsing" uuid="d08e5912-e6fc-4b24-903b-9d431864904e">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>web-browsing</member>
+                  </application>
+                  <service>
+                    <member>service-http</member>
+                    <member>service-https</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="ssl-decrypt" uuid="d9f54a30-227c-4fac-87dc-cef4c4600af5">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>ssh</member>
+                  </application>
+                  <service>
+                    <member>ssl</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <disabled>yes</disabled>
+                </entry>
+                <entry name="Mobile Trust to Trust" uuid="2100b653-dc66-4ee5-a6aa-d8e85a849c1a">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Trust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>ecaswell@paloaltonetworks.com</member>
+                    <member>ercaswell@live.com</member>
+                    <member>Student</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="Mobile Trust to Untrust" uuid="ab4048e2-e33e-4113-8099-7f6713445623">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>Access-URL-Filtering</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+                <entry name="clientless" uuid="84c403e3-fc49-436f-a0d9-d3fa54c59808">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>Mobile-User-Trust</member>
+                  </to>
+                  <from>
+                    <member>Mobile-User-Untrust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>service-http</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>Mobile User Logging</log-setting>
+                </entry>
+              </rules>
+            </security>
+            <decryption>
+              <rules>
+                <entry name="ssl-decrypt" uuid="8d539512-13fe-49fc-bdc9-82ec493c0ce5">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <type>
+                    <ssl-forward-proxy/>
+                  </type>
+                  <from>
+                    <member>Mobile-User-Trust</member>
+                  </from>
+                  <to>
+                    <member>Mobile-User-Untrust</member>
+                  </to>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <action>decrypt</action>
+                  <profile>default</profile>
+                  <disabled>no</disabled>
+                </entry>
+              </rules>
+            </decryption>
+          </pre-rulebase>
+          <profiles>
+            <decryption>
+              <entry name="eds-ssl-decrypt">
+                <ssl-protocol-settings>
+                  <min-version>tls1-0</min-version>
+                  <enc-algo-3des>yes</enc-algo-3des>
+                  <enc-algo-rc4>yes</enc-algo-rc4>
+                </ssl-protocol-settings>
+              </entry>
+            </decryption>
+            <custom-url-category/>
+            <url-filtering>
+              <entry name="Access-URL-Filtering">
+                <credential-enforcement>
+                  <mode>
+                    <ip-user/>
+                  </mode>
+                  <log-severity>medium</log-severity>
+                  <block>
+                    <member>abortion</member>
+                    <member>dating</member>
+                    <member>gambling</member>
+                    <member>phishing</member>
+                    <member>weapons</member>
+                  </block>
+                </credential-enforcement>
+                <block>
+                  <member>abortion</member>
+                  <member>dating</member>
+                  <member>gambling</member>
+                  <member>phishing</member>
+                  <member>weapons</member>
+                </block>
+              </entry>
+            </url-filtering>
+          </profiles>
+          <service>
+            <entry name="ssl">
+              <protocol>
+                <tcp>
+                  <port>443</port>
+                  <override>
+                    <no/>
+                  </override>
+                </tcp>
+              </protocol>
+            </entry>
+            <entry name="Test">
+              <protocol>
+                <tcp>
+                  <port>443</port>
+                  <override>
+                    <no/>
+                  </override>
+                </tcp>
+              </protocol>
+            </entry>
+          </service>
+          <external-list/>
+        </entry>
+        <entry name="Remote_Network_Device_Group">
+          <description> Device Group (Use the Cloud Services plugin to edit)</description>
+          <devices/>
+          <pre-rulebase>
+            <security>
+              <rules>
+                <entry name="high-risk" uuid="f8be32c3-a841-4164-bd9b-3ecc6f8a23e0">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>remote-untrust</member>
+                  </to>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>panw-highrisk-ip-list</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>deny</action>
+                  <log-setting>remote-logging</log-setting>
+                </entry>
+                <entry name="known-malicious" uuid="f42c368e-1a26-46b9-ae31-58e007393907">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>remote-untrust</member>
+                  </to>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>panw-known-ip-list</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>deny</action>
+                  <log-setting>remote-logging</log-setting>
+                </entry>
+                <entry name="SSL-Decrypt" uuid="a2959da6-fbd7-44df-bdfa-45a618f5c252">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>remote-untrust</member>
+                  </to>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>web-browsing</member>
+                  </application>
+                  <service>
+                    <member>service-http</member>
+                    <member>service-https</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>remote-logging</log-setting>
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                </entry>
+                <entry name="remote-trust-to-trust" uuid="58925216-373a-4712-8fb3-8efec2952886">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <virus>
+                        <member>default</member>
+                      </virus>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>remote-trust</member>
+                  </to>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>remote-logging</log-setting>
+                </entry>
+                <entry name="remote-trust-to-untrust" uuid="1cd9a972-c96a-4947-bf48-7aecc8080cf5">
+                  <profile-setting>
+                    <profiles>
+                      <url-filtering>
+                        <member>default</member>
+                      </url-filtering>
+                      <file-blocking>
+                        <member>basic file blocking</member>
+                      </file-blocking>
+                      <spyware>
+                        <member>default</member>
+                      </spyware>
+                      <vulnerability>
+                        <member>default</member>
+                      </vulnerability>
+                      <wildfire-analysis>
+                        <member>default</member>
+                      </wildfire-analysis>
+                    </profiles>
+                  </profile-setting>
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <to>
+                    <member>remote-untrust</member>
+                  </to>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <hip-profiles>
+                    <member>any</member>
+                  </hip-profiles>
+                  <action>allow</action>
+                  <log-setting>remote-logging</log-setting>
+                </entry>
+              </rules>
+            </security>
+            <decryption>
+              <rules>
+                <entry name="remote-ssl-decrypt" uuid="88191099-f352-4a23-a4ef-a29bdeca46ac">
+                  <target>
+                    <negate>no</negate>
+                  </target>
+                  <category>
+                    <member>any</member>
+                  </category>
+                  <service>
+                    <member>service-https</member>
+                    <member>ssl-443</member>
+                  </service>
+                  <type>
+                    <ssl-forward-proxy/>
+                  </type>
+                  <from>
+                    <member>remote-trust</member>
+                  </from>
+                  <to>
+                    <member>remote-untrust</member>
+                  </to>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <source-user>
+                    <member>any</member>
+                  </source-user>
+                  <action>decrypt</action>
+                  <profile>default</profile>
+                </entry>
+              </rules>
+            </decryption>
+          </pre-rulebase>
+          <log-settings>
+            <profiles>
+              <entry name="remote-logging">
+                <match-list>
+                  <entry name="remote-auth">
+                    <log-type>auth</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="remote-data">
+                    <log-type>data</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="remote-threat">
+                    <log-type>threat</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="remote-traffic">
+                    <log-type>traffic</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="remote-url">
+                    <log-type>url</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                  <entry name="remote-wildfire">
+                    <log-type>wildfire</log-type>
+                    <filter>All Logs</filter>
+                    <send-to-panorama>yes</send-to-panorama>
+                  </entry>
+                </match-list>
+              </entry>
+            </profiles>
+          </log-settings>
+          <service>
+            <entry name="ssl-443">
+              <protocol>
+                <tcp>
+                  <port>443</port>
+                  <override>
+                    <no/>
+                  </override>
+                </tcp>
+              </protocol>
+            </entry>
+          </service>
+        </entry>
+      </device-group>
+    </entry>
+  </devices>
+  <readonly>
+    <max-internal-id>31</max-internal-id>
+    <devices>
+      <entry name="localhost.localdomain">
+        <template>
+          <entry name="Service_Conn_Template">
+            <id>11</id>
+          </entry>
+          <entry name="Mobile_User_Template">
+            <id>14</id>
+            <config>
+              <devices>
+                <entry name="localhost.localdomain">
+                  <vsys>
+                    <entry name="vsys1">
+                      <zone>
+                        <entry name="Mobile-User-Trust">
+                          <id>17</id>
+                        </entry>
+                        <entry name="Mobile-User-Untrust">
+                          <id>18</id>
+                        </entry>
+                      </zone>
+                    </entry>
+                  </vsys>
+                </entry>
+              </devices>
+            </config>
+          </entry>
+          <entry name="Remote_Network_Template">
+            <id>22</id>
+            <config>
+              <devices>
+                <entry name="localhost.localdomain">
+                  <vsys>
+                    <entry name="vsys1">
+                      <zone>
+                        <entry name="remote-trust">
+                          <id>25</id>
+                        </entry>
+                        <entry name="remote-untrust">
+                          <id>26</id>
+                        </entry>
+                      </zone>
+                    </entry>
+                  </vsys>
+                </entry>
+              </devices>
+            </config>
+          </entry>
+        </template>
+        <template-stack>
+          <entry name="Service_Conn_Template_Stack">
+            <id>12</id>
+          </entry>
+          <entry name="Mobile_User_Template_Stack">
+            <id>15</id>
+          </entry>
+          <entry name="Remote_Network_Template_Stack">
+            <id>23</id>
+          </entry>
+        </template-stack>
+        <device-group>
+          <entry name="Service_Conn_Device_Group">
+            <id>13</id>
+          </entry>
+          <entry name="Mobile_User_Device_Group">
+            <id>16</id>
+          </entry>
+          <entry name="Remote_Network_Device_Group">
+            <id>24</id>
+          </entry>
+        </device-group>
+        <plugins>
+          <cloud_services>
+            <mobile-users>
+              <onboarding>
+                <entry name="eds.lab.gpcloudservice.com">
+                  <id>19</id>
+                </entry>
+              </onboarding>
+            </mobile-users>
+            <service-connection>
+              <onboarding>
+                <entry name="Azure-Service-1">
+                  <id>29</id>
+                </entry>
+                <entry name="Azure-Service-2">
+                  <id>30</id>
+                </entry>
+              </onboarding>
+              <internal-dns-list>
+                <entry name="otisfieldlab-com">
+                  <id>28</id>
+                </entry>
+              </internal-dns-list>
+            </service-connection>
+            <remote-networks>
+              <onboarding>
+                <entry name="Remote-Lab">
+                  <id>31</id>
+                </entry>
+              </onboarding>
+            </remote-networks>
+          </cloud_services>
+        </plugins>
+      </entry>
+    </devices>
+  </readonly>
+</config>
+
