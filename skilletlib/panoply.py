@@ -78,7 +78,6 @@ class Panoply:
             logger.setLevel(logging.DEBUG)
 
         if hostname is None and api_username is None and api_password is None:
-            logger.info('No Credentials found for Panoply, using offline mode')
             self.offline_mode = True
             return
 

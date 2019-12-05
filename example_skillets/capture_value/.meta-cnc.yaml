@@ -1,0 +1,41 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-capture
+label: Example of how to use capture_value
+
+description: |
+  This example Skillet shows how to parse and validate a config using output capturing. This example get the value
+  for the given xpath using 'capture_value'. This value is captured into a variable called 'hostname'. We can then
+  use this variable in a test to validate the configuration is correct.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    variable: config
+    outputs:
+      - name: hostname
+        capture_value: /config/devices/entry/deviceconfig/system/hostname
+
+  - name: ensure_hostname_was_found
+    label: Ensures the hostname was found using capture_value
+    test: hostname == 'skillet_test_hostname'
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+

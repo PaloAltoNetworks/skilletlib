@@ -147,7 +147,7 @@ class Skillet(ABC):
 
         return self.get_results(returned_outputs)
 
-    def get_results(self, context: dict) -> None:
+    def get_results(self, context: dict) -> dict:
         results = dict()
         for s in self.snippet_stack:
             snippet_name = s.get('name', '')
