@@ -61,10 +61,10 @@ class PanValidationSkillet(PanosSkillet):
             if snippet_name in context and cmd == 'validate':
                 if 'results' in context[snippet_name]:
                     result = context[snippet_name]['results']
-                    if not results:
+                    if not result:
                         fail_message = s.metadata.get('fail_message', 'Snippet Validation results were {{ result }}')
                         context[snippet_name]['output_message'] = s.render(fail_message, context)
-                    elif results:
+                    elif result:
                         pass_message = s.metadata.get('pass_message', 'Snippet Validation results were {{ result }}')
                         context[snippet_name]['output_message'] = s.render(pass_message, context)
                     else:
