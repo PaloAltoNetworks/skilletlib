@@ -96,7 +96,7 @@ class PanosSnippet(TemplateSnippet):
             # for zube ticket #21
             self._env.filters['tag_present'] = self.__node_present
             self._env.filters['tag_absent'] = self.__node_absent
-            self._env.filters['text_value'] = self.__node_value
+            self._env.filters['element_value'] = self.__node_value
             self._env.filters['element_value_contains'] = self.__node_value_contains
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
