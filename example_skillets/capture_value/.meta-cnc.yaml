@@ -32,10 +32,14 @@ snippets:
     variable: config
     outputs:
       - name: hostname
+        # Directly capture the value found at this xpath. When you only need a specific value from the config,
+        # capture_value can be useful. Otherwise, a capture_object with multiple tests using 'element_value'
+        # may be useful.
         capture_value: /config/devices/entry/deviceconfig/system/hostname
 
   - name: ensure_hostname_was_found
     label: Ensures the hostname was found using capture_value
+    # simple boolean test using jinja expression logic
     test: hostname == 'skillet_test_hostname'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 

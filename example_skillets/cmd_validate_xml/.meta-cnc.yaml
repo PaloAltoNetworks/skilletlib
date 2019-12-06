@@ -1,0 +1,70 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-validate-xml
+label: Example of how to validate-xml cmd
+
+description: |
+  This example Skillet shows how to parse and validate a config using the 'validate_xml' command. This will compare
+  the contents of the given 'file' or 'element' attribute against the 'xpath' attribute. Only exact matches will pass
+  this validation. If you want to compare only a subset of the XML document, you may use the optional 'cherry_pick'
+  attribute as well.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+
+snippets:
+  - name: validate_full_update_schedule
+    # validate_xml is useful to comparing raw XML to raw XML. This is potentially the easiest way to build a
+    # full validation skillet
+    cmd: validate_xml
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+    # note the snippet can specify an 'element' inline or a relative path to the 'file'. The contents of the file
+    # found at the relative path defined by 'file' will be rendered and placed in the 'element' attribute.
+    # Element allows snippets to be fully self-contained in a single document, however files may be easier to
+    # manage and administer on an onging basis
+    element: |
+      <update-schedule>
+             <threats>
+                 <recurring>
+                     <every-30-mins>
+                         <action>download-and-install</action>
+                     </every-30-mins>
+                 </recurring>
+             </threats>
+             <anti-virus>
+                 <recurring>
+                     <hourly>
+                         <at>1</at>
+                         <action>download-and-install</action>
+                     </hourly>
+                 </recurring>
+             </anti-virus>
+             <wildfire>
+                 <recurring>
+                     <every-min>
+                         <action>download-and-install</action>
+                     </every-min>
+                 </recurring>
+             </wildfire>
+             <statistics-service>
+                 <passive-dns-monitoring>yes</passive-dns-monitoring>
+                 <application-reports>yes</application-reports>
+                 <threat-prevention-reports>yes</threat-prevention-reports>
+                 <threat-prevention-pcap>yes</threat-prevention-pcap>
+                 <threat-prevention-information>yes</threat-prevention-information>
+                 <url-reports>yes</url-reports>
+                 <health-performance-reports>yes</health-performance-reports>
+                 <file-identification-reports>yes</file-identification-reports>
+             </statistics-service>
+         </update-schedule>

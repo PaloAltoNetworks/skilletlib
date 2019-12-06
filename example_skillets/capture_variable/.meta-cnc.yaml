@@ -1,0 +1,53 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-capture-variable
+label: Example of how to use capture_variable
+
+description: |
+  This example Skillet shows how to parse and validate a config using output capturing. This example takes input
+  from the user and uses 'capture_variable' to create a new variable based on the output of the expression. This is
+  useful is you want to use some part of a captured object in a fail_message or in a singular test. This also helps
+  by only grabbing one larger part of the configuration, and pulling out smaller parts for evaluation.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: interface_name
+    description: Interface to Check
+    default: ethernet1/1
+    type_hint: text
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    # every skillet tool will implicitly make the 'config' variable available. This is the contents of the currently
+    # running config, or a saved XML config when offline
+    variable: config
+    outputs:
+      # captures can use jinja variables to focus on what to capture. 'interface_name' was captured from the user
+      # in the 'variables' section above.
+      - name: interface_object
+        capture_object: /config/devices/entry/network/interface/ethernet/entry[@name='{{ interface_name }}']
+      # the variables set in each 'step' of the outputs can be used in the subsequent steps. Here, we are using the
+      # discovered interface_object captured above to capture a specific portion.
+      - name: interface_dhcp
+        capture_variable: "{{ interface_object | element_value('entry.layer3.dhcp-client.enable') | default('no') }}"
+
+  - name: ensure_interface_is_dhcp
+    label: Ensures the interface is configured with DHCP
+    # a fail_message or a pass_message may be specified on each validation test step. This can be very useful for
+    # troubleshooting and debugging when test results are not what is expected
+    fail_message: '{{ interface_dhcp }}'
+    test: interface_dhcp == 'yes'
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+

@@ -28,19 +28,29 @@ variables:
 
 snippets:
   - name: parse config variable and capture outputs
+    # cmd parse will pass the value of the named `variable` directly to the output for output parsing.
+    # for skillet type: pan_validation the default output_type is xml. So capture_object will try to treat the
+    # variable as an XML document and convert the element found at the 'xpath' into an object
     cmd: parse
     variable: config
     outputs:
+      # create a variable named 'system_object' which will be an object from the element found at this xpath
       - name: system_object
         capture_object: /config/devices/entry/deviceconfig/system
 
   - name: ensure_hostname_is_set
     label: Ensures the deviceconfig system element was converted into an object and the hostname matches
+    # pan_validation skillets will run a 'test' for each snippet definition. This test is a boolean pass / fail
+    # this test uses the 'system_object' defined earlier. We specifically want to test the value of the 'hostname'
+    # tag and ensure it is set to the correct value.
     test: system_object | node_value('hostname') == 'skillet_test_hostname'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 
   - name: ensure_timezoone_is_set
     label: Ensures the deviceconfig system element was converted into an object and the timezone matches
+    # this test is much like the previous. However, we are testing a different node value, 'timezone' this time. Note
+    # these use the same 'system_object' to test against. This allows you to only capture a portion of the config
+    # and perform multiple tests against different parts of it.
     test: system_object | node_value('timezone') == 'US/Eastern'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 

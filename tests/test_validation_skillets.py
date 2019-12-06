@@ -42,6 +42,11 @@ def test_output_capture_filter():
     load_and_execute_skillet(skillet_path)
 
 
+def test_capture_variable():
+    skillet_path = '../example_skillets/capture_variable/'
+    load_and_execute_skillet(skillet_path)
+
+
 def test_tag_present():
     skillet_path = '../example_skillets/tag_present/'
     load_and_execute_skillet(skillet_path)
@@ -57,6 +62,16 @@ def test_when_conditional():
     load_and_execute_skillet(skillet_path)
 
 
+def test_cmd_validate():
+    skillet_path = '../example_skillets/cmd_validate_xml'
+    load_and_execute_skillet(skillet_path)
+
+
+def test_cmd_validate_cherry_pick():
+    skillet_path = '../example_skillets/cmd_validate_xml_cherry_pick'
+    load_and_execute_skillet(skillet_path)
+
+
 if __name__ == '__main__':
     test_capture_value()
     test_capture_object()
@@ -64,4 +79,7 @@ if __name__ == '__main__':
     test_tag_present()
     test_tag_absent()
     test_when_conditional()
+    test_capture_variable()
+    test_cmd_validate()
+    test_cmd_validate_cherry_pick()
 

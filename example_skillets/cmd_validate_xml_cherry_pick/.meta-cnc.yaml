@@ -1,0 +1,55 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-validate-xml-with-cherry-pick
+label: Example of how to use validate-xml cmd
+
+description: |
+  This example Skillet shows how to parse and validate a config using the 'validate_xml' command. This will compare
+  the contents of the given 'file' or 'element' attribute against the 'xpath' attribute. Only exact matches will pass
+  this validation. However, it is often desirable to compare only a smaller portion of an XML file, rather then
+  the full document. One example is when a user has a feature turned off. In that case, you may want to compare other
+  parts of the larger XML document while ignore the non-existent portion. This check is identical to the one in the
+  'example_skillets/cmd_validate_xml' skillet, however, we are only comparing a subset of the XML element.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+
+snippets:
+  - name: validate_statistics_service
+    cmd: validate_xml
+    # note the xpath that will be queried from the config will be a result of xpath + cherry_pick path
+    # in this case, we want to compare the statistics-service
+    xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+    cherry_pick: update-schedule/statistics-service
+    element: |
+      <update-schedule>
+             <threats>
+                 <recurring>
+                     <every-30-mins>
+                         <action>THIS WILL NOT MATCH IF WE CHECK THIS</action>
+                     </every-30-mins>
+                 </recurring>
+             </threats>
+             <statistics-service>
+                 <passive-dns-monitoring>yes</passive-dns-monitoring>
+                 <application-reports>yes</application-reports>
+                 <threat-prevention-reports>yes</threat-prevention-reports>
+                 <threat-prevention-pcap>yes</threat-prevention-pcap>
+                 <threat-prevention-information>yes</threat-prevention-information>
+                 <url-reports>yes</url-reports>
+                 <health-performance-reports>yes</health-performance-reports>
+                 <file-identification-reports>yes</file-identification-reports>
+             </statistics-service>
+         </update-schedule>
+

@@ -183,17 +183,15 @@ class PanosSnippet(TemplateSnippet):
         try:
             if 'cherry_pick' in self.metadata:
                 meta['element'] = self.cherry_pick_element(self.metadata['element'],
-                                                           self.metadata['cherry_pick'],
-                                                           context)
+                                                           self.metadata['cherry_pick'])
                 meta['xpath'] = self.cherry_pick_xpath(self.metadata['xpath'],
-                                                       self.metadata['cherry_pick'],
-                                                       context)
+                                                       self.metadata['cherry_pick'])
             else:
                 if 'xpath' in self.metadata:
-                    meta['xpath'] = self.render(self.metadata['xpath'])
+                    meta['xpath'] = self.render(self.metadata['xpath'], context)
 
                 if 'element' in self.metadata:
-                    meta['element'] = self.render(self.metadata['element'])
+                    meta['element'] = self.render(self.metadata['element'], context)
 
         except TypeError as te:
             logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
@@ -282,8 +280,22 @@ class PanosSnippet(TemplateSnippet):
         elif cherry_picked_xpath.startswith('/'):
             cherry_picked_xpath = cherry_picked_xpath[1:]
 
+        # in some cases we can get the cherry_picked xpath and the base_xpath with an overlap of the ending
+        # element for example:
+        #     xpath: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+        #     cherry_pick: update-schedule/statistics-service
+        cherry_picked_xpath_parts = cherry_picked_xpath.split('/')
+        base_xpath_parts = base_xpath.split('/')
+
+        cherry_picked_xpath_first = cherry_picked_xpath_parts[0]
+        base_xpath_last = base_xpath_parts[-1]
+
+        # check if we have an overlap between first and last bits
+        if cherry_picked_xpath_first == base_xpath_last:
+            full_path_parts = base_xpath_parts + cherry_picked_xpath_parts[1:]
+            xpath = "/".join(full_path_parts)
         # allow the user to specify the full xpath directly instead of manually breaking it up
-        if base_xpath.endswith(f'/{cherry_picked_xpath}'):
+        elif base_xpath.endswith(f'/{cherry_picked_xpath}'):
             xpath = base_xpath
         else:
             xpath = f'{base_xpath}/{cherry_picked_xpath}'

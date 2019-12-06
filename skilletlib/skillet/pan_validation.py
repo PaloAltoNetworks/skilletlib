@@ -58,7 +58,8 @@ class PanValidationSkillet(PanosSkillet):
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
-            if snippet_name in context and cmd == 'validate':
+            # handle both validate and validate_xml here
+            if snippet_name in context and 'validate' in cmd:
                 if 'results' in context[snippet_name]:
                     result = context[snippet_name]['results']
                     if not result:
