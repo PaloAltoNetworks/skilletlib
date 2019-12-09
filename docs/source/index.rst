@@ -10,8 +10,10 @@ Welcome to skilletlib's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   examples
+   xml_naming
+   creating_objects
    jinja_filters
+   examples
 
 
 About

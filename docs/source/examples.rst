@@ -17,7 +17,7 @@ This example captures a variable called `update_schedule_object` by converting t
 given `xpath` from the `config` variable. The output of this snippet is a new variable is placed into the context
 and is available for use in subsequent steps.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: create_update_schedule_object
     cmd: parse
@@ -29,7 +29,7 @@ and is available for use in subsequent steps.
 
 The `updated_schedule_object` variable will contain all the configuration elements found at that xpath:
 
-.. code-block::
+.. code-block:: xml
 
      <update-schedule>
       <statistics-service>
@@ -88,7 +88,7 @@ The `updated_schedule_object` variable will contain all the configuration elemen
 The previous XML fragment will be converted into an object with name `update_schedule_object` with the following
 value:
 
-.. code-block::
+.. code-block:: json
 
     {
       "update-schedule": {
@@ -152,7 +152,7 @@ Validation
 The `validation` cmd type can be used to validate configuration objects with simple logical operators and Jinja filters.
 This example will validate that a configuration node is present on the `update_schedule_object` variable.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: update_schedule_stats_service_configured
     when: update_schedule_object is not none
@@ -178,7 +178,7 @@ many validations to perform in the same area of the configuration, you can use `
 of a larger XML `file` or `element`.
 
 
-.. code-block::
+.. code-block:: yaml
 
   # this example will validate that the application-reports xml fragment matches that that is found in the
   # device_system.xml file
