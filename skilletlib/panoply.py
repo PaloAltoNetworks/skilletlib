@@ -565,6 +565,107 @@ class Panoply:
         return self.generate_skillet_from_configs(previous_config, latest_config)
 
     def generate_skillet_from_configs(self, previous_config: str, latest_config: str) -> list:
+        # convert the config string to an xml doc
+        latest_doc = ElementTree.fromstring(latest_config)
+
+        # let's grab the previous as well
+        previous_doc = ElementTree.fromstring(previous_config)
+
+        current_xpath = '.'
+        not_found_xpaths = list()
+        for c in latest_doc:
+            o_xpath = current_xpath + '/' + c.tag
+            these_not_found_xpaths = self.__check_element(c, o_xpath, previous_doc, [])
+            not_found_xpaths.extend(these_not_found_xpaths)
+
+        snippets = list()
+        for xpath in not_found_xpaths:
+            # keep a string of changes
+            xml_string = ''
+
+            changed_element = latest_doc.find(xpath)
+            # we can't just dump out the changed element because it'll contain the 'tag' as the outermost tag
+            # so, find all the children of this 'tag' and append them to the xml_string
+            for child_element in changed_element.findall('./'):
+                xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
+
+            if xml_string == '':
+                if changed_element.text:
+                    xml_string = changed_element.text
+
+            snippet = dict()
+            random_name = str(int(random.random() * 1000000))
+            full_tag = xpath.split('/')[-1]
+            tag = re.sub(r'\[.*\]', '', full_tag)
+            snippet['name'] = f'{tag}-{random_name}'
+            snippet['xpath'] = xpath
+            snippet['element'] = xml_string.strip()
+            snippets.append(snippet)
+
+        return self.__order_snippets(snippets)
+
+    def __check_element(self, el: Element, xpath: str, pc: Element, not_founds: list) -> list:
+
+        found_element = pc.find(xpath)
+        if found_element is not None:
+            children = el.findall('./')
+            if len(children) == 0:
+                # print(f'Skipping leaf node {xpath} {el.tag}')
+                if found_element.text != el.text:
+                    not_founds.append(xpath)
+                return not_founds
+
+            if self.__check_children_are_list(children):
+                # only use
+                diffs = xmldiff_main.diff_texts(ElementTree.tostring(found_element), ElementTree.tostring(el))
+                if len(diffs) == 0:
+                    return not_founds
+
+            for e in el:
+                if e.attrib:
+                    attribs = list()
+                    for k, v in e.attrib.items():
+                        if k != 'uuid':
+                            attribs.append(f'@{k}="{v}"')
+
+                    attrib_str = " ".join(attribs)
+                    path_entry = f'{e.tag}[{attrib_str}]'
+                else:
+                    path_entry = e.tag
+
+                n_xpath = xpath + '/' + path_entry
+                new_not_founds = self.__check_element(e, n_xpath, pc, list())
+                not_founds.extend(new_not_founds)
+            return not_founds
+
+        not_founds.append(xpath)
+        return not_founds
+
+    @staticmethod
+    def __order_snippets(snippets: list):
+        # Attempt to order the snippets in a cohesive ordering. Will never be 100% perfect,
+        # but at least make the attempt
+        # FIXME - add some sort of logic here
+        return snippets
+
+    @staticmethod
+    def __check_children_are_list(c: list) -> bool:
+        # check if children are a list of items by identical tag names
+        if len(c) <= 1:
+            # can't be a list of identical items if there are only 0 or 1 items
+            return False
+
+        found_tag_name = ''
+        for child in c:
+            if found_tag_name == '':
+                found_tag_name = child.tag
+                continue
+            if found_tag_name != child.tag:
+                return False
+
+        return True
+
+    def generate_skillet_from_configs_old(self, previous_config: str, latest_config: str) -> list:
         # use the excellent xmldiff library to get a list of changed elements
         diffs = xmldiff_main.diff_texts(previous_config, latest_config,
                                         {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
