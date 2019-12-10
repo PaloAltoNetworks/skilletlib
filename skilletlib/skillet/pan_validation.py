@@ -53,8 +53,11 @@ class PanValidationSkillet(PanosSkillet):
         self.snippet_list = snippet_list
         return snippet_list
 
-    def get_results(self, context: dict) -> dict:
+    def get_results(self, returned_output: dict) -> dict:
         results = dict()
+        context = self.context
+        # allow items from the snippet / skillet context to be used here as well
+        context.update(returned_output)
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
@@ -62,6 +65,9 @@ class PanValidationSkillet(PanosSkillet):
             if snippet_name in context and 'validate' in cmd:
                 if 'results' in context[snippet_name]:
                     result = context[snippet_name]['results']
+                    label_template = context[snippet_name].get('label', '')
+                    # attempt to render the label using supplied context
+                    context[snippet_name]['label'] = s.render(label_template, context)
                     if not result:
                         fail_message = s.metadata.get('fail_message', 'Snippet Validation results were {{ result }}')
                         context[snippet_name]['output_message'] = s.render(fail_message, context)

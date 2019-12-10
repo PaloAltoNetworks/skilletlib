@@ -562,10 +562,14 @@ class Panoply:
             self.xapi.op(cmd='show config running', cmd_xml=True)
             latest_config = self.xapi.xml_result()
 
+        return self.generate_skillet_from_configs(previous_config, latest_config)
+
+    def generate_skillet_from_configs(self, previous_config: str, latest_config: str) -> list:
         # use the excellent xmldiff library to get a list of changed elements
-        # diffs = xmldiff_main.diff_texts(previous_config, latest_config, {'F': 0.1})
+        diffs = xmldiff_main.diff_texts(previous_config, latest_config,
+                                        {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
         # THIS IS BROKEN
-        diffs = xmldiff_main.diff_texts(previous_config, latest_config)
+        # diffs = xmldiff_main.diff_texts(previous_config, latest_config)
         # returned diffs have the following basic structure
         # InsertNode(target='/config/shared[1]', tag='log-settings', position=2)
         # InsertNode(target='/config/shared/log-settings[1]', tag='http', position=0)
@@ -582,12 +586,17 @@ class Panoply:
         # convert the config string to an xml doc
         latest_doc = ElementTree.fromstring(latest_config)
 
+        # let's grab the previous as well
+        previous_doc = ElementTree.fromstring(previous_config)
         for d in diffs:
             logger.debug(d)
             # step 1 - find all inserted nodes (future enhancement can consider other types of detected changes as well
             if 'InsertNode' in str(d):
                 if d.target not in xpaths:
-                    xpaths[d.target] = d.target
+                    d_xpath = self.__normalize_xpath(latest_doc, d.target)
+                    xpaths[d.target] = d_xpath
+                else:
+                    d_xpath = xpaths[d.target]
 
                 # we have an inserted node, step2 determine if it's a top level element or a child of another element
                 # xmldiff will return even inserted nodes in elements that have already been inserted
@@ -600,11 +609,20 @@ class Panoply:
                 for e in diffs:
                     # again only consider inserted nodes for now
                     if 'InsertNode' in str(e):
+                        if e.target not in xpaths:
+                            e_xpath = self.__normalize_xpath(latest_doc, e.target)
+                            xpaths[e.target] = e_xpath
+                        else:
+                            e_xpath = xpaths[e.target]
+
                         e_target = re.sub(r'\[\d+\]$', '', e.target)
                         e_full = f'{e_target}/{e.tag}'
                         # begin checking for child / parent or equality relationship
                         if e.target == d.target and d.tag == e.tag and d.position == e.position:
                             # this is the same diff
+                            pass
+                        elif e.target == d.target and d.tag == e.tag and d.position != e.position:
+                            # new tag under an existing one possible
                             pass
                         elif e.target == d.target and d.tag == e.tag:
                             # same target and same tag indicate another entry under the same top-level tag
@@ -651,13 +669,22 @@ class Panoply:
             # now iterate only the top-level diffs (insertednodes only at this time)
             for f in fx:
                 # target contains the full xpath, since we have the 'config' element already in 'latest_config'
-                # we need to adjust the xpath to be relative. Also attach the 'tag' to the end of the xpath
+                # we need to adjust the xpath to be relative. Also attach the 'tag' to the end of the xpath and
+                # account for position if supplied
                 # f_target_str = xpaths[f.target]
-                f_target_str = f.target
 
-                f_target_str_relative = self.__normalize_xpath(latest_doc, f_target_str)
-                f_target_str_normalized = re.sub(r'^\./', '/config/', f_target_str_relative)
-                changed_short_xpath = f'{f_target_str_relative}/{f.tag}'
+                f_tag = f.tag
+                if hasattr(f, 'position'):
+                    f_tag = f'{f.tag}[{f.position}]'
+
+                if f.target in xpaths:
+                    f_target_str = xpaths[f.target]
+                else:
+                    f_target_str = self.__normalize_xpath(latest_doc, f.target)
+                    xpaths[f.target] = f_target_str
+
+                f_target_str_relative = re.sub(r'^\./', '/config/', f_target_str)
+                changed_short_xpath = f'{f_target_str}/{f_tag}'
                 # get this element from the latest config xml document
                 changed_element_dirty = latest_doc.find(changed_short_xpath)
                 changed_element = self.__clean_uuid(changed_element_dirty)
@@ -674,22 +701,23 @@ class Panoply:
                     # else:
                     # this is a text only node, we should catch this later with a updateTextIn diff
                     logger.debug('****************')
-                    logger.debug(f'skipping {f_target_str_normalized}/{f.tag} as this looks like a text only node')
+                    logger.debug(f'skipping {f_target_str_relative}/{f_tag} as this looks like a text only node')
                     logger.debug('****************')
                     continue
 
                 snippet = dict()
                 random_name = str(int(random.random() * 1000000))
                 snippet['name'] = f'{f.tag}-{random_name}'
-                snippet['xpath'] = f'{f_target_str_normalized}/{f.tag}'
+                snippet['xpath'] = f'{f_target_str_relative}/{f_tag}'
                 snippet['element'] = xml_string.strip()
+                snippet['from_insert'] = True
                 # now print out to the end user
                 snippets.append(snippet)
 
         text_update_snippets_to_include = list()
         if updated_text_snippets:
-            found = False
             for ut_snippet in updated_text_snippets:
+                found = False
                 for snippet in snippets:
                     if snippet['xpath'] in ut_snippet['xpath']:
                         # logger.debug('This text snippet is a child of one already included')
@@ -725,6 +753,8 @@ class Panoply:
         :param changed_element: ElementTree.Element in which to search
         :return: ElementTree.Element with all uuid attributes removed
         """
+        if changed_element is None:
+            return changed_element
 
         child_nodes = changed_element.findall('.//*[@uuid]')
         if child_nodes is None:
