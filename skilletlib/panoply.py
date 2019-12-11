@@ -586,7 +586,7 @@ class Panoply:
             xml_string = ''
 
             changed_element = latest_doc.find(xpath)
-            xml_string = ElementTree.tostring(changed_element)
+            xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
             # we can't just dump out the changed element because it'll contain the 'tag' as the outermost tag
             # so, find all the children of this 'tag' and append them to the xml_string
             # for child_element in changed_element.findall('./'):
