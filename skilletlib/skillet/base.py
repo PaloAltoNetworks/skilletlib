@@ -42,7 +42,8 @@ class Skillet(ABC):
         self.type = self.skillet_dict['type']
         self.supported_versions = 'not implemented'
         self.variables = self.skillet_dict['variables']
-        self.path = self.skillet_dict['snippet_path']
+        # path is needed only when snippets are held in a relative file path
+        self.path = self.skillet_dict.get('snippet_path', '')
         self.labels = self.skillet_dict['labels']
         self.collections = self.skillet_dict['labels']['collection']
         self.context = dict()

@@ -35,6 +35,8 @@ from .exceptions import LoginException
 from .exceptions import SkilletLoaderException
 from .skilletLoader import SkilletLoader
 
+from typing import Tuple
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
@@ -584,21 +586,24 @@ class Panoply:
             xml_string = ''
 
             changed_element = latest_doc.find(xpath)
+            xml_string = ElementTree.tostring(changed_element)
             # we can't just dump out the changed element because it'll contain the 'tag' as the outermost tag
             # so, find all the children of this 'tag' and append them to the xml_string
-            for child_element in changed_element.findall('./'):
-                xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
+            # for child_element in changed_element.findall('./'):
+            #     xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
+            #
+            # if xml_string == '':
+            #     if changed_element.text:
+            #         xml_string = changed_element.text
 
-            if xml_string == '':
-                if changed_element.text:
-                    xml_string = changed_element.text
+            set_xpath, entry = self.__split_xpath(xpath)
+            tag = re.sub(r'\[.*\]', '', entry)
+
+            random_name = str(int(random.random() * 1000000))
 
             snippet = dict()
-            random_name = str(int(random.random() * 1000000))
-            full_tag = xpath.split('/')[-1]
-            tag = re.sub(r'\[.*\]', '', full_tag)
             snippet['name'] = f'{tag}-{random_name}'
-            snippet['xpath'] = xpath
+            snippet['xpath'] = set_xpath
             snippet['element'] = xml_string.strip()
             snippets.append(snippet)
 
@@ -640,6 +645,13 @@ class Panoply:
 
         not_founds.append(xpath)
         return not_founds
+
+    @staticmethod
+    def __split_xpath(xpath: str) -> Tuple[str, str]:
+        xpath_parts = xpath.split('/')
+        new_xpath = "/".join(xpath_parts[:-1])
+        entry = xpath_parts[-1]
+        return new_xpath, entry
 
     @staticmethod
     def __order_snippets(snippets: list):
