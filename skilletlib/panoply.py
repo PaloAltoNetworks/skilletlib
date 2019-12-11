@@ -597,6 +597,7 @@ class Panoply:
             #         xml_string = changed_element.text
 
             set_xpath, entry = self.__split_xpath(xpath)
+            set_xpath = set_xpath.replace('./', '/config/')
             tag = re.sub(r'\[.*\]', '', entry)
 
             random_name = str(int(random.random() * 1000000))
