@@ -32,7 +32,7 @@ snippets:
     # note the snippet can specify an 'element' inline or a relative path to the 'file'. The contents of the file
     # found at the relative path defined by 'file' will be rendered and placed in the 'element' attribute.
     # Element allows snippets to be fully self-contained in a single document, however files may be easier to
-    # manage and administer on an onging basis
+    # manage and administer on an ongoing basis
     element: |
       <update-schedule>
              <threats>

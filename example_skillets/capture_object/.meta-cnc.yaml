@@ -12,7 +12,8 @@ label: Example of how to use capture_object
 description: |
   This example Skillet shows how to parse and validate a config using output capturing. This example converts the
   xml elements at the given xpath into an object. We can then use this object in jinja expressions to validate the
-  configuration.
+  configuration. Note the use of the 'element_value' jinja filter. This filter is one in a series of filters designed
+  to simplify working with configuration objects.
 
 type: pan_validation
 labels:
@@ -43,7 +44,7 @@ snippets:
     # pan_validation skillets will run a 'test' for each snippet definition. This test is a boolean pass / fail
     # this test uses the 'system_object' defined earlier. We specifically want to test the value of the 'hostname'
     # tag and ensure it is set to the correct value.
-    test: system_object | node_value('hostname') == 'skillet_test_hostname'
+    test: system_object | element_value('hostname') == 'skillet_test_hostname'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 
   - name: ensure_timezoone_is_set
@@ -51,7 +52,7 @@ snippets:
     # this test is much like the previous. However, we are testing a different node value, 'timezone' this time. Note
     # these use the same 'system_object' to test against. This allows you to only capture a portion of the config
     # and perform multiple tests against different parts of it.
-    test: system_object | node_value('timezone') == 'US/Eastern'
+    test: system_object | element_value('timezone') == 'US/Eastern'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 
 

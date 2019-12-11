@@ -1,0 +1,53 @@
+#
+# Example When Conditional
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-fail_message
+label: Example of how to use 'fail_message'
+
+description: |
+  This example Skillet shows how to parse and validate a config using the 'fail_message' to pass information
+  to the operator. This allows you to render the value of variables, objects, and conditional results in a message
+  to the user. This is useful to return information about why a test is failing. Note the fail_message is an optional
+  attribute.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: show_device_system
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_configured
+    label: Ensure Update Schedules are Configured
+    test: update_schedule_object is not none
+    fail_message: Update Schedule is not configured
+    pass_message: Update Schedule is configured
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: update_schedule_stats_service_configured
+    when: update_schedule_object is not none
+    label: Ensure Statistics Service is enabled
+    test: update_schedule_object| tag_present('update-schedule.statistics-service')
+    fail_message: |
+      This fail message contains a variable, which is useful for debugging and testing.
+      Object found was: {{ update_schedule_object }}
+    pass_message: This message will be displayed when the 'test' is successful.
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing

@@ -13,7 +13,7 @@ description: |
   This example Skillet shows how to parse and validate a config using output capturing. This example takes input
   from the user and uses 'capture_variable' to create a new variable based on the output of the expression. This is
   useful is you want to use some part of a captured object in a fail_message or in a singular test. This also helps
-  by only grabbing one larger part of the configuration, and pulling out smaller parts for evaluation.
+  by grabbing one, larger, part of the configuration, and pulling out smaller parts for evaluation.
 
 type: pan_validation
 labels:
@@ -39,7 +39,9 @@ snippets:
       - name: interface_object
         capture_object: /config/devices/entry/network/interface/ethernet/entry[@name='{{ interface_name }}']
       # the variables set in each 'step' of the outputs can be used in the subsequent steps. Here, we are using the
-      # discovered interface_object captured above to capture a specific portion.
+      # discovered interface_object captured above to capture a specific portion. By using capture_variable, we
+      # can pass the value through an expression. In this case, we can use the 'default' filter to ensure we have a
+      # value of 'no' in the event the value returned from 'element_value' is undefined.
       - name: interface_dhcp
         capture_variable: "{{ interface_object | element_value('entry.layer3.dhcp-client.enable') | default('no') }}"
 

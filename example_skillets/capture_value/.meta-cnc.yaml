@@ -12,7 +12,7 @@ label: Example of how to use capture_value
 description: |
   This example Skillet shows how to parse and validate a config using output capturing. This example get the value
   for the given xpath using 'capture_value'. This value is captured into a variable called 'hostname'. We can then
-  use this variable in a test to validate the configuration is correct.
+  use this variable in a test to validate the supplied configuration passes.
 
 type: pan_validation
 labels:

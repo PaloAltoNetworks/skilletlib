@@ -72,6 +72,11 @@ def test_cmd_validate_cherry_pick():
     load_and_execute_skillet(skillet_path)
 
 
+def test_fail_message():
+    skillet_path = '../example_skillets/fail_message'
+    load_and_execute_skillet(skillet_path)
+
+
 if __name__ == '__main__':
     test_capture_value()
     test_capture_object()
@@ -82,4 +87,4 @@ if __name__ == '__main__':
     test_capture_variable()
     test_cmd_validate()
     test_cmd_validate_cherry_pick()
-
+    test_fail_message()
