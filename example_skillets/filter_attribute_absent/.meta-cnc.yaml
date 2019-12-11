@@ -1,0 +1,60 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+# <zone>
+#    <entry name="internet">
+#        <network>
+#            <layer3>
+#                <member>ethernet1/1</member>
+#            </layer3>
+#        </network>
+#    </entry>
+# </zone>
+#
+name: example-filter-attribute_absent
+label: Example of how to use the attribute_absent filter
+
+description: |
+  This example Skillet shows how to parse and validate a config using jinja filters. This example checks the configured
+  zones to ensure we do not have one with the attribute name equal to 'does-not-exist'
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: zone_to_test
+    description: Name of the Zone to test for absence
+    default: does-not-exist
+    type_hint: text
+
+snippets:
+  - name: parse config variable and capture outputs
+    # cmd parse will pass the value of the named `variable` directly to the output for output parsing.
+    # for skillet type: pan_validation the default output_type is xml. So capture_object will try to treat the
+    # variable as an XML document and convert the element found at the 'xpath' into an object
+    cmd: parse
+    variable: config
+    outputs:
+      # create a variable named 'zones' which will be an object from the element found at this xpath
+      - name: zones
+        capture_object: /config/devices/entry/vsys/entry/zone
+
+  - name: ensure_desired_zone_absent
+    label: Ensures the {{ zone_to_test }} zone is not configured
+    # pan_validation skillets will run a 'test' for each snippet definition. This test is a boolean pass / fail
+    # this test uses the 'system_object' defined earlier. We specifically want to test the value of the
+    # 'service.disable-telnet' tag and ensure it is set to the correct value. Note that the 'element_value' filter
+    # will search into the object using a '.' or '/' seperated notation. In this case, the system stanza in the xml
+    # contains a child-element called 'service', which contains a child-element called 'disable-telnet'. This allows
+    # these filters to simplify checking multiple levels of the configuration.
+    test: zones | attribute_absent('entry', 'name', zone_to_test)
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
+

@@ -1,0 +1,48 @@
+#
+# Example Configuration Validation
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+#               <update-schedule>
+#                        <threats>
+#                            <recurring>
+#                                <every-30-mins>
+#                                    <action>download-and-install</action>
+#                                </every-30-mins>
+#                            </recurring>
+#                        </threats>
+#               </update-schedule>
+#
+name: example-filter-tag_absent
+label: Example of how to use tag_absent
+
+description: |
+  This example Skillet shows how to parse and validate a config using jinja filters. This example captures a portion
+  of the supplied configuration into an object called 'update_schedule_object'. We then use the 'tag_present' filter
+  to validate portions of that object. This filter 'tag_absent' is useful when you need to validate an XML tag is NOT
+  present in the configuration. In some cases, valid configuration options are stored only as tags in the XML heirarchy.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+
+snippets:
+  - name: show_device_system
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_threats_configured
+    label: Ensure Threats are not scheduled every hour
+    test: update_schedule_object| tag_absent('update-schedule.threats.recurring.hourly')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+

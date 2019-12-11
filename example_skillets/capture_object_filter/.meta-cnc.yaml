@@ -33,14 +33,14 @@ snippets:
     outputs:
       - name: interface_with_ip
         capture_object: /config/devices/entry/network/interface/ethernet/entry
-        filter_items: item | node_attribute_present('entry.layer3.ip.entry', 'name', '192.168.250.1/24')
+        filter_items: item | attribute_present('entry.layer3.ip.entry', 'name', '192.168.250.1/24')
 
   - name: ensure_interface_was_found
     label: Ensures the interface was found
     test: |
       (
         interface_with_ip is defined
-        and interface_with_ip | node_attribute_present('entry', 'name', 'ethernet1/7')
+        and interface_with_ip | attribute_present('entry', 'name', 'ethernet1/7')
       )
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 

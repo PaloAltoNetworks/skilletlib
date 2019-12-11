@@ -1,0 +1,69 @@
+#
+# Example Output Capturing
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+# <zone>
+#    <entry name="internet">
+#        <network>
+#            <layer3>
+#                <member>ethernet1/1</member>
+#            </layer3>
+#        </network>
+#    </entry>
+# </zone>
+#
+name: example-filter-element_value_contains
+label: Example of how to use the element_value_contains filter
+
+description: |
+  This example Skillet shows how to parse and validate a config using jinja filters. This example checks the configured
+  zones to ensure the desired zone contains the desired interface.
+
+type: pan_validation
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+  - name: zone_to_test
+    description: Name of the Zone to test
+    default: internet
+    type_hint: text
+  - name: interface_to_test
+    description: Name of the Interface to test
+    default: ethernet1/1
+    type_hint: text
+
+
+snippets:
+  - name: parse config variable and capture outputs
+    # cmd parse will pass the value of the named `variable` directly to the output for output parsing.
+    # for skillet type: pan_validation the default output_type is xml. So capture_object will try to treat the
+    # variable as an XML document and convert the element found at the 'xpath' into an object
+    cmd: parse
+    variable: config
+    outputs:
+      # create a variable named 'desired_zone' from the element found at the given xpath. Note the use of a variable
+      # in the capture_object xpath
+      - name: desired_zone
+        capture_object: /config/devices/entry/vsys/entry/zone/entry[@name="{{ zone_to_test }}"]
+
+  - name: ensure_desired_zone
+    label: Ensures the {{ zone_to_test }} zone is configured
+    test: desired_zone is not none
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
+  - name: ensure_interface_in_zone
+    # note the when conditional can check the result of previous validation steps. This example is a bit contrived
+    # but, nonetheless, this can be a powerful feature
+    when: ensure_desired_zone.results == True
+    # variables can be used almost anywhere, includeing in labels, when conditions, fail_messages, etc
+    label: Ensure the {{ interface_to_test }} interface is configured in the {{ zone_to_test }} zone
+    # check the desired_zone to ensure it contains a value equal to our interface_to_test from the list of members
+    # found at the 'network.layer3.member' level.
+    test: desired_zone | element_value_contains('network.layer3.member', interface_to_test)
+    documentation_link: https://github.com/scotchoaf/SkilletBuilder/tree/develop/validation_skillet_basic

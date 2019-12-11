@@ -3,12 +3,12 @@ Working with Objects
 
 To make working with objects easier, we have created the following jinja filters:
 
-- node_present
-- node_absent
-- node_value
-- node_value_contains
-- node_attribute_present
-- node_attribute_absent
+- tag_present 
+- tag_absent
+- attribute_present
+- attribute_absent
+- element_value
+- element_value_contains
 - append_uuid
 
 
@@ -17,7 +17,7 @@ To make working with objects easier, we have created the following jinja filters
 Jinja Filters
 -------------
 
-node_present
+tag_present
 ~~~~~~~~~~~~
 
 This filter will validate that the given path is present in the variable object. The path argument is a '.' or '/'
@@ -28,9 +28,9 @@ found, this filter will return True. This is useful to validate a specific eleme
 
   - name: update_schedule_stats_service_configured
     label: Ensure Statistics Service is enabled
-    test: update_schedule_object| node_present('update-schedule.statistics-service')
+    test: update_schedule_object| tag_present('update-schedule.statistics-service')
 
-node_value
+element_value
 ~~~~~~~~~~
 
 This filter will return the value of the given path in the variable object. This value can then be used with any
@@ -42,14 +42,14 @@ found, this filter will return leaf node text value.
 
   - name: ensure_ip_address
     label: Ensure IP Address is configured
-    test: device_system | node_value('ip-address') == '10.10.10.10'
+    test: device_system | element_value('ip-address') == '10.10.10.10'
 
-node_attribute_present
+attribute_present
 ~~~~~~~~~~~~~~~~~~~~~~
 
 This filter will determine if a node exists with the given attribute name and value. This is useful for parts of the
 configuration where there may be many 'entries' under a specific xpath. For example, security profiles or interfaces.
-This filter takes a configuration path as the first argument, similar to the node_present filter. The second argument
+This filter takes a configuration path as the first argument, similar to the tag_present filter. The second argument
 is the attribute name and the third is the attribute value. If the configuration path is found, and has an attribute
 that matches both the name and value, this filter will return True.
 
@@ -58,10 +58,10 @@ that matches both the name and value, this filter will return True.
   - name: check_profile_exists
     when: network_profiles is not none
     label: Ensure Named profile exists
-    test: network_profiles | node_attribute_present('entry', 'name', 'default')
+    test: network_profiles | attribute_present('entry', 'name', 'default')
 
 
-node_value_contains
+element_value_contains
 ~~~~~~~~~~~~~~~~~~~
 
 This filter is useful for times when the xpath may contain a list of items. The path argument is a '.' or '/'
@@ -74,5 +74,5 @@ argument.
 
   - name: security_rules_outbound_edl
     label: check for IronSkillet outbound EDL block rule member
-    test: security_rule_outbound_edl | node_value_contains('destination.member', 'panw-bulletproof-ip-list')
+    test: security_rule_outbound_edl | element_value_contains('destination.member', 'panw-bulletproof-ip-list')
     documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-telemetry-telemetry
