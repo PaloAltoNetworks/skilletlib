@@ -3,6 +3,7 @@ venv/
 local_tests/
 local_t/
 docs/build
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
