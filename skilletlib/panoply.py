@@ -573,6 +573,9 @@ class Panoply:
         # let's grab the previous as well
         previous_doc = ElementTree.fromstring(previous_config)
 
+        ignored_xpaths = [
+            '/config/mgt-config/users/entry[@name="admin"]'
+        ]
         current_xpath = '.'
         not_found_xpaths = list()
         for c in latest_doc:
@@ -582,23 +585,17 @@ class Panoply:
 
         snippets = list()
         for xpath in not_found_xpaths:
-            # keep a string of changes
-            xml_string = ''
-
-            changed_element = latest_doc.find(xpath)
-            xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
-            # we can't just dump out the changed element because it'll contain the 'tag' as the outermost tag
-            # so, find all the children of this 'tag' and append them to the xml_string
-            # for child_element in changed_element.findall('./'):
-            #     xml_string += ElementTree.tostring(child_element).decode(encoding='UTF-8')
-            #
-            # if xml_string == '':
-            #     if changed_element.text:
-            #         xml_string = changed_element.text
 
             set_xpath, entry = self.__split_xpath(xpath)
             set_xpath = set_xpath.replace('./', '/config/')
             tag = re.sub(r'\[.*\]', '', entry)
+
+            if set_xpath in ignored_xpaths:
+                logger.debug(f'Skipping ignored xpath: {xpath}')
+                continue
+
+            changed_element = latest_doc.find(xpath)
+            xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
 
             random_name = str(int(random.random() * 1000000))
 
