@@ -608,22 +608,49 @@ class Panoply:
         return self.__order_snippets(snippets)
 
     def __check_element(self, el: Element, xpath: str, pc: Element, not_founds: list) -> list:
+        """
+        recursive function to determine if the 'el' Element found at 'xpath' can also be found at the same
+        xpath in the 'pc' previous_config. Keep tabs on what has not been found using the 'not_founds' list
+        :param el: The element in question from the latest_config
+        :param xpath: the xpath to the element in question
+        :param pc:  the previous config Element
+        :param not_founds: list of xpaths that have not been found
+        :return: a list of xpaths that have not been found in the previous_config at this level
+        """
 
+        # first, check the previous_config to see if this xpath exists there
         found_element = pc.find(xpath)
+
         if found_element is not None:
+            # this xpath exists in the previous_config, now iterate through all the children
             children = el.findall('./')
             if len(children) == 0:
-                # print(f'Skipping leaf node {xpath} {el.tag}')
+                # there are no children at this level, so check if the 'text' is different
                 if found_element.text != el.text:
+                    # this xpath contains a text node that has been modified <port>6666</port> != <port>0000</port>
                     not_founds.append(xpath)
+                # no need to go further as we have no children to descend into
                 return not_founds
 
+            # we have children elements, first check if they are a list of identical elements
+            is_list = False
             if self.__check_children_are_list(children):
-                # only use
-                diffs = xmldiff_main.diff_texts(ElementTree.tostring(found_element), ElementTree.tostring(el))
+
+                # use the xmldiff library to check the list of elements
+                diffs = xmldiff_main.diff_texts(ElementTree.tostring(found_element), ElementTree.tostring(el),
+                                                {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
+
+                # all children are a list and there are no differences in them, so return up the stack
                 if len(diffs) == 0:
                     return not_founds
+                else:
+                    # we have a list and there ARE differences
+                    is_list = True
 
+            # continue checking each child, either they are not a list or they are a list and there are diffs
+            # track the child index in case we find a diff in the list case
+            index = 1
+            # check each child now
             for e in el:
                 if e.attrib:
                     attribs = list()
@@ -632,13 +659,29 @@ class Panoply:
                             attribs.append(f'@{k}="{v}"')
 
                     attrib_str = " ".join(attribs)
+                    # track the attributes in the xpath by virtue of the 'path_entry' which will be appended to the
+                    # xpath later
                     path_entry = f'{e.tag}[{attrib_str}]'
                 else:
-                    path_entry = e.tag
+                    # no attributes but this is a list, so include the index value in the xpath to check
+                    # this will be used to grab the changed element later, but will be removed from the xpath
+                    # as it is not necessary in PAN-OS (double check this please)
+                    if is_list:
+                        path_entry = f'{e.tag}[{index}]'
+                    else:
+                        # just append the tag to the xpath and move on
+                        path_entry = e.tag
 
+                # craft our new xpath to check
                 n_xpath = xpath + '/' + path_entry
+                # do it all over again
                 new_not_founds = self.__check_element(e, n_xpath, pc, list())
+                # add any child xpaths that weren't found with any found here for return up the stack
                 not_founds.extend(new_not_founds)
+                # increase our index for the next iteration
+                index = index + 1
+
+            # return our findings up the stack
             return not_founds
 
         not_founds.append(xpath)
