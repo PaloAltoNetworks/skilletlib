@@ -28,6 +28,8 @@ import requests
 import requests_toolbelt
 import xmltodict
 from pan import xapi
+from pan.config import PanConfig
+from pan.config import PanConfigError
 from pan.xapi import PanXapiError
 from xmldiff import main as xmldiff_main
 
@@ -587,7 +589,8 @@ class Panoply:
         for xpath in not_found_xpaths:
 
             set_xpath, entry = self.__split_xpath(xpath)
-            set_xpath = set_xpath.replace('./', '/config/')
+            # set_xpath = set_xpath.replace('./', '/config/')
+            set_xpath = re.sub(r'^/config/', r'\./', set_xpath)
             tag = re.sub(r'\[.*\]', '', entry)
 
             if set_xpath in ignored_xpaths:
@@ -606,6 +609,26 @@ class Panoply:
             snippets.append(snippet)
 
         return self.__order_snippets(snippets)
+
+    @staticmethod
+    def generate_set_cli_from_configs(previous_config: str, latest_config: str) -> list:
+        """
+        Takes two configuration files, converts them to set commands, then returns only the commands found
+        in the 'latest_config' vs the 'previous_config'. This allows the user to quickly configure one firewall,
+        generate a 'set cli' diff and move those configs to another firewall
+        :param previous_config: Starting config
+        :param latest_config: Ending config
+        :return: list of set cli commands required to convert previous to latest
+        """
+
+        p_config = PanConfig(previous_config)
+        l_config = PanConfig(latest_config)
+
+        p_set = p_config.set_cli('set ', xpath='./')
+        l_set = l_config.set_cli('set ', xpath='./')
+
+        diffs = [item for item in l_set if item not in p_set]
+        return diffs
 
     def __check_element(self, el: Element, xpath: str, pc: Element, not_founds: list) -> list:
         """
