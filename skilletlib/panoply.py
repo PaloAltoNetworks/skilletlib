@@ -627,7 +627,13 @@ class Panoply:
         p_set = p_config.set_cli('set ', xpath='./')
         l_set = l_config.set_cli('set ', xpath='./')
 
-        diffs = [item for item in l_set if item not in p_set]
+        # diffs = [item for item in l_set if item not in p_set]
+        diffs = list()
+        for cmd in l_set:
+            if cmd not in p_set:
+                cmd_cleaned = cmd.replace('devices localhost.localdomain', '')
+                diffs.append(cmd_cleaned)
+
         return diffs
 
     def __check_element(self, el: Element, xpath: str, pc: Element, not_founds: list) -> list:
