@@ -631,7 +631,7 @@ class Panoply:
         diffs = list()
         for cmd in l_set:
             if cmd not in p_set:
-                cmd_cleaned = cmd.replace('devices localhost.localdomain', '')
+                cmd_cleaned = cmd.replace('devices localhost.localdomain', '').replace('\n', ' ')
                 diffs.append(cmd_cleaned)
 
         return diffs
