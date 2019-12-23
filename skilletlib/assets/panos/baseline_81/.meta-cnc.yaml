@@ -1,5 +1,5 @@
-name: panoply_panos_baseline_80
-  label: PAN-OS Baseline Configuration for Version 8.0
+name: panoply_panos_baseline_81
+  label: PAN-OS Baseline Configuration for Version 8.1
 
   description: |
     Loads a configuration that is essentially a factory default plus admin username, password, and IP information
@@ -28,6 +28,10 @@ name: panoply_panos_baseline_80
       default: not-saved
       type_hint: text
 
-  snippets:
-    - name: baseline
-      file: baseline_80.xml
+  # Snippets is an ordered list of configuration xml fragments that will be pushed to the PAN-OS NGFW. The xpath
+  # determines where in the configuration hierarchy the xml fragment will be set. 'file' indicates the name of the file
+  # to load and parse. Jinja2 style variables will be variable interpolated using the values of the 'variables' defined
+  # in the 'variables' sectiona.
+snippets:
+  - name: baseline
+    file: baseline_81.xml
