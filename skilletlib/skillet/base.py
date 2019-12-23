@@ -41,7 +41,7 @@ class Skillet(ABC):
         self.snippet_stack = self.skillet_dict['snippets']
         self.type = self.skillet_dict['type']
         self.supported_versions = 'not implemented'
-        self.variables = self.skillet_dict['variables']
+        self.variables = self.__initialize_variables(s['variables'])
         # path is needed only when snippets are held in a relative file path
         self.path = self.skillet_dict.get('snippet_path', '')
         self.labels = self.skillet_dict['labels']
@@ -87,12 +87,44 @@ class Skillet(ABC):
         self.update_context(initial_context)
         return self.context
 
+    @staticmethod
+    def __initialize_variables(vars_dict: dict) -> dict:
+        """
+        Ensure the proper default values are configured for each type of variable that may be present in the skillet
+        :param vars_dict: Skillet 'variables' stanza
+        :return: variables stanza with default values correctly parsed
+        """
+
+        for variable in vars_dict:
+            default = variable.get('default', '')
+            type_hint = variable.get('type_hint', 'text')
+            if type_hint == "dropdown" and "dd_list" in variable:
+                for item in variable.get('dd_list', []):
+                    if 'key' in item and 'value' in item:
+                        if default == item['key'] and default != item['value']:
+                            # user set the key as the default and not the value, just fix it for them here
+                            variable['default'] = item['value']
+            elif type_hint == "radio" and "rad_list" in variable:
+                rad_list = variable['rad_list']
+                for item in rad_list:
+                    if 'key' in item and 'value' in item:
+                        if default == item['key'] and default != item['value']:
+                            variable['default'] = item['value']
+            elif type_hint == "checkbox" and "cbx_list" in variable:
+                cbx_list = variable['cbx_list']
+                for item in cbx_list:
+                    if 'key' in item and 'value' in item:
+                        if default == item['key'] and default != item['value']:
+                            variable['default'] = item['value']
+
+        return vars_dict
+
     def cleanup(self):
         pass
 
     def execute(self, initial_context: dict) -> dict:
         """
-        The heart of the Skillet class. This method executes the skillet by iterating over all the skillets retunred
+        The heart of the Skillet class. This method executes the skillet by iterating over all the skillets returned
         from the 'get_skillets' method. Each one is checked if it should be executed if a 'when' conditional attribute
         is found, and if so, is executed using the snippet execute method.
         :param initial_context: context of key values pairs to use for the execution. By default this is all the
@@ -123,7 +155,7 @@ class Skillet(ABC):
                         if running_counter > 60:
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
-                    returned_output = snippet.capture_outputs(output)
+                    returned_output = snippet.capture_outputs(output, status)
                     returned_outputs.update(returned_output)
                     context.update(returned_output)
 

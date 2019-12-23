@@ -14,6 +14,7 @@
 
 # Authors: Adam Baumeister, Nathan Embery
 
+import html
 import logging
 from pathlib import Path
 from typing import List
@@ -132,5 +133,7 @@ class PanosSkillet(Skillet):
             else:
                 # raise SkilletLoaderException('Could not load "file" attribute!')
                 logger.error(f'Could not load the referenced file for {snippet_def["name"]}')
-
+        else:
+            # we have an element directly defined
+            snippet_def['element'] = html.unescape(snippet_def['element'])
         return snippet_def

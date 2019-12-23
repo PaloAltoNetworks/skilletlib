@@ -15,6 +15,7 @@
 # Authors: Nathan Embery
 
 import json
+import logging
 import xml.etree.ElementTree as elementTree
 from abc import ABC
 from abc import abstractmethod
@@ -22,12 +23,11 @@ from base64 import urlsafe_b64encode
 from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
-import logging
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
-from jinja2.exceptions import UndefinedError
 from jinja2.exceptions import TemplateAssertionError
+from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
 from lxml import etree
 from passlib.hash import md5_crypt
@@ -162,15 +162,26 @@ class Snippet(ABC):
 
         return '', 'success'
 
-    def capture_outputs(self, results: str) -> dict:
+    def get_default_output(self, results: str, status: str) -> dict:
+        """
+        each snippet type can override this method to provide it's own default output. This is used
+        when there are no variables defined to be captured
+        :param results: raw output from snippet execution
+        :param status: status of the snippet.execute method
+        :return: dict of default outputs
+        """
+        return {self.name: status}
+
+    def capture_outputs(self, results: str, status: str) -> dict:
         """
         All snippet output or portions of snippet output can be captured and saved on the context as a new variable
         :param results: the raw output from the snippet execution
+        :param status: status of the snippet.execute method
         :return: a dictionary containing all captured variables
         """
 
-        captured_outputs = dict()
-
+        # always capture the default output
+        captured_outputs = self.get_default_output(results, status)
         output_type = self.metadata.get('output_type', self.output_type)
 
         # check if this snippet type wants to handle it's own outputs
@@ -201,19 +212,19 @@ class Snippet(ABC):
                     outputs = self.__handle_manual_outputs(output, results)
                 elif output_type == 'text':
                     outputs = self.__handle_text_outputs(output, results)
-        # elif output_type == 'base64':
-        #     outputs = self._handle_base64_outputs(results)
-        # elif output_type == 'json':
-        #     outputs = self._handle_json_outputs(results)
-        # elif output_type == 'manual':
-        #     outputs = self._handle_manual_outputs(results)
-        # elif output_type == 'text':
-        #     outputs = self.__handle_text_outputs(results)
-        # # sub classes can handle their own output types
-        # # see panos/__handle_validation for example
-        # elif hasattr(self, f'handle_output_type_{output_type}'):
-        #     func = getattr(self, f'handle_output_type_{output_type}')
-        #     outputs = func(results)
+            # elif output_type == 'base64':
+            #     outputs = self._handle_base64_outputs(results)
+            # elif output_type == 'json':
+            #     outputs = self._handle_json_outputs(results)
+            # elif output_type == 'manual':
+            #     outputs = self._handle_manual_outputs(results)
+            # elif output_type == 'text':
+            #     outputs = self.__handle_text_outputs(results)
+            # # sub classes can handle their own output types
+            # # see panos/__handle_validation for example
+            # elif hasattr(self, f'handle_output_type_{output_type}'):
+            #     func = getattr(self, f'handle_output_type_{output_type}')
+            #     outputs = func(results)
             captured_outputs.update(outputs)
             self.context.update(outputs)
 
@@ -359,9 +370,9 @@ class Snippet(ABC):
         :param results: string as returned from some action, to be parsed as XML document
         :return: dict containing all outputs found from the capture pattern in each output
         """
-        
+
         captured_output = dict()
-        
+
         def unique_tag_list(elements: list) -> bool:
             tag_list = list()
             for el in elements:
@@ -377,7 +388,7 @@ class Snippet(ABC):
 
         try:
             xml_doc = etree.XML(results)
-                
+
             # xml_doc = elementTree.fromstring(results)
             # allow jinja syntax in capture_pattern, capture_value, capture_object etc
 
