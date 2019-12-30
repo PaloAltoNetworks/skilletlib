@@ -553,9 +553,9 @@ class Panoply:
         :return: configuration xml as a string or a blank string if not connected
         """
 
-        if config_source == 'baseline'
+        if config_source == 'baseline':
             return self.generate_baseline()
-        elif config_source == 'candidate'
+        elif config_source == 'candidate':
                 cmd = 'show config candidate'
         else:
             cmd = 'show config running'
