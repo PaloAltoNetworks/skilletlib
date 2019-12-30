@@ -547,6 +547,28 @@ class Panoply:
 
             time.sleep(interval)
 
+    def get_configuration(self, config_source='running') -> str:
+        """
+        Get the configuration from the device.
+        :return: configuration xml as a string or a blank string if not connected
+        """
+
+        if config_source == 'baseline'
+            return self.generate_baseline()
+        elif config_source == 'candidate'
+                cmd = 'show config candidate'
+        else:
+            cmd = 'show config running'
+        try:
+            if self.connected:
+                self.xapi.op(cmd=cmd, cmd_xml=True)
+                return self.xapi.xml_result()
+            else:
+                return ''
+        except PanXapiError:
+            logger.error(f'Could not get configuration from device')
+            raise SkilletLoaderException('Could not get configuration from the device')
+
     def generate_skillet(self, from_candidate=False) -> list:
         """
         Generates a skillet from the changes detected on this device.
@@ -911,21 +933,6 @@ class Panoply:
 
         snippets.extend(text_update_snippets_to_include)
         return snippets
-
-    def get_configuration(self) -> str:
-        """
-        Get the running configuration from the device if connected
-        :return: configuration xml as a string or a blank string if not connected
-        """
-        try:
-            if self.connected:
-                self.xapi.op(cmd='show config running', cmd_xml=True)
-                return self.xapi.xml_result()
-            else:
-                return ''
-        except PanXapiError:
-            logger.error(f'Could not get configuration from device')
-            raise SkilletLoaderException('Could not get configuration from the device')
 
     @staticmethod
     def __clean_uuid(changed_element: Element) -> Element:
