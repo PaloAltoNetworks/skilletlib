@@ -21,6 +21,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from typing import Tuple
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
@@ -29,15 +30,12 @@ import requests_toolbelt
 import xmltodict
 from pan import xapi
 from pan.config import PanConfig
-from pan.config import PanConfigError
 from pan.xapi import PanXapiError
 from xmldiff import main as xmldiff_main
 
 from .exceptions import LoginException
 from .exceptions import SkilletLoaderException
 from .skilletLoader import SkilletLoader
-
-from typing import Tuple
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -556,7 +554,7 @@ class Panoply:
         if config_source == 'baseline':
             return self.generate_baseline()
         elif config_source == 'candidate':
-                cmd = 'show config candidate'
+            cmd = 'show config candidate'
         else:
             cmd = 'show config running'
         try:
