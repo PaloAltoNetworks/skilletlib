@@ -502,89 +502,41 @@ class Panoply:
             logger.error('Could not check for updated dynamic content')
             return False
 
-    def __check_element(self, el: etree.Element, xpath: str, pc: etree.Element, not_founds: list) -> list:
+    def check_content_updates(self, content_type: str) -> (str, None):
         """
-        recursive function to determine if the 'el' Element found at 'xpath' can also be found at the same
-        xpath in the 'pc' previous_config. Keep tabs on what has not been found using the 'not_founds' list
-        :param el: The element in question from the latest_config
-        :param xpath: the xpath to the element in question
-        :param pc:  the previous config Element
-        :param not_founds: list of xpaths that have not been found
-        :return: a list of xpaths that have not been found in the previous_config at this level
+        Iterate through all available content of the specified type, locate and return the version with the highest
+        version number. If that version is already installed, return None as no further action is necessary
+        :param content_type: type of content to check
+        :return: version-number to download and install or None if already at the latest
         """
+        latest_version = ''
+        latest_version_first = 0
+        latest_version_second = 0
+        latest_version_current = 'no'
+        try:
+            logger.info('Checking for latest content...')
+            self.xapi.op(cmd=f'<request><{content_type}><upgrade><check/></upgrade></{content_type}></request>')
+            er = self.xapi.element_root
+            for entry in er.findall('.//entry'):
+                version = entry.find('./version').text
+                current = entry.find('./current').text
+                # version will have the format 1234-1234
+                version_parts = version.split('-')
+                version_first = int(version_parts[0])
+                version_second = int(version_parts[1])
+                if version_first > latest_version_first and version_second > latest_version_second:
+                    latest_version = version
+                    latest_version_first = version_first
+                    latest_version_second = version_second
+                    latest_version_current = current
 
-        # first, check the previous_config to see if this xpath exists there
-        found_elements = pc.xpath(xpath)
+            if latest_version_current == 'yes':
+                return None
+            else:
+                return latest_version
 
-        if found_elements:
-            found_element = found_elements[0]
-            # this xpath exists in the previous_config, now iterate through all the children
-            children = el.findall('./')
-            if len(children) == 0:
-                # there are no children at this level, so check if the 'text' is different
-                if found_element.text != el.text:
-                    # this xpath contains a text node that has been modified <port>6666</port> != <port>0000</port>
-                    not_founds.append(xpath)
-                # no need to go further as we have no children to descend into
-                return not_founds
-
-            # we have children elements, first check if they are a list of identical elements
-            is_list = False
-            if self.__check_children_are_list(children):
-
-                # use the xmldiff library to check the list of elements
-                diffs = xmldiff_main.diff_trees(found_element, el,
-                                                {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
-
-                # all children are a list and there are no differences in them, so return up the stack
-                if len(diffs) == 0:
-                    return not_founds
-                else:
-                    # we have a list and there ARE differences
-                    is_list = True
-
-            # continue checking each child, either they are not a list or they are a list and there are diffs
-            # track the child index in case we find a diff in the list case
-            index = 1
-            # check each child now
-            for e in el:
-                if e.attrib:
-                    attribs = list()
-                    for k, v in e.attrib.items():
-                        if k != 'uuid':
-                            attribs.append(f'@{k}="{v}"')
-
-                    attrib_str = " ".join(attribs)
-                    # track the attributes in the xpath by virtue of the 'path_entry' which will be appended to the
-                    # xpath later
-                    path_entry = f'{e.tag}[{attrib_str}]'
-                else:
-                    # no attributes but this is a list, so include the index value in the xpath to check
-                    # this will be used to grab the changed element later, but will be removed from the xpath
-                    # as it is not necessary in PAN-OS (double check this please)
-                    if is_list:
-                        if e.text.strip() != '':
-                            path_entry = f'{e.tag}[text()="{e.text.strip()}"]'
-                        else:
-                            path_entry = f'{e.tag}[{index}]'
-                    else:
-                        # just append the tag to the xpath and move on
-                        path_entry = e.tag
-
-                # craft our new xpath to check
-                n_xpath = xpath + '/' + path_entry
-                # do it all over again
-                new_not_founds = self.__check_element(e, n_xpath, pc, list())
-                # add any child xpaths that weren't found with any found here for return up the stack
-                not_founds.extend(new_not_founds)
-                # increase our index for the next iteration
-                index = index + 1
-
-            # return our findings up the stack
-            return not_founds
-
-        not_founds.append(xpath)
-        return not_founds
+        except PanXapiError:
+            return None
 
     def wait_for_job(self, job_id: str, interval=10, timeout=600) -> bool:
         """
@@ -747,7 +699,7 @@ class Panoply:
 
         return diffs
 
-    def __check_element(self, el: Element, xpath: str, pc: Element, not_founds: list) -> list:
+    def __check_element(self, el: etree.Element, xpath: str, pc: etree.Element, not_founds: list) -> list:
         """
         recursive function to determine if the 'el' Element found at 'xpath' can also be found at the same
         xpath in the 'pc' previous_config. Keep tabs on what has not been found using the 'not_founds' list
@@ -759,9 +711,10 @@ class Panoply:
         """
 
         # first, check the previous_config to see if this xpath exists there
-        found_element = pc.find(xpath)
+        found_elements = pc.xpath(xpath)
 
-        if found_element is not None:
+        if found_elements:
+            found_element = found_elements[0]
             # this xpath exists in the previous_config, now iterate through all the children
             children = el.findall('./')
             if len(children) == 0:
@@ -777,7 +730,7 @@ class Panoply:
             if self.__check_children_are_list(children):
 
                 # use the xmldiff library to check the list of elements
-                diffs = xmldiff_main.diff_texts(ElementTree.tostring(found_element), ElementTree.tostring(el),
+                diffs = xmldiff_main.diff_trees(found_element, el,
                                                 {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
 
                 # all children are a list and there are no differences in them, so return up the stack
@@ -807,7 +760,10 @@ class Panoply:
                     # this will be used to grab the changed element later, but will be removed from the xpath
                     # as it is not necessary in PAN-OS (double check this please)
                     if is_list:
-                        path_entry = f'{e.tag}[{index}]'
+                        if e.text.strip() != '':
+                            path_entry = f'{e.tag}[text()="{e.text.strip()}"]'
+                        else:
+                            path_entry = f'{e.tag}[{index}]'
                     else:
                         # just append the tag to the xpath and move on
                         path_entry = e.tag
