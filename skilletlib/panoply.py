@@ -14,7 +14,6 @@
 
 # Authors: Nathan Embery
 
-
 import datetime
 import logging
 import random
@@ -37,7 +36,13 @@ from xmldiff import main as xmldiff_main
 from .exceptions import LoginException
 from .exceptions import PanoplyException
 from .exceptions import SkilletLoaderException
+from .exceptions import TargetConnectionException
+from .exceptions import TargetGenericException
+from .exceptions import TargetLoginException
 from .skilletLoader import SkilletLoader
+
+from lxml import etree
+from lxml.etree import Element
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -90,9 +95,19 @@ class Panoply:
         try:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
                                      port=self.port, serial=self.serial_number)
-        except PanXapiError:
-            # print('Invalid Connection information')
-            raise LoginException('Invalid connection parameters')
+
+        except xapi.PanXapiError as pxe:
+            err_msg = str(pxe)
+
+            if '403' in err_msg:
+                raise TargetLoginException('Invalid credentials logging into device')
+            elif 'Errno 111' in err_msg:
+                raise TargetConnectionException('Error contacting the device at the given IP / hostname')
+            elif 'Errno 60' in err_msg:
+                raise TargetConnectionException('Error contacting the device at the given IP / hostname')
+            else:
+                raise TargetGenericException(pxe)
+
         else:
             self.connect(allow_offline=True)
 
@@ -487,41 +502,89 @@ class Panoply:
             logger.error('Could not check for updated dynamic content')
             return False
 
-    def check_content_updates(self, content_type: str) -> (str, None):
+    def __check_element(self, el: etree.Element, xpath: str, pc: etree.Element, not_founds: list) -> list:
         """
-        Iterate through all available content of the specified type, locate and return the version with the highest
-        version number. If that version is already installed, return None as no further action is necessary
-        :param content_type: type of content to check
-        :return: version-number to download and install or None if already at the latest
+        recursive function to determine if the 'el' Element found at 'xpath' can also be found at the same
+        xpath in the 'pc' previous_config. Keep tabs on what has not been found using the 'not_founds' list
+        :param el: The element in question from the latest_config
+        :param xpath: the xpath to the element in question
+        :param pc:  the previous config Element
+        :param not_founds: list of xpaths that have not been found
+        :return: a list of xpaths that have not been found in the previous_config at this level
         """
-        latest_version = ''
-        latest_version_first = 0
-        latest_version_second = 0
-        latest_version_current = 'no'
-        try:
-            logger.info('Checking for latest content...')
-            self.xapi.op(cmd=f'<request><{content_type}><upgrade><check/></upgrade></{content_type}></request>')
-            er = self.xapi.element_root
-            for entry in er.findall('.//entry'):
-                version = entry.find('./version').text
-                current = entry.find('./current').text
-                # version will have the format 1234-1234
-                version_parts = version.split('-')
-                version_first = int(version_parts[0])
-                version_second = int(version_parts[1])
-                if version_first > latest_version_first and version_second > latest_version_second:
-                    latest_version = version
-                    latest_version_first = version_first
-                    latest_version_second = version_second
-                    latest_version_current = current
 
-            if latest_version_current == 'yes':
-                return None
-            else:
-                return latest_version
+        # first, check the previous_config to see if this xpath exists there
+        found_elements = pc.xpath(xpath)
 
-        except PanXapiError:
-            return None
+        if found_elements:
+            found_element = found_elements[0]
+            # this xpath exists in the previous_config, now iterate through all the children
+            children = el.findall('./')
+            if len(children) == 0:
+                # there are no children at this level, so check if the 'text' is different
+                if found_element.text != el.text:
+                    # this xpath contains a text node that has been modified <port>6666</port> != <port>0000</port>
+                    not_founds.append(xpath)
+                # no need to go further as we have no children to descend into
+                return not_founds
+
+            # we have children elements, first check if they are a list of identical elements
+            is_list = False
+            if self.__check_children_are_list(children):
+
+                # use the xmldiff library to check the list of elements
+                diffs = xmldiff_main.diff_trees(found_element, el,
+                                                {'F': 0.1, 'ratio_mode': 'accurate', 'fast_match': True})
+
+                # all children are a list and there are no differences in them, so return up the stack
+                if len(diffs) == 0:
+                    return not_founds
+                else:
+                    # we have a list and there ARE differences
+                    is_list = True
+
+            # continue checking each child, either they are not a list or they are a list and there are diffs
+            # track the child index in case we find a diff in the list case
+            index = 1
+            # check each child now
+            for e in el:
+                if e.attrib:
+                    attribs = list()
+                    for k, v in e.attrib.items():
+                        if k != 'uuid':
+                            attribs.append(f'@{k}="{v}"')
+
+                    attrib_str = " ".join(attribs)
+                    # track the attributes in the xpath by virtue of the 'path_entry' which will be appended to the
+                    # xpath later
+                    path_entry = f'{e.tag}[{attrib_str}]'
+                else:
+                    # no attributes but this is a list, so include the index value in the xpath to check
+                    # this will be used to grab the changed element later, but will be removed from the xpath
+                    # as it is not necessary in PAN-OS (double check this please)
+                    if is_list:
+                        if e.text.strip() != '':
+                            path_entry = f'{e.tag}[text()="{e.text.strip()}"]'
+                        else:
+                            path_entry = f'{e.tag}[{index}]'
+                    else:
+                        # just append the tag to the xpath and move on
+                        path_entry = e.tag
+
+                # craft our new xpath to check
+                n_xpath = xpath + '/' + path_entry
+                # do it all over again
+                new_not_founds = self.__check_element(e, n_xpath, pc, list())
+                # add any child xpaths that weren't found with any found here for return up the stack
+                not_founds.extend(new_not_founds)
+                # increase our index for the next iteration
+                index = index + 1
+
+            # return our findings up the stack
+            return not_founds
+
+        not_founds.append(xpath)
+        return not_founds
 
     def wait_for_job(self, job_id: str, interval=10, timeout=600) -> bool:
         """
@@ -611,10 +674,10 @@ class Panoply:
 
     def generate_skillet_from_configs(self, previous_config: str, latest_config: str) -> list:
         # convert the config string to an xml doc
-        latest_doc = ElementTree.fromstring(latest_config)
+        latest_doc = etree.fromstring(latest_config)
 
         # let's grab the previous as well
-        previous_doc = ElementTree.fromstring(previous_config)
+        previous_doc = etree.fromstring(previous_config)
 
         ignored_xpaths = [
             '/config/mgt-config/users/entry[@name="admin"]'
@@ -632,14 +695,20 @@ class Panoply:
             set_xpath, entry = self.__split_xpath(xpath)
             # set_xpath = set_xpath.replace('./', '/config/')
             set_xpath = re.sub(r'^/config/', r'\./', set_xpath)
+            full_relative_xpath = re.sub(r'^/config/', r'\./', xpath)
             tag = re.sub(r'\[.*\]', '', entry)
 
             if set_xpath in ignored_xpaths:
                 logger.debug(f'Skipping ignored xpath: {xpath}')
                 continue
 
-            changed_element = latest_doc.find(xpath)
-            xml_string = ElementTree.tostring(changed_element).decode(encoding='UTF-8')
+            changed_elements = latest_doc.xpath(xpath)
+            if not changed_elements:
+                print('Something is broken here')
+                continue
+
+            changed_element = changed_elements[0]
+            xml_string = etree.tostring(changed_element).decode(encoding='UTF-8')
 
             random_name = str(int(random.random() * 1000000))
 
@@ -647,6 +716,7 @@ class Panoply:
             snippet['name'] = f'{tag}-{random_name}'
             snippet['xpath'] = set_xpath
             snippet['element'] = xml_string.strip()
+            snippet['full_xpath'] = full_relative_xpath
             snippets.append(snippet)
 
         return self.__order_snippets(snippets)
