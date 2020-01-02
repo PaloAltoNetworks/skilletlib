@@ -31,5 +31,8 @@ class RestSkillet(Skillet):
                         snippet_list.append(snippet)
                 else:
                     logger.warning(f'Snippet file: {snippet_def["name"]} was not found!')
+            else:
+                snippet = RestSnippet('', snippet_def, self.session)
+                snippet_list.append(snippet)
 
         return snippet_list

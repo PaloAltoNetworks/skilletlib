@@ -20,3 +20,7 @@ class PanoplyException(BaseException):
 
 class NodeNotFoundException(BaseException):
     pass
+
+class SkilletExecutionException(BaseException):
+    pass
+

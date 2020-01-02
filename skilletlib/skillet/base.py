@@ -169,13 +169,13 @@ class Skillet(ABC):
 
         return self.get_results(returned_outputs)
 
-    def get_results(self, context: dict) -> dict:
-        results = dict()
-        for s in self.snippet_stack:
-            snippet_name = s.get('name', '')
-            if snippet_name in context:
-                results[snippet_name] = context[snippet_name]
-
-        return results
+    def get_results(self, captured_outputs: dict) -> dict:
+        """
+        Allow snippets to override what is returned to the outer scope. By default, just return all the
+        captured outputs from the snippet
+        :param captured_outputs:
+        :return:
+        """
+        return captured_outputs
 
 

@@ -25,7 +25,7 @@ class RestSnippet(TemplateSnippet):
     optional_metadata = {
         'operation': 'get',
         'payload': '',
-        'headers': '',
+        'headers': {},
         'content_type': '',
         'accepts_type': ''
     }
