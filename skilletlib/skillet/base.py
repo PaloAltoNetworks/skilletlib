@@ -156,7 +156,9 @@ class Skillet(ABC):
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
                     returned_output = snippet.capture_outputs(output, status)
-                    returned_outputs.update(returned_output)
+                    returned_outputs[snippet.name] = dict()
+                    returned_outputs[snippet.name]['status'] = status
+                    returned_outputs[snippet.name]['outputs'] = returned_output
                     context.update(returned_output)
 
         except SkilletLoaderException as sle:
@@ -169,13 +171,14 @@ class Skillet(ABC):
 
         return self.get_results(returned_outputs)
 
-    def get_results(self, captured_outputs: dict) -> dict:
-        """
-        Allow snippets to override what is returned to the outer scope. By default, just return all the
-        captured outputs from the snippet
-        :param captured_outputs:
-        :return:
-        """
-        return captured_outputs
+    def get_results(self, context: dict) -> dict:
+        results = dict()
+        results['snippets'] = dict()
+        for s in self.snippet_stack:
+            snippet_name = s.get('name', '')
+            if snippet_name in context:
+                results['snippets'][snippet_name] = context[snippet_name]
+
+        return results
 
 

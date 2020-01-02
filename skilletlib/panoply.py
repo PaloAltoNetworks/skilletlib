@@ -15,6 +15,7 @@
 # Authors: Nathan Embery
 
 
+import datetime
 import logging
 import random
 import re
@@ -34,6 +35,7 @@ from pan.xapi import PanXapiError
 from xmldiff import main as xmldiff_main
 
 from .exceptions import LoginException
+from .exceptions import PanoplyException
 from .exceptions import SkilletLoaderException
 from .skilletLoader import SkilletLoader
 
@@ -230,6 +232,25 @@ class Panoply:
         element = re.sub(r"\n", "", element)
 
         return element
+
+    def backup_config(self):
+        """
+        Saves a named backup on the PAN-OS device. The format for the backup is 'panhandler-20190424000000.xml'
+        :return:  xml results from the op command sequence
+        """
+        d = datetime.datetime.today()
+        tstamp = d.strftime('%Y%m%d%H%M%S')
+        cmd = f'<save><config><to>config-backup-{tstamp}.xml</to></config></save>'
+        try:
+            self.xapi.op(cmd=cmd)
+
+            if self.xapi.status != 'success':
+                raise PanoplyException('Could not perform config backup on device!')
+
+            return self.xapi.xml_result()
+
+        except xapi.PanXapiError as pxe:
+            raise PanoplyException(f'Could not perform backup: {pxe}')
 
     def get_facts(self) -> dict:
         """
