@@ -23,11 +23,12 @@ import time
 from pathlib import Path
 from typing import Tuple
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 import requests
 import requests_toolbelt
 import xmltodict
+from lxml import etree
+from lxml.etree import Element
 from pan import xapi
 from pan.config import PanConfig
 from pan.xapi import PanXapiError
@@ -40,9 +41,6 @@ from .exceptions import TargetConnectionException
 from .exceptions import TargetGenericException
 from .exceptions import TargetLoginException
 from .skilletLoader import SkilletLoader
-
-from lxml import etree
-from lxml.etree import Element
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -129,32 +127,38 @@ class Panoply:
                     # print('FYI - Device is not currently available')
                     self.connected = False
                 else:
-                    raise SkilletLoaderException('Could not connect to device!')
+                    raise PanoplyException('Could not connect to device!')
         else:
             self.connected = True
 
-    def commit(self) -> str:
+    def commit(self, force_sync=True) -> str:
         """
-        Perform a commit operation on this device instance
+        Perform a commit operation on this device instance -
+        :raises PanoplyException: if commit failed
+        :param force_sync: Flag to enablle synch commit or async
         :return: String from the API indicating success or failure
         """
         try:
-            self.xapi.commit(cmd='<commit></commit>', sync=True, timeout=600)
+            self.xapi.commit(cmd='<commit></commit>', sync=force_sync, timeout=600)
             results = self.xapi.xml_result()
             if results is None:
                 return self.xapi.status_detail
 
-            doc = ElementTree.XML(results)
-            embedded_result = doc.find('result')
-            if embedded_result is not None:
-                commit_result = embedded_result.text
-                if commit_result == 'FAIL':
-                    raise SkilletLoaderException(self.xapi.status_detail)
+            if force_sync:
+                doc = ElementTree.XML(results)
+                embedded_result = doc.find('result')
+                if embedded_result is not None:
+                    commit_result = embedded_result.text
+                    if commit_result == 'FAIL':
+                        raise PanoplyException(self.xapi.status_detail)
+                    else:
+                        return self.xapi.status_detail
 
             return self.xapi.status_detail
 
         except PanXapiError as pxe:
-            raise SkilletLoaderException('Could not commit configuration')
+            logger.error(pxe)
+            raise PanoplyException('Could not commit configuration')
 
     def set_at_path(self, name: str, xpath: str, xml_str: str) -> None:
         """
@@ -170,14 +174,14 @@ class Panoply:
             if self.xapi.status_code == '7':
                 raise SkilletLoaderException(f'xpath {xpath} was NOT found for skillet: {name}')
         except PanXapiError as pxe:
-            raise SkilletLoaderException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
+            raise PanoplyException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
 
     def execute_op(self, cmd_str: str) -> str:
         try:
             self.xapi.op(cmd=cmd_str)
             return self.xapi.xml_result()
         except PanXapiError as pxe:
-            raise SkilletLoaderException(pxe)
+            raise PanoplyException(pxe)
 
     def execute_cmd(self, cmd: str, params: dict, context=None) -> str:
         """
@@ -189,7 +193,7 @@ class Panoply:
         :return: raw results from the cmd output, raises SkilletLoaderException
         """
         if cmd not in ('op', 'set', 'edit', 'override', 'move', 'rename', 'clone', 'show', 'get', 'delete'):
-            raise SkilletLoaderException('Invalid cmd type given to execute_cmd')
+            raise PanoplyException('Invalid cmd type given to execute_cmd')
 
         # this code happily borrowed from ansible-pan module
         # https://raw.githubusercontent.com/PaloAltoNetworks/ansible-pan/develop/library/panos_type_cmd.py
@@ -226,13 +230,13 @@ class Panoply:
                 kwargs['xpath_from'] = params['xpath_from']
 
         except KeyError as ke:
-            raise SkilletLoaderException(f'Invalid parameters passed to execute_cmd: {ke}')
+            raise PanoplyException(f'Invalid parameters passed to execute_cmd: {ke}')
 
         try:
             func(**kwargs)
 
         except PanXapiError as e:
-            raise SkilletLoaderException(f'Could not execute command: {cmd}: {e}')
+            raise PanoplyException(f'Could not execute command: {cmd}: {e}')
 
         return self.xapi.xml_result()
 
@@ -279,7 +283,7 @@ class Panoply:
         self.xapi.op(cmd='<show><system><info></info></system></show>')
 
         if self.xapi.status != 'success':
-            raise SkilletLoaderException('Could not get facts from device!')
+            raise PanoplyException('Could not get facts from device!')
 
         results_xml_str = self.xapi.xml_result()
         results = xmltodict.parse(results_xml_str)
@@ -326,7 +330,7 @@ class Panoply:
             self.connect()
 
         if 'sw-version' not in self.facts:
-            raise SkilletLoaderException('Could not determine sw-version to load baseline configuration!')
+            raise PanoplyException('Could not determine sw-version to load baseline configuration!')
 
         version = self.facts['sw-version']
         context = dict()
@@ -365,7 +369,7 @@ class Panoply:
             # load the 9.0 baseline with
             skillet_dir = 'baseline_90'
         else:
-            raise SkilletLoaderException('Could not determine sw-version for baseline load')
+            raise PanoplyException('Could not determine sw-version for baseline load')
 
         template_path = Path(__file__).parent.joinpath('assets', skillet_type_dir, skillet_dir)
         sl = SkilletLoader()
@@ -376,7 +380,7 @@ class Panoply:
         if status == 'success':
             return str(output)
         else:
-            raise SkilletLoaderException('Could not generate baseline config!')
+            raise PanoplyException('Could not generate baseline config!')
 
     def import_file(self, filename: str, file_contents: (str, bytes), category: str) -> bool:
         """
@@ -412,7 +416,7 @@ class Panoply:
         resp = ElementTree.fromstring(r.content)
 
         if resp.attrib['status'] == 'error':
-            raise SkilletLoaderException(r.content)
+            raise PanoplyException(r.content)
 
         return True
 
@@ -480,7 +484,7 @@ class Panoply:
             if job_element is not None:
                 job_id = job_element.text
                 if not self.wait_for_job(job_id):
-                    raise SkilletLoaderException('Could not update dynamic content')
+                    raise PanoplyException('Could not update dynamic content')
 
             logger.info(f'Installing latest and greatest ')
             install_cmd = f'<request><content><upgrade><install>' \
@@ -492,7 +496,7 @@ class Panoply:
             if job_element is not None:
                 job_id = job_element.text
                 if not self.wait_for_job(job_id):
-                    raise SkilletLoaderException('Could not install dynamic content')
+                    raise PanoplyException('Could not install dynamic content')
             else:
                 logger.info(f'No job returned to track')
 
@@ -601,7 +605,7 @@ class Panoply:
                 return ''
         except PanXapiError:
             logger.error(f'Could not get configuration from device')
-            raise SkilletLoaderException('Could not get configuration from the device')
+            raise PanoplyException('Could not get configuration from the device')
 
     def generate_skillet(self, from_candidate=False) -> list:
         """
@@ -694,8 +698,8 @@ class Panoply:
         diffs = list()
         for cmd in l_set:
             if cmd not in p_set and 'set readonly' not in cmd:
-                cmd_cleaned = cmd.replace('devices localhost.localdomain ', '')\
-                    .replace('\n', ' ')\
+                cmd_cleaned = cmd.replace('devices localhost.localdomain ', '') \
+                    .replace('\n', ' ') \
                     .replace('vsys vsys1 ', '')
                 diffs.append(cmd_cleaned)
 
@@ -1036,7 +1040,7 @@ class Panoply:
             if el is None:
                 # this should never happen as the xpath was found in the document we are checking
                 # this would indicate a programmatic error somewhere
-                raise SkilletLoaderException('Could not normalize xpath in configuration document!')
+                raise PanoplyException('Could not normalize xpath in configuration document!')
 
             if el.attrib != {} and type(el.attrib) is dict:
                 logger.debug('Found attributes here')
