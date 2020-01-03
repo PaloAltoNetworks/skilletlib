@@ -156,9 +156,8 @@ class Skillet(ABC):
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
                     returned_output = snippet.capture_outputs(output, status)
-                    returned_outputs[snippet.name] = dict()
-                    returned_outputs[snippet.name]['status'] = status
-                    returned_outputs[snippet.name]['outputs'] = returned_output
+                    # returned_output['status'] = status
+                    returned_outputs.update(returned_output)
                     context.update(returned_output)
 
         except SkilletLoaderException as sle:
