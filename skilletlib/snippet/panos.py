@@ -477,6 +477,7 @@ class PanosSnippet(TemplateSnippet):
         output['label'] = self.metadata.get('label', '')
         output['severity'] = self.metadata.get('severity', 'low')
         output['documentation_link'] = self.metadata.get('documentation_link', '')
+        output['test'] = self.metadata.get('test', '')
 
         o = dict()
         o[self.name] = output
