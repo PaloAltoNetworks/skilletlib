@@ -137,3 +137,24 @@ class PanosSkillet(Skillet):
             # we have an element directly defined
             snippet_def['element'] = html.unescape(snippet_def['element'])
         return snippet_def
+
+    def get_results(self, context: dict) -> dict:
+        """
+        PanosSkillet will return a dict containing two keys:
+        result and snippets. If any snippet failed, the result will be 'failure' otherwise 'success'
+        :param context:
+        :return: dict containing default outputs plus the overall result
+        """
+        results = super().get_results(context)
+        skillet_result = 'success'
+        snippets = results.get('snippets', {})
+        for k,v in snippets.items():
+            if v != 'success':
+                skillet_result = 'failure'
+                break
+
+        results['result'] = skillet_result
+        return results
+
+
+
