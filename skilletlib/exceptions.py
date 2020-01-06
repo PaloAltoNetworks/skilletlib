@@ -1,4 +1,8 @@
-class SkilletLoaderException(BaseException):
+class PanoplyException(BaseException):
+    pass
+
+
+class SkilletLoaderException(PanoplyException):
     pass
 
 
@@ -6,34 +10,29 @@ class SkilletNotFoundException(SkilletLoaderException):
     pass
 
 
-class SkilletValidationException(BaseException):
+class SkilletValidationException(PanoplyException):
     pass
 
 
-class LoginException(BaseException):
+class LoginException(PanoplyException):
     pass
 
 
-class TargetLoginException(BaseException):
+class TargetLoginException(LoginException):
     pass
 
 
-class TargetConnectionException(BaseException):
+class TargetConnectionException(PanoplyException):
     pass
 
 
-class TargetGenericException(BaseException):
+class TargetGenericException(PanoplyException):
     pass
 
 
-class PanoplyException(BaseException):
+class NodeNotFoundException(PanoplyException):
     pass
 
 
-class NodeNotFoundException(BaseException):
+class SkilletExecutionException(PanoplyException):
     pass
-
-
-class SkilletExecutionException(BaseException):
-    pass
-
