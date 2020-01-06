@@ -684,6 +684,7 @@ class Panoply:
                 continue
 
             changed_element = changed_elements[0]
+            # FIXME - do we need to __clean_uuid() here ?
             xml_string = etree.tostring(changed_element).decode(encoding='UTF-8')
 
             random_name = str(int(random.random() * 1000000))
@@ -1011,8 +1012,8 @@ class Panoply:
         Some rules and other elements contain the 'uuid' attribute. These should be removed before
         they can be applied to another device / fw. This function descends to all child nodes and removes the uuid
         attribute if found
-        :param changed_element: ElementTree.Element in which to search
-        :return: ElementTree.Element with all uuid attributes removed
+        :param changed_element: Element in which to search
+        :return: Element with all uuid attributes removed
         """
         if changed_element is None:
             return changed_element
