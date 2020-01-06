@@ -21,6 +21,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 from typing import Tuple
 from xml.etree import ElementTree
 
@@ -54,15 +55,17 @@ class Panoply:
     Panoply is a wrapper around pan-python PanXAPI class to provide additional, commonly used functions
     """
 
-    def __init__(self, hostname=None, api_username=None, api_password=None,
-                 api_port=None, serial_number=None, debug=False):
+    def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
+                 api_port: Optional[str], serial_number: Optional[str], debug: Optional[bool] = False):
         """
-        Initialize a new panoply object
+        Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
+        to connect to the device and set offline_mode to False. Otherwise, offline mode will be set to True
         :param hostname: hostname or ip address of target device`
         :param api_username: username
         :param api_password: password
         :param api_port: port to use for target device
         :param serial_number: Serial number of target device if proxy through panorama
+        :param debug: Optional flag to log additional debug messages
         """
 
         if api_port is None:
@@ -73,13 +76,16 @@ class Panoply:
         self.pw = api_password
         self.port = api_port
         self.serial_number = serial_number
+
         self.key = ''
         self.debug = False
         self.serial = serial_number
         self.connected = False
+        self.connected_message = 'no connection attempted'
         self.facts = {}
         self.last_error = ''
         self.offline_mode = False
+        self.xapi = None
 
         if debug:
             logger.setLevel(logging.DEBUG)
@@ -109,13 +115,18 @@ class Panoply:
         else:
             self.connect(allow_offline=True)
 
-    def connect(self, allow_offline=False) -> None:
+    def connect(self, allow_offline: Optional[bool] = False) -> None:
         """
         Attempt to connect to this device instance
-        :param allow_offline: Do not raise an exception if this device is offline
+        :param allow_offline: Do not raise an exception if this device is offline unless there is an authentication
+        error
         :return: None
         """
         try:
+            if self.xapi is None:
+                self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
+                                         port=self.port, serial=self.serial_number)
+
             self.key = self.xapi.keygen()
             self.facts = self.get_facts()
         except PanXapiError as pxe:
@@ -124,8 +135,10 @@ class Panoply:
                 raise LoginException('Invalid credentials logging into device')
             else:
                 if allow_offline:
-                    # print('FYI - Device is not currently available')
+                    logger.debug('FYI - Device is not currently available')
                     self.connected = False
+                    self.connected_message = 'device is not currently available'
+                    return None
                 else:
                     raise PanoplyException('Could not connect to device!')
         else:
@@ -447,11 +460,18 @@ class Panoply:
 
         while True:
             try:
+                if not self.connected:
+                    self.connect()
+
                 self.xapi.op(cmd='<show><chassis-ready></chassis-ready></show>')
                 resp = self.xapi.xml_result()
                 if self.xapi.status == 'success':
                     if resp.strip() == 'yes':
                         return True
+            except TargetLoginException:
+                logger.error('Could not log in to device...')
+                return False
+
             except PanXapiError:
                 logger.info(f'{self.hostname} is not yet ready...')
 
