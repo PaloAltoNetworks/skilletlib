@@ -22,4 +22,9 @@ class TemplateSnippet(Snippet):
     def template(self, context) -> str:
         return self.execute(context)[0]
 
+    def handle_output_type_text(self, results):
+        r = dict()
+        r[self.name] = results
+        return r
+
 

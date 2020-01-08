@@ -148,7 +148,7 @@ class PanosSkillet(Skillet):
         results = super().get_results(context)
         skillet_result = 'success'
         snippets = results.get('snippets', {})
-        for k,v in snippets.items():
+        for k, v in snippets.items():
             if v != 'success':
                 skillet_result = 'failure'
                 break
