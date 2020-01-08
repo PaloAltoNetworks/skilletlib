@@ -22,3 +22,18 @@ class TemplateSkillet(Skillet):
                     snippet_list.append(snippet)
 
         return snippet_list
+
+    def get_results(self, context: dict) -> str:
+        """
+        TemplateSkillet should only return the rendered template from the first snippet that successfully executed
+        :param context:
+        :return: str output of the first successfully rendered template snippet (usually the only one defined)
+        return a blank str if not snippets were found
+        """
+        results = super().get_results(context)
+        snippets = results.get('snippets', {})
+        for k, v in snippets.items():
+            if v == 'success':
+                return k
+
+        return ''
