@@ -56,7 +56,7 @@ class Panoply:
     """
 
     def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
-                 api_port: Optional[str], serial_number: Optional[str], debug: Optional[bool] = False):
+                 api_port: Optional[str], serial_number: Optional[str] = None, debug: Optional[bool] = False):
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
         to connect to the device and set offline_mode to False. Otherwise, offline mode will be set to True
