@@ -460,8 +460,6 @@ class Panoply:
 
         while True:
             try:
-                if not self.connected:
-                    self.connect()
 
                 self.xapi.op(cmd='<show><chassis-ready></chassis-ready></show>')
                 resp = self.xapi.xml_result()
@@ -1085,3 +1083,23 @@ class Panoply:
 
         logger.debug(f'returning {path}')
         return path
+
+
+class EphemeralPanos(Panoply):
+    pass
+
+
+class Panos(Panoply):
+    """
+    Panos is used to connect to PAN-OS devices that are expected to be currently and always online! Exceptions
+    will be raised in any event that we cannot connect!
+    """
+
+    def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
+                 api_port: Optional[str], serial_number: Optional[str] = None, debug: Optional[bool] = False):
+
+        super().__init__(hostname, api_username, api_password, api_port, serial_number, debug)
+
+        if self.xapi and 'URLError' in self.xapi.status_detail:
+            raise TargetConnectionException(self.xapi.status_detail)
+
