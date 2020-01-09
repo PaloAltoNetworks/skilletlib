@@ -6,8 +6,8 @@
 # skillets are optimized for this task.
 #
 
-name: example-tag-present
-label: Example of how to use 'tag_present'
+name: example-when-conditional
+label: Example of how to use 'when' conditional
 
 description: |
   This example Skillet shows how to parse and validate a config using the 'when' conditionals.
