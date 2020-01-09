@@ -1,3 +1,4 @@
+urllib3
 oyaml
 pan-python
 pathlib

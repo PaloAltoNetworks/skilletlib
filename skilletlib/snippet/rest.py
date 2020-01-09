@@ -2,12 +2,14 @@ import json
 import logging
 from typing import Tuple
 
+import urllib3
 from requests import Response
 from requests import Session
 
 from .template import TemplateSnippet
 
 logger = logging.getLogger(__name__)
+urllib3.disable_warnings()
 
 
 class RestSnippet(TemplateSnippet):
