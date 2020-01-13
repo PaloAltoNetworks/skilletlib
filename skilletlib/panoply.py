@@ -56,7 +56,8 @@ class Panoply:
     """
 
     def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
-                 api_port: Optional[str], serial_number: Optional[str] = None, debug: Optional[bool] = False):
+                 api_port: Optional[str, int] = 443, serial_number: Optional[str] = None,
+                 debug: Optional[bool] = False):
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
         to connect to the device and set offline_mode to False. Otherwise, offline mode will be set to True
@@ -1096,9 +1097,13 @@ class Panos(Panoply):
     """
 
     def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
-                 api_port: Optional[str], serial_number: Optional[str] = None, debug: Optional[bool] = False):
+                 api_port: Optional[str, int] = 443, serial_number: Optional[str] = None,
+                 debug: Optional[bool] = False):
 
         super().__init__(hostname, api_username, api_password, api_port, serial_number, debug)
+
+        if self.connected:
+            return
 
         if self.xapi and 'URLError' in self.xapi.status_detail:
             raise TargetConnectionException(self.xapi.status_detail)
