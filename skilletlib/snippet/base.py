@@ -30,6 +30,7 @@ from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
 from lxml import etree
+from lxml.etree import Element
 from passlib.hash import md5_crypt
 
 from skilletlib.exceptions import SkilletLoaderException
@@ -385,6 +386,10 @@ class Snippet(ABC):
         def unique_tag_list(elements: list) -> bool:
             tag_list = list()
             for el in elements:
+                # some xpath queries can return a list of str
+                if isinstance(el, str):
+                    return False
+
                 if el.tag not in tag_list:
                     tag_list.append(el.tag)
 
@@ -420,17 +425,20 @@ class Snippet(ABC):
                     captured_output[var_name] = ''
                 elif len(entries) == 1:
                     entry = entries.pop()
-                    if len(entry) == 0:
-                        # this tag has no children, so try to grab the text
-                        if return_type == 'text':
-                            captured_output[var_name] = str(entry.text).strip()
-                        else:
-                            captured_output[var_name] = entry.tag
+                    if isinstance(entry, str):
+                        captured_output[var_name] = entry
                     else:
-                        # we have 1 Element returned, so the user has a fairly specific xpath
-                        # however, this element has children itself, so we can't return a text value
-                        # just return the tag name of this element only
-                        captured_output[var_name] = entry.tag
+                        if len(entry) == 0:
+                            # this tag has no children, so try to grab the text
+                            if return_type == 'text':
+                                captured_output[var_name] = str(entry.text).strip()
+                            else:
+                                captured_output[var_name] = entry.tag
+                        else:
+                            # we have 1 Element returned, so the user has a fairly specific xpath
+                            # however, this element has children itself, so we can't return a text value
+                            # just return the tag name of this element only
+                            captured_output[var_name] = entry.tag
                 else:
                     # we have a list of elements returned from the users xpath query
                     capture_list = list()
@@ -438,13 +446,28 @@ class Snippet(ABC):
                     if unique_tag_list(entries):
                         return_type = 'tag'
                     for entry in entries:
-                        if len(entry) == 0:
-                            if return_type == 'text':
-                                capture_list.append(str(entry.text).strip())
+                        if isinstance(entry, str):
+                            capture_list.append(entry)
+                        else:
+                            if len(entry) == 0:
+                                if return_type == 'text':
+                                    if entry.text is not None:
+                                        capture_list.append(entry.text.strip())
+                                    else:
+                                        # If there is no text, then try to grab a sensible attribute
+                                        # if you need more control than this, then you should first
+                                        # capture_object to convert to a python object then use a jinja filter
+                                        # to get what you need
+                                        if 'value' in entry.attrib:
+                                            capture_list.append(entry.attrib.get('value', ''))
+                                        elif 'name' in entry.attrib:
+                                            capture_list.append(entry.attrib.get('name', ''))
+                                        else:
+                                            capture_list.append(json.dumps(dict(entry.attrib)))
+                                else:
+                                    capture_list.append(entry.tag)
                             else:
                                 capture_list.append(entry.tag)
-                        else:
-                            capture_list.append(entry.tag)
 
                     captured_output[var_name] = capture_list
 
