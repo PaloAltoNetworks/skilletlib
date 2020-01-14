@@ -53,11 +53,14 @@ class PanValidationSkillet(PanosSkillet):
         self.snippet_list = snippet_list
         return snippet_list
 
-    def get_results(self, returned_output: dict) -> dict:
+    def get_results(self) -> dict:
+        # do not call super() as this subclasses panos and not base directly
         results = dict()
+        results['snippets'] = dict()
+        results['pan_validation'] = dict()
         context = self.context
         # allow items from the snippet / skillet context to be used here as well
-        context.update(returned_output)
+        # context.update(returned_output)
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
@@ -77,7 +80,8 @@ class PanValidationSkillet(PanosSkillet):
                     else:
                         context[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
 
-                results[snippet_name] = context[snippet_name]
+                results['snippets'][snippet_name] = result
+                results['pan_validation'][snippet_name] = context[snippet_name]
 
         return results
 

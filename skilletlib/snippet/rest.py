@@ -51,7 +51,7 @@ class RestSnippet(TemplateSnippet):
 
     def execute(self, context: dict) -> Tuple[str, str]:
         # fixme - can we do this in sanitize_metadata ?
-        rest_path = self.path.strip().replace('\n', '').replace(' ', '')
+        rest_path = self.path.strip().replace('\n', '')
         url = self.render(rest_path, context)
 
         for k, v in self.headers.items():
@@ -83,8 +83,3 @@ class RestSnippet(TemplateSnippet):
 
             return r, 'success'
 
-    def handle_output_type_rest(self, results: str):
-
-        output = dict()
-        output[self.name] = results
-        return output

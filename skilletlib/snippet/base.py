@@ -170,7 +170,14 @@ class Snippet(ABC):
         :param status: status of the snippet.execute method
         :return: dict of default outputs
         """
-        return {self.name: status}
+
+        r = {
+                self.name: {
+                    'results': status,
+                    'raw': results
+                }
+        }
+        return r
 
     def capture_outputs(self, results: str, status: str) -> dict:
         """
@@ -181,7 +188,8 @@ class Snippet(ABC):
         """
 
         # always capture the default output
-        captured_outputs = self.get_default_output(results, status)
+        # captured_outputs = self.get_default_output(results, status)
+        captured_outputs = dict()
         output_type = self.metadata.get('output_type', self.output_type)
 
         # check if this snippet type wants to handle it's own outputs
@@ -212,10 +220,11 @@ class Snippet(ABC):
                     outputs = self.__handle_manual_outputs(output, results)
                 elif output_type == 'text':
                     outputs = self.__handle_text_outputs(output, results)
+                elif output_type == 'json':
+                    outputs = self.__handle_json_outputs(output, results)
             # elif output_type == 'base64':
             #     outputs = self._handle_base64_outputs(results)
-            # elif output_type == 'json':
-            #     outputs = self._handle_json_outputs(results)
+
             # elif output_type == 'manual':
             #     outputs = self._handle_manual_outputs(results)
             # elif output_type == 'text':
@@ -495,7 +504,7 @@ class Snippet(ABC):
 
         return outputs
 
-    def _handle_json_outputs(self, results: str) -> dict:
+    def __handle_json_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Parses results and returns a dict containing base64 encoded values
 
@@ -509,59 +518,56 @@ class Snippet(ABC):
         :param results: string as returned from some action, to be parsed as JSON
         :return: dict containing all outputs found from the capture pattern in each output
         """
-        outputs = dict()
+        captured_output = dict()
+
+        local_context = self.context.copy()
+        output = self.__render_output_metadata(output_definition, local_context)
 
         try:
-            if 'outputs' not in self.metadata:
-                logger.info('No outputs defined in this snippet')
-                return outputs
+            for i in ('capture_pattern', 'capture_value', 'capture_object'):
+                if i in output:
+                    capture_pattern = output[i]
+                else:
+                    continue
 
-            for output in self.metadata['outputs']:
+                if 'name' not in output:
+                    continue
 
-                for i in ('capture_pattern', 'capture_value', 'capture_object'):
-                    if i in output:
-                        capture_pattern = output[i]
-                    else:
-                        continue
+                # some Skillet types may return us json already, check if results are actually a str like object
+                # before trying to convert
+                if type(results) is not str or type(results) is not bytes or type(results) is not bytearray:
+                    json_object = results
+                else:
+                    json_object = json.loads(results)
 
-                    if 'name' not in output:
-                        continue
+                var_name = output['name']
 
-                    # some Skillet types may return us json already, check if results are actually a str like object
-                    # before trying to convert
-                    if type(results) is not str or type(results) is not bytes or type(results) is not bytearray:
-                        json_object = results
-                    else:
-                        json_object = json.loads(results)
+                # short cut for just getting all the results
+                if capture_pattern == '$' or capture_pattern == '.':
+                    captured_output[var_name] = json_object
+                    continue
 
-                    var_name = output['name']
+                jsonpath_expr = parse(capture_pattern)
+                result = jsonpath_expr.find(json_object)
+                if len(result) == 1:
+                    captured_output[var_name] = str(result[0].value)
+                else:
+                    # FR #81 - add ability to capture from a list
+                    capture_list = list()
+                    for r in result:
+                        capture_list.append(r.value)
 
-                    # short cut for just getting all the results
-                    if capture_pattern == '$' or capture_pattern == '.':
-                        outputs[var_name] = json_object
-                        continue
-
-                    jsonpath_expr = parse(capture_pattern)
-                    result = jsonpath_expr.find(json_object)
-                    if len(result) == 1:
-                        outputs[var_name] = str(result[0].value)
-                    else:
-                        # FR #81 - add ability to capture from a list
-                        capture_list = list()
-                        for r in result:
-                            capture_list.append(r.value)
-
-                        outputs[var_name] = capture_list
+                    captured_output[var_name] = capture_list
 
         except ValueError as ve:
             logger.error('Caught error converting results to json')
-            outputs['fail_message'] = str(ve)
+            captured_output['fail_message'] = str(ve)
         except Exception as e:
             logger.error('Unknown exception here!')
             logger.error(e)
-            outputs['fail_message'] = str(e)
+            captured_output['fail_message'] = str(e)
 
-        return outputs
+        return captured_output
 
     def __handle_manual_outputs(self, output_definition: dict, results: str) -> dict:
         """

@@ -811,7 +811,7 @@ class Panoply:
 
     @staticmethod
     def __split_xpath(xpath: str) -> Tuple[str, str]:
-        xpath_parts = xpath.split('/')
+        xpath_parts = re.split(r'/(?=(?:[^"]*"[^"]*")*[^"]*$)', xpath)
         new_xpath = "/".join(xpath_parts[:-1])
         entry = xpath_parts[-1]
         return new_xpath, entry

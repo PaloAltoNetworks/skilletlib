@@ -35,3 +35,21 @@ class WorkflowSkillet(Skillet):
             snippet_list.append(snippet)
 
         return snippet_list
+
+    def get_results(self) -> dict:
+        """
+        format and return our outputs from this workflow. self.snippet_outputs will be the combined outputs
+        from all the snippets from all the skillets that were executed. Any top level items added by each skillet
+        will be added here as well.
+        """
+        results = dict()
+        results['outputs'] = self.captured_outputs
+
+        results['snippets'] = dict()
+        for k, v in self.snippet_outputs.items():
+            if k == 'skillets':
+                results.update(v)
+            else:
+                results['snippets'][k] = v
+
+        return results

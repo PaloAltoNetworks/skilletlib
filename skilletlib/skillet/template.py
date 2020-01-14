@@ -23,20 +23,20 @@ class TemplateSkillet(Skillet):
 
         return snippet_list
 
-    def get_results(self, context: dict) -> dict:
+    def get_results(self) -> dict:
         """
         TemplateSkillet will add an additional attribute into the results dict containing the value of
         the first snippet found to have been successfully executed
-        :param context: results dict
         :return: dict containing default outputs plus the rendered template
         """
-        results = super().get_results(context)
+
+        results = super().get_results()
         cleaned_results = dict()
         cleaned_results['snippets'] = dict()
         snippets = results.get('snippets', {})
         for k, v in snippets.items():
             if v != '':
-                cleaned_results['template'] = v
+                cleaned_results['template'] = v['raw']
                 cleaned_results['snippets'][k] = 'success'
                 break
             cleaned_results['snippets'][k] = 'failure'

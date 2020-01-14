@@ -482,3 +482,18 @@ class PanosSnippet(TemplateSnippet):
         o = dict()
         o[self.name] = output
         return o
+
+    def get_default_output(self, results: str, status: str) -> dict:
+        """
+        Override the default snippet get_default_output to not include raw results
+        :param results: raw output from snippet execution
+        :param status: status of the snippet.execute method
+        :return: dict of default outputs
+        """
+
+        r = {
+                self.name: {
+                    'results': status
+                }
+        }
+        return r

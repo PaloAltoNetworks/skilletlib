@@ -31,7 +31,7 @@ found, this filter will return True. This is useful to validate a specific eleme
     test: update_schedule_object| tag_present('update-schedule.statistics-service')
 
 element_value
-~~~~~~~~~~
+~~~~~~~~~~~~~
 
 This filter will return the value of the given path in the variable object. This value can then be used with any
 valid jinja expression. The path argument is a '.' or '/'
@@ -45,7 +45,7 @@ found, this filter will return leaf node text value.
     test: device_system | element_value('ip-address') == '10.10.10.10'
 
 attribute_present
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 This filter will determine if a node exists with the given attribute name and value. This is useful for parts of the
 configuration where there may be many 'entries' under a specific xpath. For example, security profiles or interfaces.

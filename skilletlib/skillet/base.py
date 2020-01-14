@@ -47,6 +47,8 @@ class Skillet(ABC):
         self.labels = self.skillet_dict['labels']
         self.collections = self.skillet_dict['labels']['collection']
         self.context = dict()
+        self.captured_outputs = dict()
+        self.snippet_outputs = dict()
 
     @abstractmethod
     def get_snippets(self) -> List[Snippet]:
@@ -155,10 +157,14 @@ class Skillet(ABC):
                         if running_counter > 60:
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
-                    returned_output = snippet.capture_outputs(output, status)
-                    # returned_output['status'] = status
-                    returned_outputs.update(returned_output)
-                    context.update(returned_output)
+                    # capture all outputs
+                    snippet_outputs = snippet.get_default_output(output, status)
+                    captured_outputs = snippet.capture_outputs(output, status)
+
+                    self.snippet_outputs.update(snippet_outputs)
+                    self.captured_outputs.update(captured_outputs)
+                    context.update(snippet_outputs)
+                    context.update(captured_outputs)
 
         except SkilletLoaderException as sle:
             logger.error(f'Caught Exception during execution: {sle}')
@@ -168,16 +174,18 @@ class Skillet(ABC):
         finally:
             self.cleanup()
 
-        return self.get_results(returned_outputs)
+        return self.get_results()
 
-    def get_results(self, context: dict) -> dict:
+    def get_results(self) -> dict:
         results = dict()
         results['snippets'] = dict()
         for s in self.snippet_stack:
             snippet_name = s.get('name', '')
-            if snippet_name in context:
-                results['snippets'][snippet_name] = context[snippet_name]
+            if snippet_name in self.snippet_outputs:
+                results['snippets'][snippet_name] = self.snippet_outputs[snippet_name]
 
+        results['outputs'] = self.captured_outputs
+        # results.update(self.captured_outputs)
         return results
 
 
