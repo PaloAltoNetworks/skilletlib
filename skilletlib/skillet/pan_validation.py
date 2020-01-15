@@ -80,7 +80,8 @@ class PanValidationSkillet(PanosSkillet):
                     else:
                         context[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
 
-                results['snippets'][snippet_name] = result
+                    results['snippets'][snippet_name] = result
+
                 results['pan_validation'][snippet_name] = context[snippet_name]
 
         return results

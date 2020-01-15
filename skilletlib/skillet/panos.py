@@ -56,13 +56,15 @@ class PanosSkillet(Skillet):
         # if the panoply object was not passed in via __init__, then check for online vs offline mode here
         online_required_fields = {'panos_hostname', 'panos_username', 'panos_password'}
         # which set of fields we find in the contexst will determine online vs offline mode
+        legacy_required_fields = {'TARGET_IP', 'TARGET_USERNAME', 'TARGET_PASSWORD'}
         offline_required_fields = {'config'}
 
         context = super().initialize_context(initial_context)
 
         if self.panoply is None:
             if not online_required_fields.issubset(initial_context) \
-                    and not offline_required_fields.issubset(initial_context):
+                    and not offline_required_fields.issubset(initial_context) \
+                    and not legacy_required_fields.issubset(initial_context):
                 raise SkilletValidationException('Required fields for panos skillet not found in context!')
 
             if online_required_fields.issubset(initial_context):
@@ -70,6 +72,16 @@ class PanosSkillet(Skillet):
                 username = initial_context.get('panos_username', None)
                 password = initial_context.get('panos_password', None)
                 port = initial_context.get('panos_port', '443')
+                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
+                                                          api_port=port)
+
+                context['config'] = self.panoply.get_configuration()
+
+            elif legacy_required_fields.issubset(initial_context):
+                hostname = initial_context.get('TARGET_IP', None)
+                username = initial_context.get('TARGET_USERNAME', None)
+                password = initial_context.get('TARGET_PASSWORD', None)
+                port = initial_context.get('TARGET_PORT', '443')
                 self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
                                                           api_port=port)
 
@@ -148,9 +160,10 @@ class PanosSkillet(Skillet):
         skillet_result = 'success'
         snippets = results.get('snippets', {})
         for k, v in snippets.items():
-            if v != 'success':
-                skillet_result = 'failure'
-                break
+            if isinstance(v, dict) and 'results' in v:
+                if v.get('results', 'failure') != 'success':
+                    skillet_result = 'failure'
+                    break
 
         results['result'] = skillet_result
         return results
