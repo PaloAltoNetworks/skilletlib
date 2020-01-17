@@ -15,11 +15,13 @@
 # Authors: Nathan Embery
 
 import logging
+import sys
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
 
 import oyaml
+import os
 from yaml.error import YAMLError
 
 from skilletlib.exceptions import SkilletLoaderException
@@ -27,13 +29,23 @@ from skilletlib.exceptions import SkilletNotFoundException
 from skilletlib.remotes.git import Git
 from skilletlib.skillet.base import Skillet
 
-logger = logging.getLogger(__name__)
+# set up logging here as the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 class SkilletLoader:
     skillets = List[Skillet]
 
     def __init__(self, path=None):
+
+        debug = os.environ.get('SKILLET_DEBUG', False)
+        if debug:
+            logger.setLevel(logging.DEBUG)
 
         if path is not None:
             self.load_all_skillets_from_dir(path)
