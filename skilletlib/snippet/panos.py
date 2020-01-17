@@ -77,12 +77,15 @@ class PanosSnippet(TemplateSnippet):
         elif self.cmd == 'parse':
             logger.info(f'  Parsing Variable: {self.metadata["variable"]}')
             output = context.get(self.metadata['variable'], '')
-        elif self.cmd == 'set':
+        elif self.cmd in ('op', 'set', 'edit', 'override', 'move', 'rename', 'clone', 'show', 'get', 'delete'):
             logger.info(f'  Executing Snippet: {self.name}')
             # execute the command from the snippet definition and return the raw output
             output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
+        elif self.cmd == 'noop':
+            output = ''
         else:
             # no-op or unknown op!
+            logger.warning(f'Skipping unknown cmd type: {self.cmd}')
             output = ''
 
         return output, 'success'
