@@ -1,5 +1,5 @@
-# skilletlib
-Base Classes and Utilities for working with Skillets. Skilletlib ecapsulates all the logic necessary to 
+# Skilletlib
+Base Classes and Utilities for working with Skillets. Skilletlib encapsulates all the logic necessary to 
 execute a skillet in your app or tooling. 
 
 
