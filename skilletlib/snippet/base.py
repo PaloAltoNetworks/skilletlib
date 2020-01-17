@@ -30,7 +30,6 @@ from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
 from lxml import etree
-from lxml.etree import Element
 from passlib.hash import md5_crypt
 
 from skilletlib.exceptions import SkilletLoaderException
@@ -173,10 +172,10 @@ class Snippet(ABC):
         """
 
         r = {
-                self.name: {
-                    'results': status,
-                    'raw': results
-                }
+            self.name: {
+                'results': status,
+                'raw': results
+            }
         }
         return r
 
@@ -248,8 +247,14 @@ class Snippet(ABC):
 
         return output
 
-    def __filter_outputs(self, output_definition: dict, output: dict, local_context: dict):
-
+    def __filter_outputs(self, output_definition: dict, output: (str, dict, list), local_context: dict) -> (list, None):
+        """
+        Filter OUT items that do not pass the test
+        :param output_definition: the output definition from the skillet
+        :param output: the captured object to test
+        :param local_context: local context for the jinja expression based tests
+        :return: a list of the items that passed the test, or all items if there is not test defined
+        """
         if 'filter_items' not in output_definition:
             return output
 
@@ -259,7 +264,7 @@ class Snippet(ABC):
         # keep a new list of all the items that have matched the test
         filtered_items = list()
 
-        if type(output) is list:
+        if isinstance(output, list):
             for item in output:
                 local_context['item'] = item
                 results = self.execute_conditional(test_str, local_context)
@@ -273,11 +278,13 @@ class Snippet(ABC):
             else:
                 output = filtered_items
 
-        elif type(output) is str or type(output) is dict:
+        elif isinstance(output, str) or isinstance(output, dict):
             local_context['item'] = output
             results = self.execute_conditional(test_str, local_context)
             if results:
                 return output
+            else:
+                return None
 
         return output
 
