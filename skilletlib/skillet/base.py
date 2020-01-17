@@ -25,6 +25,7 @@ from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class Skillet(ABC):
@@ -134,20 +135,18 @@ class Skillet(ABC):
         will override these default values vai the 'update_context' method.
         :return: a dict containing the updated context containing the output of each of the snippets
         """
-
-        context = dict()
-        returned_outputs = dict()
-
         try:
             context = self.initialize_context(initial_context)
-
+            logger.debug(f'Executing Skillet: {self.name}')
             for snippet in self.get_snippets():
                 # render anything that looks like a jinja template in the snippet metadata
                 # mostly useful for xpaths in the panos case
-                metadata = snippet.render_metadata(context)
+                snippet.render_metadata(context)
                 # check the 'when' conditional against variables currently held in the context
                 if snippet.should_execute(context):
                     (output, status) = snippet.execute(context)
+                    logger.debug(f'{self.name}: {status}')
+                    logger.debug(f'{self.name}: {output}')
                     running_counter = 0
                     while status == 'running':
                         logger.info('Snippet still running...')
@@ -160,7 +159,7 @@ class Skillet(ABC):
                     # capture all outputs
                     snippet_outputs = snippet.get_default_output(output, status)
                     captured_outputs = snippet.capture_outputs(output, status)
-
+                    logger.debug(f'{self.name}: {captured_outputs}')
                     self.snippet_outputs.update(snippet_outputs)
                     self.captured_outputs.update(captured_outputs)
                     context.update(snippet_outputs)

@@ -30,6 +30,7 @@ import requests_toolbelt
 import xmltodict
 from lxml import etree
 from lxml.etree import Element
+import os
 from pan import xapi
 from pan.config import PanConfig
 from pan.xapi import PanXapiError
@@ -89,6 +90,8 @@ class Panoply:
         self.xapi = None
 
         if debug:
+            logger.setLevel(logging.DEBUG)
+        elif os.environ.get('SKILLET_DEBUG', False):
             logger.setLevel(logging.DEBUG)
 
         if hostname is None and api_username is None and api_password is None:

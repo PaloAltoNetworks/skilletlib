@@ -72,7 +72,8 @@ class PanosSkillet(Skillet):
                 username = initial_context.get('panos_username', None)
                 password = initial_context.get('panos_password', None)
                 port = initial_context.get('panos_port', '443')
-                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
+                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username,
+                                                          api_password=password,
                                                           api_port=port)
 
                 context['config'] = self.panoply.get_configuration()
@@ -82,7 +83,8 @@ class PanosSkillet(Skillet):
                 username = initial_context.get('TARGET_USERNAME', None)
                 password = initial_context.get('TARGET_PASSWORD', None)
                 port = initial_context.get('TARGET_PORT', '443')
-                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username, api_password=password,
+                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username,
+                                                          api_password=password,
                                                           api_port=port)
 
                 context['config'] = self.panoply.get_configuration()

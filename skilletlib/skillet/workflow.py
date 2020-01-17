@@ -23,7 +23,7 @@ from .base import Skillet
 
 class WorkflowSkillet(Skillet):
 
-    def __init__(self, skillet_dict, skillet_loader: SkilletLoader):
+    def __init__(self, skillet_dict: dict, skillet_loader: SkilletLoader) -> None:
         self.skillet_loader = skillet_loader
         super().__init__(skillet_dict)
 

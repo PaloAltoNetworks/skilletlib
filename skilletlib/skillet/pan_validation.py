@@ -59,8 +59,7 @@ class PanValidationSkillet(PanosSkillet):
         results['snippets'] = dict()
         results['pan_validation'] = dict()
         context = self.context
-        # allow items from the snippet / skillet context to be used here as well
-        # context.update(returned_output)
+
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
