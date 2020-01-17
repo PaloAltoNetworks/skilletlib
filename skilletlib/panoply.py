@@ -46,9 +46,10 @@ from .skilletLoader import SkilletLoader
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-logger.addHandler(handler)
+if not len(logger.handlers):
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
 
 
 class Panoply:
@@ -190,6 +191,7 @@ class Panoply:
             self.xapi.set(xpath=xpath, element=self.sanitize_element(xml_str))
             if self.xapi.status_code == '7':
                 raise SkilletLoaderException(f'xpath {xpath} was NOT found for skillet: {name}')
+
         except PanXapiError as pxe:
             raise PanoplyException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
 
@@ -197,6 +199,7 @@ class Panoply:
         try:
             self.xapi.op(cmd=cmd_str)
             return self.xapi.xml_result()
+
         except PanXapiError as pxe:
             raise PanoplyException(pxe)
 
@@ -240,6 +243,7 @@ class Panoply:
             if cmd in ('rename', 'clone'):
                 if 'new_name' in params:
                     kwargs['newname'] = params['new_name']
+
                 else:
                     kwargs['newname'] = params['newname']
 
@@ -257,10 +261,132 @@ class Panoply:
 
         return self.xapi.xml_result()
 
+    def fetch_license(self, auth_code: str) -> bool:
+        """
+        Fetch and install licenses for PAN-OS NGFW
+        :param auth_code: Authorization code to use to license the NGFW
+        :return: True when license installation succeeds / False otherwise
+        """
+
+        if self.facts.get('family', '') == 'vm':
+            if self.facts.get('vm-license', 'none') != 'none':
+                logger.debug('This VM is already licensed')
+                return True
+
+        try:
+            cmd = f'<request><license><fetch><auth-code>{auth_code}</auth-code></fetch></license></request>'
+            logger.debug(f'Using request cmd: {cmd}')
+            self.xapi.op(cmd=cmd)
+            results = self.xapi.xml_result()
+            logger.debug(f'fetch_license results: {results}')
+            if 'License installed' in results:
+                return True
+
+            else:
+                logger.warning('Unexpected Results from fetch_license')
+                logger.warning(results)
+                return False
+
+        except PanXapiError as pxe:
+            # bug present in 9.0.4 that returns content-type of xml but the content is only text.
+            # this causes a ParseError to be thrown, however, the operation was actually successful
+            if 'ParseError' in pxe:
+                if self.xapi.xml_document is not None and 'License installed' in self.xapi.xml_document:
+                    return True
+
+            logger.error(f'Caught Exception in fetch_license: {pxe}')
+            if self.xapi.status_detail:
+                logger.error(self.xapi.status_detail)
+
+            return False
+
+    def set_license_api_key(self, api_key: str) -> bool:
+        """
+        Set's the Palo Alto Networks Support API Key in the firewall. This is required to deactivate a VM-Series NGFW.
+        :param api_key: Your support account API Key found on the support.paloaltonetworks.com site
+        :return: boolean True on success / False otherwise
+        """
+
+        try:
+            try:
+                verify_cmd = '<request><license><api-key><show></show></api-key></license></request>'
+                verify_results = self.execute_op(verify_cmd)
+                logger.debug(verify_results)
+                current_api_key = verify_results.split(': ')[1]
+                if current_api_key == api_key:
+                    logger.debug('API Key is already set')
+                    return True
+
+            except PanoplyException as pxe:
+                # will raise an error if there is no key already set, just log it and continue
+                logger.debug(pxe)
+
+            cmd = f'<request><license><api-key><set><key>{api_key}</key></set></api-key></license></request>'
+            logger.debug(f'Using request cmd: {cmd}')
+            results = self.execute_op(cmd)
+            logger.debug(f'set_license_api_key results: {results}')
+
+            if 'successfully set' in results:
+                return True
+
+            else:
+                logger.warning('Unexpected Results from set_license_api_key')
+                logger.warning(results)
+                return False
+
+        except PanoplyException as pxe:
+            logger.error(f'Caught Exception in set_license_api_key: {pxe}')
+
+            if self.xapi.status_detail:
+                logger.error(self.xapi.status_detail)
+
+            return False
+
+    def deactivate_vm_license(self, api_key: str = None) -> bool:
+        """
+        Deactivate VM-Series Licenses. Will set the API Key is not already set.
+        :param api_key: Optional api_key.
+        :return: boolean True on success / False otherwise
+        """
+
+        if self.facts.get('family', '') != 'vm':
+            logger.warning('Attempting to deactivate license on a NGFW that is not a VM!')
+            return False
+
+        if self.facts.get('vm-license', 'none') == 'none':
+            logger.debug('This VM is already de-licensed')
+            return True
+
+        if api_key is not None:
+            if not self.set_license_api_key(api_key):
+                return False
+
+        try:
+            cmd = f'<request><license><deactivate><VM-Capacity><mode>auto</mode>' \
+                  f'</VM-Capacity></deactivate></license></request>'
+            logger.debug(f'Using request cmd: {cmd}')
+            results = self.execute_op(cmd)
+            logger.debug(f'deactivate_vm_license results: {results}')
+            if 'Successfully deactivated' in results:
+                return True
+
+            else:
+                logger.warning('Unexpected Results from deactivate_vm_license')
+                logger.warning(results)
+                return False
+
+        except PanoplyException as pxe:
+            logger.error(f'Caught Exception in deactivate_vm_license: {pxe}')
+
+            if self.xapi.status_detail:
+                logger.error(self.xapi.status_detail)
+
+            return False
+
     @staticmethod
     def sanitize_element(element: str) -> str:
         """
-        Eliminate some undeeded characters out of the XML snippet if they appear.
+        Eliminate some unneeded characters from the XML snippet if they appear.
         :param element: element str
         :return: sanitized element str
         """
