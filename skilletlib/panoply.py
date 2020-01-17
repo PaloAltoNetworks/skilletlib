@@ -290,7 +290,7 @@ class Panoply:
         except PanXapiError as pxe:
             # bug present in 9.0.4 that returns content-type of xml but the content is only text.
             # this causes a ParseError to be thrown, however, the operation was actually successful
-            if 'ParseError' in pxe:
+            if 'ParseError' in str(pxe):
                 if self.xapi.xml_document is not None and 'License installed' in self.xapi.xml_document:
                     return True
 
