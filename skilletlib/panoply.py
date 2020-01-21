@@ -705,7 +705,8 @@ class Panoply:
         while True:
             try:
                 self.xapi.op(cmd=f'<show><jobs><id>{job_id}</id></jobs></show>')
-            except PanXapiError:
+            except PanXapiError as pxe:
+                logger.error(f'Exception checking job: {pxe}')
                 logger.error(f'Could not locate job with id: {job_id}')
                 return False
 
