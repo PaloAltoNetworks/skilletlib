@@ -138,30 +138,41 @@ class Skillet(ABC):
         try:
             context = self.initialize_context(initial_context)
             logger.debug(f'Executing Skillet: {self.name}')
+
             for snippet in self.get_snippets():
                 # render anything that looks like a jinja template in the snippet metadata
                 # mostly useful for xpaths in the panos case
                 snippet.render_metadata(context)
                 # check the 'when' conditional against variables currently held in the context
+
                 if snippet.should_execute(context):
                     (output, status) = snippet.execute(context)
-                    logger.debug(f'{self.name}: {status}')
-                    logger.debug(f'{self.name}: {output}')
+                    logger.debug(f'{snippet.name} - status: {status}')
+
+                    if output:
+                        logger.debug(f'{snippet.name} - output: {output}')
+
                     running_counter = 0
+
                     while status == 'running':
                         logger.info('Snippet still running...')
                         time.sleep(5)
                         (output, status) = snippet.get_output()
                         running_counter += 1
+
                         if running_counter > 60:
                             raise SkilletLoaderException('Snippet took too long to execute!')
 
                     # capture all outputs
                     snippet_outputs = snippet.get_default_output(output, status)
                     captured_outputs = snippet.capture_outputs(output, status)
-                    logger.debug(f'{self.name}: {captured_outputs}')
+
+                    if captured_outputs:
+                        logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+
                     self.snippet_outputs.update(snippet_outputs)
                     self.captured_outputs.update(captured_outputs)
+
                     context.update(snippet_outputs)
                     context.update(captured_outputs)
 
@@ -170,6 +181,7 @@ class Skillet(ABC):
 
         except Exception as e:
             logger.error(f'Exception caught: {e}')
+
         finally:
             self.cleanup()
 
@@ -178,8 +190,10 @@ class Skillet(ABC):
     def get_results(self) -> dict:
         results = dict()
         results['snippets'] = dict()
+
         for s in self.snippet_stack:
             snippet_name = s.get('name', '')
+
             if snippet_name in self.snippet_outputs:
                 results['snippets'][snippet_name] = self.snippet_outputs[snippet_name]
 
