@@ -213,6 +213,33 @@ class SkilletLoader:
                     if 'default' not in variable:
                         variable['default'] = ''
 
+        if 'depends' not in skillet:
+            skillet['depends'] = list()
+
+        elif not isinstance(skillet['depends'], list):
+            skillet['depends'] = list()
+
+        elif isinstance(skillet['depends'], list):
+            for depends in skillet['depends']:
+
+                if not isinstance(depends, dict):
+                    print('Removing Invalid Depends Definition')
+                    print(type(depends))
+                    skillet['depends'].remove(depends)
+
+                else:
+                    if not {'url', 'name'}.issubset(depends):
+                        print('Removing Invalid Depends Definition - incorrect attributes')
+                        print('Required "url" and "name" to be present. "branch" is optional')
+                        print(depends)
+
+                    else:
+                        if depends['url'] is None or depends['url'] == '' \
+                                or depends['name'] is None or depends['name'] == '':
+                            print('Removing Invalid Depends Definition - incorrect attribute values')
+                            print('Required "url" and "name" to be not be blank or None')
+                            print(depends)
+
         # verify labels stanza is present and is a OrderedDict
         if 'labels' not in skillet:
             skillet['labels'] = OrderedDict()
@@ -248,6 +275,44 @@ class SkilletLoader:
             skillet['snippets'] = list()
 
         return skillet
+
+    @staticmethod
+    def debug_skillet_structure(skillet: dict) -> list:
+        """
+        Verifies the structure of a skillet and returns a list of errors or warning if found
+        :param skillet: Skillet Definition Dictionary
+        :return: list of errors or warnings if found
+        """
+
+        errs = list()
+
+        if skillet is None:
+            errs.append('Skillet is blank or could not be loaded')
+            return errs
+
+        if not isinstance(skillet, dict):
+            errs.append('Skillet is malformed')
+            return errs
+
+        # verify labels stanza is present
+        if 'labels' not in skillet:
+            errs.append('No labels attribute present in skillet')
+        else:
+            if 'collection' not in skillet['labels']:
+                errs.append('No collection defined in skillet')
+
+        if 'label' not in skillet:
+            errs.append('No label attribute in skillet')
+
+        if 'type' not in skillet:
+            errs.append('No type attribute in skillet')
+        else:
+            valid_types = ['panos', 'panorama', 'panorama-gpcs', 'pan_validation',
+                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker']
+            if skillet['type'] not in valid_types:
+                errs.append(f'Unknown type {skillet["type"]} in skillet')
+
+        return errs
 
     def get_skillet_with_name(self, skillet_name: str) -> (Skillet, None):
 
