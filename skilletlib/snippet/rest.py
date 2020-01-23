@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Tuple
+from urllib.parse import quote
 
 import urllib3
 from requests import Response
@@ -49,9 +50,16 @@ class RestSnippet(TemplateSnippet):
         if self.accepts_type != '':
             self.headers['Accepts-Type'] = self.accepts_type
 
-    def execute(self, context: dict) -> Tuple[str, str]:
+    def execute(self, raw_context: dict) -> Tuple[str, str]:
         # fixme - can we do this in sanitize_metadata ?
         rest_path = self.path.strip().replace('\n', '')
+        context = dict()
+
+        if raw_context is not None:
+            # always enforce quotes in the context
+            for k, v in raw_context.items():
+                context[k] = quote(v)
+
         url = self.render(rest_path, context)
 
         for k, v in self.headers.items():
@@ -82,4 +90,3 @@ class RestSnippet(TemplateSnippet):
                 r = response.text
 
             return r, 'success'
-
