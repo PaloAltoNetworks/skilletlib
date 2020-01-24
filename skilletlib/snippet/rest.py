@@ -58,7 +58,8 @@ class RestSnippet(TemplateSnippet):
         if raw_context is not None:
             # always enforce quotes in the context
             for k, v in raw_context.items():
-                context[k] = quote(v)
+                if isinstance(v, str):
+                    context[k] = quote(v)
 
         url = self.render(rest_path, context)
 
