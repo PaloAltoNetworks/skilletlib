@@ -50,11 +50,17 @@ class PanosSnippet(TemplateSnippet):
 
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
+
+        # can this snippet make changes to the PAN-OS Device?
+        self.destructive = False
+
         if 'cmd' not in metadata:
             self.cmd = 'set'
             metadata['cmd'] = 'set'
+
         elif metadata['cmd'] == 'op':
             self.cmd = metadata['cmd']
+
         else:
             self.cmd = metadata['cmd']
 
@@ -70,19 +76,32 @@ class PanosSnippet(TemplateSnippet):
             logger.info(f'  Test is: {test}')
             output = self.execute_conditional(test, context)
             logger.info(f'  Validation results were: {output}')
+
         elif self.cmd == 'validate_xml':
             logger.info(f'  Validating XML Snippet: {self.name}')
             output = self.compare_element_at_xpath(context['config'], self.metadata['element'],
                                                    self.metadata['xpath'], context)
+
         elif self.cmd == 'parse':
             logger.info(f'  Parsing Variable: {self.metadata["variable"]}')
             output = context.get(self.metadata['variable'], '')
-        elif self.cmd in ('op', 'set', 'edit', 'override', 'move', 'rename', 'clone', 'show', 'get', 'delete'):
+
+        elif self.cmd in ('op', 'set', 'edit', 'override', 'move', 'rename', 'clone', 'delete'):
             logger.info(f'  Executing Snippet: {self.name}')
-            # execute the command from the snippet definition and return the raw output
+
+            # These cmds may modify the configuration
+            self.destructive = True
+
             output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
+
+        elif self.cmd in ('show', 'get'):
+            logger.info(f'  Executing Snippet: {self.name}')
+
+            output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
+
         elif self.cmd == 'noop':
             output = ''
+
         else:
             # no-op or unknown op!
             logger.warning(f'Skipping unknown cmd type: {self.cmd}')
@@ -109,6 +128,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['element_value_contains'] = self.__node_value_contains
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
+
         else:
             logger.info('NO FILTERS TO APPEND TO')
 
@@ -496,7 +516,8 @@ class PanosSnippet(TemplateSnippet):
 
         r = {
                 self.name: {
-                    'results': status
+                    'results': status,
+                    'changed': self.destructive
                 }
         }
         return r

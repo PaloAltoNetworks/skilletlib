@@ -60,7 +60,7 @@ class Panoply:
 
     def __init__(self, hostname: Optional[str] = None, api_username: Optional[str] = None,
                  api_password: Optional[str] = None, api_port: Optional[int] = 443,
-                 serial_number: Optional[str] = None, debug: Optional[bool] = False):
+                 serial_number: Optional[str] = None, debug: Optional[bool] = False, api_key: Optional[str] = None):
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
         to connect to the device and set offline_mode to False. Otherwise, offline mode will be set to True
@@ -70,6 +70,7 @@ class Panoply:
         :param api_port: port to use for target device
         :param serial_number: Serial number of target device if proxy through panorama
         :param debug: Optional flag to log additional debug messages
+        :param api_key: Optional api key to use instead of username / password auth
         """
 
         if api_port is None:
@@ -80,9 +81,9 @@ class Panoply:
         self.pw = api_password
         self.port = api_port
         self.serial_number = serial_number
+        self.key = api_key
+        self.debug = debug
 
-        self.key = ''
-        self.debug = False
         self.serial = serial_number
         self.connected = False
         self.connected_message = 'no connection attempted'
@@ -106,7 +107,7 @@ class Panoply:
 
         try:
             self.xapi = xapi.PanXapi(api_username=self.user, api_password=self.pw, hostname=self.hostname,
-                                     port=self.port, serial=self.serial_number)
+                                     port=self.port, serial=self.serial_number, api_key=self.key)
 
         except xapi.PanXapiError as pxe:
             err_msg = str(pxe)

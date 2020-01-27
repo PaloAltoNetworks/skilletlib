@@ -17,7 +17,7 @@
 import html
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import skilletlib
 from skilletlib.panoply import Panoply
@@ -54,9 +54,19 @@ class PanosSkillet(Skillet):
         """
 
         # if the panoply object was not passed in via __init__, then check for online vs offline mode here
+        # which set of fields we find in the context will determine online vs offline mode
         online_required_fields = {'panos_hostname', 'panos_username', 'panos_password'}
-        # which set of fields we find in the contexst will determine online vs offline mode
+
+        # deprecated legacy fields
         legacy_required_fields = {'TARGET_IP', 'TARGET_USERNAME', 'TARGET_PASSWORD'}
+
+        # simplified version
+        provider_required_fields = {'ip_address', 'username', 'password'}
+
+        # also allow api_key auth as well
+        api_key_required_fields = {'ip_address', 'api_key'}
+
+        # support for offline mode requires at least the 'config' variable to be present
         offline_required_fields = {'config'}
 
         context = super().initialize_context(initial_context)
@@ -64,7 +74,9 @@ class PanosSkillet(Skillet):
         if self.panoply is None:
             if not online_required_fields.issubset(initial_context) \
                     and not offline_required_fields.issubset(initial_context) \
-                    and not legacy_required_fields.issubset(initial_context):
+                    and not legacy_required_fields.issubset(initial_context) \
+                    and not provider_required_fields.issubset(initial_context) \
+                    and not api_key_required_fields.issubset(initial_context):
                 raise SkilletValidationException('Required fields for panos skillet not found in context!')
 
             if online_required_fields.issubset(initial_context):
@@ -72,9 +84,8 @@ class PanosSkillet(Skillet):
                 username = initial_context.get('panos_username', None)
                 password = initial_context.get('panos_password', None)
                 port = initial_context.get('panos_port', '443')
-                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username,
-                                                          api_password=password,
-                                                          api_port=port)
+
+                self.panoply = self.__init_panoply(hostname, username, password, port)
 
                 context['config'] = self.panoply.get_configuration()
 
@@ -83,23 +94,59 @@ class PanosSkillet(Skillet):
                 username = initial_context.get('TARGET_USERNAME', None)
                 password = initial_context.get('TARGET_PASSWORD', None)
                 port = initial_context.get('TARGET_PORT', '443')
-                self.panoply = skilletlib.panoply.Panoply(hostname=hostname, api_username=username,
-                                                          api_password=password,
-                                                          api_port=port)
+
+                self.panoply = self.__init_panoply(hostname, username, password, port)
 
                 context['config'] = self.panoply.get_configuration()
+
+            elif provider_required_fields.issubset(initial_context):
+                hostname = initial_context['ip_address']
+                username = initial_context['username']
+                password = initial_context['password']
+                port = initial_context['port']
+
+                self.panoply = self.__init_panoply(hostname, username, password, port)
+
+                context['config'] = self.panoply.get_configuration()
+
+            elif api_key_required_fields.issubset(initial_context):
+                hostname = initial_context['hostname']
+                api_key = initial_context['api_key']
+
+                # port may or may not be defined here
+                port = initial_context.get('port', 443)
+
+                self.panoply = self.__init_panoply(hostname=hostname, api_key=api_key, port=port)
+
+                context['config'] = self.panoply.get_configuration()
+
             else:
                 logger.info(f'offline mode detected for {__name__}')
                 # init panoply in offline mode
-                self.panoply = skilletlib.panoply.Panoply()
+                self.panoply = self.__init_panoply()
+
         else:
             # we were passed in a panoply object already, check if we are connected and grab the configuration if so
             if self.panoply.connected:
                 context['config'] = self.panoply.get_configuration()
+
             else:
-                raise SkilletLoaderException('Could not get configuration as Panoply is not connected!')
+                raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
         return context
+
+    @staticmethod
+    def __init_panoply(hostname: Optional[str] = None,
+                       username: Optional[str] = None,
+                       password: Optional[str] = None,
+                       port: Optional[int] = 443,
+                       api_key: Optional[str] = None):
+
+        return skilletlib.panoply.Panoply(hostname=hostname,
+                                          api_username=username,
+                                          api_password=password,
+                                          api_port=port,
+                                          api_key=api_key)
 
     def get_snippets(self) -> List[PanosSnippet]:
         """
@@ -108,7 +155,9 @@ class PanosSkillet(Skillet):
         """
         snippet_path = Path(self.path)
         snippet_list = list()
+
         for snippet_def in self.snippet_stack:
+
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
                 snippet_def = self.load_element(snippet_def, snippet_path)
 
@@ -136,38 +185,56 @@ class PanosSkillet(Skillet):
         relative paths for each snippet. This allows snippet file re-use across skillets.
         :return: snippet_def with the element populated with the resolved and loaded snippet file contents
         """
+
         if 'element' not in snippet_def or snippet_def['element'] == '':
+
             if 'file' not in snippet_def:
                 raise SkilletLoaderException(
                     'YAMLError: Could not parse metadata file for snippet %s' % snippet_def['name'])
+
             snippet_file = snippet_path.joinpath(snippet_def['file']).resolve()
+
             if snippet_file.exists():
                 with snippet_file.open() as sf:
                     snippet_def['element'] = sf.read()
+
             else:
                 # raise SkilletLoaderException('Could not load "file" attribute!')
                 logger.error(f'Could not load the referenced file for {snippet_def["name"]}')
+
         else:
             # we have an element directly defined
             snippet_def['element'] = html.unescape(snippet_def['element'])
+
         return snippet_def
 
     def get_results(self) -> dict:
         """
-        PanosSkillet will return a dict containing two keys:
-        result and snippets. If any snippet failed, the result will be 'failure' otherwise 'success'
-        :return: dict containing default outputs plus the overall result
+        PanosSkillet will return a dict containing three keys:
+        result, changed, and snippets. If any snippet failed, the result will be 'failure' otherwise 'success'
+        If any successful snippet may have caused a change to the device, the 'changed' attribute will be 'True'
+        :return: dict containing default outputs plus the overall result and changed flag
         """
+
         results = super().get_results()
         skillet_result = 'success'
+
+        changed = False
+
         snippets = results.get('snippets', {})
+
         for k, v in snippets.items():
             if isinstance(v, dict) and 'results' in v:
+
                 if v.get('results', 'failure') != 'success':
                     skillet_result = 'failure'
-                    break
+                else:
+                    if v.get('changed', False):
+                        changed = True
 
         results['result'] = skillet_result
+        results['changed'] = changed
+
         return results
 
 
