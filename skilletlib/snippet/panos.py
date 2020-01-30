@@ -101,8 +101,8 @@ class PanosSnippet(TemplateSnippet):
 
         elif self.cmd == 'cli':
             logger.info(f'  Executing CLI cmd: {self.name}')
-
-            output = self.panoply.execute_cli(self.cmd, self.metadata, context)
+            cmd_str = self.metadata['cmd_str']
+            output = self.panoply.execute_cli(cmd_str)
 
         elif self.cmd == 'noop':
             output = ''
