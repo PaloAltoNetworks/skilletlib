@@ -215,14 +215,28 @@ class Panoply:
         except PanXapiError as pxe:
             raise PanoplyException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
 
-    def execute_op(self, cmd_str: str) -> str:
+    def execute_op(self, cmd_str: str, cmd_xml=False) -> str:
+        """
+        Executes an 'op' command on the NGFW
+        :param cmd_str: op command to send
+        :param cmd_xml: Flag to determine if op command requires XML encoding
+        :return: raw output from the device
+        """
 
         try:
-            self.xapi.op(cmd=cmd_str)
+            self.xapi.op(cmd=cmd_str, cmd_xml=cmd_xml)
             return self.xapi.xml_result()
 
         except PanXapiError as pxe:
             raise PanoplyException(pxe)
+
+    def execute_cli(self, cmd_str: str) -> str:
+        """
+        Short-cut to execute a simple CLI op cmd
+        :param cmd_str: CLI command to send to the NGFW
+        :return: raw output from the command
+        """
+        return self.execute_op(cmd_str, cmd_xml=True)
 
     def execute_cmd(self, cmd: str, params: dict, context=None) -> str:
         """

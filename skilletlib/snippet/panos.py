@@ -99,6 +99,11 @@ class PanosSnippet(TemplateSnippet):
 
             output = self.panoply.execute_cmd(self.cmd, self.metadata, context)
 
+        elif self.cmd == 'cli':
+            logger.info(f'  Executing CLI cmd: {self.name}')
+
+            output = self.panoply.execute_cli(self.cmd, self.metadata, context)
+
         elif self.cmd == 'noop':
             output = ''
 
@@ -163,10 +168,10 @@ class PanosSnippet(TemplateSnippet):
             if 'xpath_from' in metadata:
                 return metadata
             err = 'xpath_from attribute is required for clone cmd'
-        elif self.cmd == 'op':
+        elif self.cmd == 'op' or self.cmd == 'cli':
             if 'cmd_str' in metadata:
                 return metadata
-            err = 'cmd_str attribute is required for op cmd'
+            err = 'cmd_str attribute is required for op or cli cmd'
         elif self.cmd == 'validate':
             if {'test', 'label', 'documentation_link'}.issubset(metadata):
                 # configure validation outputs manually if necessary
