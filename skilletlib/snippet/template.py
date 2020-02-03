@@ -5,7 +5,7 @@ from .base import Snippet
 
 class TemplateSnippet(Snippet):
     """
-    BaseSnippet implements a basic template object snippet
+    TemplateSnippet implements a basic template object snippet
     """
     required_metadata = {'name', 'file'}
 
@@ -22,9 +22,5 @@ class TemplateSnippet(Snippet):
     def template(self, context) -> str:
         return self.execute(context)[0]
 
-    def handle_output_type_text(self, results):
-        r = dict()
-        r[self.name] = results
-        return r
 
 
