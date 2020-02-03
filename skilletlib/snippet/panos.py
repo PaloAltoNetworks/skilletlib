@@ -221,6 +221,9 @@ class PanosSnippet(TemplateSnippet):
                 if 'element' in self.metadata:
                     meta['element'] = self.render(self.metadata['element'], context)
 
+            if 'cmd_str' in self.metadata:
+                meta['cmd_str'] = self.render(self.metadata['cmd_str'], context)
+
         except TypeError as te:
             logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
 
