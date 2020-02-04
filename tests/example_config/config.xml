@@ -375,7 +375,8 @@
                                 <dhcp-client>
                                     <enable>yes</enable>
                                 </dhcp-client>
-                                <interface-management-profile>SKILLETLIB management untrust</interface-management-profile>
+                                <interface-management-profile>SKILLETLIB management untrust
+                                </interface-management-profile>
                                 <ipv6>
                                     <neighbor-discovery>
                                         <router-advertisement>
@@ -468,7 +469,8 @@
                                 <lldp>
                                     <enable>no</enable>
                                 </lldp>
-                                <interface-management-profile>SKILLETLIB management untrust</interface-management-profile>
+                                <interface-management-profile>SKILLETLIB management untrust
+                                </interface-management-profile>
                             </layer3>
                         </entry>
                         <entry name="ethernet1/7">
@@ -771,36 +773,74 @@
                 </ike>
                 <qos>
                     <profile>
-                        <entry name="default">
+                        <entry name="qos_1">
                             <class>
                                 <entry name="class1">
-                                    <priority>real-time</priority>
-                                </entry>
-                                <entry name="class2">
-                                    <priority>high</priority>
-                                </entry>
-                                <entry name="class3">
-                                    <priority>high</priority>
+                                    <class-bandwidth>
+                                        <egress-max>100</egress-max>
+                                        <egress-guaranteed>0</egress-guaranteed>
+                                    </class-bandwidth>
+                                    <priority>medium</priority>
                                 </entry>
                                 <entry name="class4">
+                                    <class-bandwidth>
+                                        <egress-max>20</egress-max>
+                                        <egress-guaranteed>0</egress-guaranteed>
+                                    </class-bandwidth>
                                     <priority>medium</priority>
                                 </entry>
-                                <entry name="class5">
+                            </class>
+                            <aggregate-bandwidth>
+                                <egress-max>2000</egress-max>
+                                <egress-guaranteed>1000</egress-guaranteed>
+                            </aggregate-bandwidth>
+                        </entry>
+                        <entry name="no_c4_1">
+                            <class>
+                                <entry name="class1">
+                                    <class-bandwidth>
+                                        <egress-max>0</egress-max>
+                                        <egress-guaranteed>0</egress-guaranteed>
+                                    </class-bandwidth>
                                     <priority>medium</priority>
                                 </entry>
-                                <entry name="class6">
-                                    <priority>low</priority>
-                                </entry>
-                                <entry name="class7">
-                                    <priority>low</priority>
-                                </entry>
-                                <entry name="class8">
-                                    <priority>low</priority>
+                            </class>
+                        </entry>
+                        <entry name="no_c4_2">
+                            <class>
+                                <entry name="class2">
+                                    <class-bandwidth>
+                                        <egress-max>0</egress-max>
+                                        <egress-guaranteed>0</egress-guaranteed>
+                                    </class-bandwidth>
+                                    <priority>medium</priority>
                                 </entry>
                             </class>
                         </entry>
                     </profile>
+                    <interface>
+                        <entry name="ethernet1/1">
+                            <regular-traffic>
+                                <groups>
+                                    <entry name="regular-traffic-group"/>
+                                </groups>
+                                <default-group>
+                                    <qos-profile>qos_1</qos-profile>
+                                </default-group>
+                            </regular-traffic>
+                            <tunnel-traffic>
+                                <groups>
+                                    <entry name="tunnel-traffic-group"/>
+                                </groups>
+                            </tunnel-traffic>
+                            <interface-bandwidth>
+                                <egress-max>10000</egress-max>
+                            </interface-bandwidth>
+                            <enabled>yes</enabled>
+                        </entry>
+                    </interface>
                 </qos>
+
                 <virtual-router>
                     <entry name="default">
                         <protocol>
