@@ -271,22 +271,21 @@ class Snippet(ABC):
                 if results:
                     filtered_items.append(item)
 
-            if len(filtered_items) == 0:
-                output = None
-            elif len(filtered_items) == 1:
-                output = filtered_items[0]
-            else:
-                output = filtered_items
+            # if len(filtered_items) == 0:
+            #     output = None
+            # elif len(filtered_items) == 1:
+            #     output = filtered_items[0]
+            # else:
+            #     output = filtered_items
+            return filtered_items
 
         elif isinstance(output, str) or isinstance(output, dict):
             local_context['item'] = output
             results = self.execute_conditional(test_str, local_context)
             if results:
-                return output
-            else:
-                return None
+                filtered_items.append(output)
 
-        return output
+        return filtered_items
 
     def render(self, template_str: str, context: (dict, None)) -> str:
         if context is None:

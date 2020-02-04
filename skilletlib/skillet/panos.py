@@ -103,7 +103,7 @@ class PanosSkillet(Skillet):
                 hostname = initial_context['ip_address']
                 username = initial_context['username']
                 password = initial_context['password']
-                port = initial_context['port']
+                port = initial_context.get('port', 443)
 
                 self.panoply = self.__init_panoply(hostname, username, password, port)
 
