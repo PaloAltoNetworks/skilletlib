@@ -377,11 +377,11 @@ class Snippet(ABC):
             output_type: xml
             outputs:
               - name: hostname
-                capture_pattern: result/system/hostname
+                capture_value: result/system/hostname
               - name: uptime
-                capture_pattern: result/system/uptime
+                capture_value: result/system/uptime
               - name: sw_version
-                capture_pattern: result/system/sw-version
+                capture_value: result/system/sw-version
 
         :param results: string as returned from some action, to be parsed as XML document
         :return: dict containing all outputs found from the capture pattern in each output
@@ -490,6 +490,19 @@ class Snippet(ABC):
                     for entry in entries:
                         capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
                     captured_output[var_name] = capture_list
+
+            elif 'capture_list' in output:
+                capture_pattern = output['capture_list']
+                entries = xml_doc.xpath(capture_pattern)
+
+                capture_list = list()
+                for entry in entries:
+                    if isinstance(entry, str):
+                        capture_list.append(entry)
+                    else:
+                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
+
+                captured_output[var_name] = capture_list
 
             # filter selected items here
             captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
