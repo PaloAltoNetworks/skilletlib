@@ -531,6 +531,9 @@ class Panoply:
         context = dict()
         context['ADMINISTRATOR_USERNAME'] = self.user
         context['ADMINISTRATOR_PASSWORD'] = self.pw
+        # fix for #50 - always set DNS values
+        context['DNS_1'] = self.facts['dns-primary']
+        context['DNS_2'] = self.facts['dns-secondary']
 
         if self.facts['model'] == 'Panorama':
             skillet_type_dir = 'panorama'
@@ -540,8 +543,6 @@ class Panoply:
             context['PANORAMA_IP'] = self.facts['ip-address']
             context['PANORAMA_MASK'] = self.facts['netmask']
             context['PANORAMA_DG'] = self.facts['default-gateway']
-            context['DNS_1'] = self.facts['dns-primary']
-            context['DNS_2'] = self.facts['dns-secondary']
 
         else:
             skillet_type_dir = 'panos'
@@ -552,8 +553,6 @@ class Panoply:
                 context['MGMT_IP'] = self.facts['ip-address']
                 context['MGMT_MASK'] = self.facts['netmask']
                 context['MGMT_DG'] = self.facts['default-gateway']
-                context['DNS_1'] = self.facts['dns-primary']
-                context['DNS_2'] = self.facts['dns-secondary']
 
         if '8.0' in version:
             # load the 8.0 baseline with
