@@ -1072,7 +1072,7 @@ class Panoply:
         # but at least make the attempt
         # FIXME - add some sort of logic here
 
-        xpaths = ['/shared/certificates', '/shared/tag', '/shared/profiles']
+        xpaths = ['shared/certificate', '/shared/tag', '/shared/profiles']
         ordered_snippets = list()
         for x in xpaths:
             ordered_snippets.extend(self.__filter_snippets_by_xpath(snippets, x))
