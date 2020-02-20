@@ -890,8 +890,8 @@ class Panoply:
         for xpath in not_found_xpaths:
 
             set_xpath, entry = self.__split_xpath(xpath)
-            # set_xpath = set_xpath.replace('./', '/config/')
-            set_xpath = re.sub(r'^/config/', r'\./', set_xpath)
+            # do not change xpath to be relative for #52
+            # set_xpath = re.sub(r'^/config/', r'\./', set_xpath)
             full_relative_xpath = re.sub(r'^/config/', r'\./', xpath)
             tag = re.sub(r'\[.*\]', '', entry)
 
