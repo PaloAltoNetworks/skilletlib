@@ -512,12 +512,13 @@ class Panoply:
 
         return self.load_config('skillet_baseline')
 
-    def generate_baseline(self) -> str:
+    def generate_baseline(self, reset_hostname=False) -> str:
         """
         Load baseline config that contains ONLY connecting username / password
         use device facts to determine which baseline template to load
         see template/panos/baseline_80.xml for example
         :param self:
+        :param reset_hostname: Flag to reset hostname back to a default value (baseline in this case)
         :return: string contents of baseline config
         """
 
@@ -537,7 +538,12 @@ class Panoply:
 
         if self.facts['model'] == 'Panorama':
             skillet_type_dir = 'panorama'
-            context['PANORAMA_NAME'] = self.facts['hostname']
+
+            if not reset_hostname:
+                context['PANORAMA_NAME'] = self.facts['hostname']
+            else:
+                context['PANORAMA_NAME'] = 'baseline'
+
             # FIXME - is there a way to determine if dhcp is active via an op cmd?
             context['PANORAMA_TYPE'] = 'static'
             context['PANORAMA_IP'] = self.facts['ip-address']
@@ -546,7 +552,11 @@ class Panoply:
 
         else:
             skillet_type_dir = 'panos'
-            context['FW_NAME'] = self.facts['hostname']
+
+            if not reset_hostname:
+                context['FW_NAME'] = self.facts['hostname']
+            else:
+                context['FW_NAME'] = 'baseline'
 
             if self.facts['is-dhcp'] == 'no':
                 context['MGMT_TYPE'] = 'static'
@@ -565,6 +575,10 @@ class Panoply:
         elif '9.0' in version:
             # load the 9.0 baseline with
             skillet_dir = 'baseline_90'
+
+        elif '9.1' in version:
+            # load the 9.0 baseline with
+            skillet_dir = 'baseline_91'
 
         else:
             raise PanoplyException('Could not determine sw-version for baseline load')
@@ -861,7 +875,7 @@ class Panoply:
             previous_config = self.xapi.xml_result()
 
         else:
-            previous_config = self.generate_baseline()
+            previous_config = self.generate_baseline(reset_hostname=True)
             self.xapi.op(cmd='show config running', cmd_xml=True)
             latest_config = self.xapi.xml_result()
 
