@@ -1067,13 +1067,38 @@ class Panoply:
 
         return new_xpath, entry
 
-    @staticmethod
-    def __order_snippets(snippets: list):
+    def __order_snippets(self, snippets: list):
         # Attempt to order the snippets in a cohesive ordering. Will never be 100% perfect,
         # but at least make the attempt
         # FIXME - add some sort of logic here
 
-        return snippets
+        xpaths = ['/shared/certificates', '/shared/tag', '/shared/profiles']
+        ordered_snippets = list()
+        for x in xpaths:
+            ordered_snippets.extend(self.__filter_snippets_by_xpath(snippets, x))
+
+        for s in snippets:
+            if s not in ordered_snippets:
+                ordered_snippets.append(s)
+
+        return ordered_snippets
+
+    @staticmethod
+    def __filter_snippets_by_xpath(snippets: list, xpath: str) -> list:
+        """
+        Check the each snippet in the list and return those that has a full_xpath matching the xpath param
+        :param snippets: list of snippets
+        :param xpath: xpath to check
+        :return: list of only those that contain the xpath in their full_xpath attribute
+        """
+        filtered_snippets = list()
+        for s in snippets:
+            full_xpath = s.get('full_xpath', '')
+            if xpath in full_xpath:
+                # snippets.remove(s)
+                filtered_snippets.append(s)
+
+        return filtered_snippets
 
     @staticmethod
     def __check_children_are_list(c: list) -> bool:
