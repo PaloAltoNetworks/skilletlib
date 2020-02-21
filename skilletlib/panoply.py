@@ -1072,14 +1072,32 @@ class Panoply:
         # but at least make the attempt
         # FIXME - add some sort of logic here
 
-        xpaths = ['shared/certificate', '/shared/tag', '/shared/profiles']
+        xpaths = ['/deviceconfig/system', '/shared/certificate', '/shared/tag', '/tag/entry',
+                  '/shared/profiles',
+                  '/shared/reports', '/network/interface', '/network/virtual-wire', '/network/vlan',
+                  '/network/ike', '/network/tunnel',
+                  '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
+                  '/profiles/custom-url-category',  # should come before profiles/url-filtering
+                  '/address/entry'  # should come before rules or address-group
+                  ]
+
         ordered_snippets = list()
         for x in xpaths:
             ordered_snippets.extend(self.__filter_snippets_by_xpath(snippets, x))
 
+        post_xpaths = ['/rulebase']
+
+        post_snippets = list()
+        for p in post_xpaths:
+            post_snippets.extend(self.__filter_snippets_by_xpath(snippets, p))
+
         for s in snippets:
-            if s not in ordered_snippets:
+            if s not in ordered_snippets and s not in post_snippets:
                 ordered_snippets.append(s)
+
+        for ps in post_snippets:
+            if ps not in ordered_snippets:
+                ordered_snippets.append(ps)
 
         return ordered_snippets
 
