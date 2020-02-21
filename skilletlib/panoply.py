@@ -1072,14 +1072,21 @@ class Panoply:
         # but at least make the attempt
         # FIXME - add some sort of logic here
 
-        xpaths = ['/deviceconfig/system', '/shared/certificate', '/shared/tag', '/tag/entry',
-                  '/shared/profiles',
-                  '/shared/reports', '/network/interface', '/network/virtual-wire', '/network/vlan',
-                  '/network/ike', '/network/tunnel',
-                  '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
-                  '/profiles/custom-url-category',  # should come before profiles/url-filtering
-                  '/address/entry'  # should come before rules or address-group
-                  ]
+        xpaths = [
+            '/shared/ssl-tls-service-profile',
+            '/shared/certificate',
+            '/shared/tag',
+            '/shared/profiles',
+            '/shared/reports',
+            '/shared/'  # catch the rest of the shared items here
+            '/tag/entry',
+            '/deviceconfig/system',
+            '/network/interface', '/network/virtual-wire', '/network/vlan',
+            '/network/ike', '/network/tunnel',
+            '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
+            '/profiles/custom-url-category',  # should come before profiles/url-filtering
+            '/address/entry'  # should come before rules or address-group
+            ]
 
         ordered_snippets = list()
         for x in xpaths:
