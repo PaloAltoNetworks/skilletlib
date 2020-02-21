@@ -1073,8 +1073,8 @@ class Panoply:
         # FIXME - add some sort of logic here
 
         xpaths = [
-            '/shared/ssl-tls-service-profile',
             '/shared/certificate',
+            '/shared/ssl-tls-service-profile',
             '/shared/tag',
             '/shared/profiles',
             '/shared/reports',
