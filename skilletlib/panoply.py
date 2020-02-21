@@ -1078,7 +1078,7 @@ class Panoply:
             '/shared/tag',
             '/shared/profiles',
             '/shared/reports',
-            '/shared/'  # catch the rest of the shared items here
+            '/shared/',  # catch the rest of the shared items here
             '/tag/entry',
             '/deviceconfig/system',
             '/network/interface', '/network/virtual-wire', '/network/vlan',
