@@ -1070,7 +1070,6 @@ class Panoply:
     def __order_snippets(self, snippets: list):
         # Attempt to order the snippets in a cohesive ordering. Will never be 100% perfect,
         # but at least make the attempt
-        # FIXME - add some sort of logic here
 
         xpaths = [
             '/shared/certificate',
