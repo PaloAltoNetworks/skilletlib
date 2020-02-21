@@ -20,9 +20,9 @@ def load_and_execute_skillet(skillet_path: str) -> None:
 
     output = skillet.execute(context)
 
-    for k, v in output.items():
-        if 'results' in v:
-            r = str(v['results'])
+    if 'pan_validation' in output:
+        for k, v in output.get('pan_validation', {}).items():
+            r = str(v.get('results', 'False'))
             print(f'{k:60}{r}')
             assert r == 'True'
 
@@ -37,8 +37,8 @@ def test_capture_object():
     load_and_execute_skillet(skillet_path)
 
 
-def test_capture_object_filter():
-    skillet_path = '../example_skillets/capture_object_filter/'
+def test_capture_list_filter():
+    skillet_path = '../example_skillets/capture_list_filter/'
     load_and_execute_skillet(skillet_path)
 
 
@@ -109,7 +109,7 @@ def test_attribute_absent():
 
 if __name__ == '__main__':
     test_capture_object()
-    test_capture_object_filter()
+    test_capture_list_filter()
     test_capture_value()
     test_capture_variable()
     test_cmd_validate_xml()
