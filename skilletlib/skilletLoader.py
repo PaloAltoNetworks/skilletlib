@@ -143,7 +143,7 @@ class SkilletLoader:
 
             with meta_cnc_file.open(mode='r') as sc:
                 raw_service_config = oyaml.safe_load(sc.read())
-                skillet = self._normalize_skillet_structure(raw_service_config)
+                skillet = self.normalize_skillet_dict(raw_service_config)
                 skillet['snippet_path'] = snippet_path
                 return skillet
 
@@ -162,7 +162,7 @@ class SkilletLoader:
                 'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
 
     @staticmethod
-    def _normalize_skillet_structure(skillet: dict) -> dict:
+    def normalize_skillet_dict(skillet: dict) -> dict:
         """
         Attempt to resolve common configuration file format errors
         :param skillet: a loaded skillet/snippet
