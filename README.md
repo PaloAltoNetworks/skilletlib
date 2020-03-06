@@ -40,7 +40,7 @@ from skilletlib import SkilletLoader
 # init SkilletLoader Class
 sl = SkilletLoader()
 
-# Load all skillets from the current directory
+# Load the skillet found in the current directory
 skillet = sl.load_skillet_from_path('.')
 
 # Every skillet requires a context, which is a dict containing
