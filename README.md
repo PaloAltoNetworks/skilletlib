@@ -2,6 +2,34 @@
 Base Classes and Utilities for working with Skillets. Skilletlib encapsulates all the logic necessary to 
 execute a skillet in your app or tooling. 
 
+See [here](https://live.paloaltonetworks.com/t5/Skillet-District/ct-p/Skillets) for information about Skillets and
+what skillets may be available. A list of example skillets may be found 
+[here as well](https://github.com/PaloAltoNetworks/skillets).
+
+
+## About Skillets
+
+Skillets are designed to be sharable units of configuration or validation data. They are perfectly suited for 
+'Compliance as Code' or 'Infrastructure as Code' type environments. All the 'knowledge' of doing a thing is encapsulated
+in the skillet. Skillets strive to be tooling agnostic. A subject matter expert should not have to define best 
+practices in multiple domain specific languages. Ideally, this should be expressed once, and executed in a variety of
+tools. Skilletlib makes it easy to allow Skillets to be executed in your tooling, or tooling of choice. 
+
+Skillets are meant to be stored and shared via source control repositories along with the rest of your infrastructure.
+This allows complex NGFW configurations and use case specific compliance checks to be executed as part of your 
+deployment pipeline.  
+
+
+## Installation
+
+Skilletlib is distributed as a python shared library on [pypi.org](https://pypi.org/project/skilletlib/).
+
+```bash
+
+pip install skilletlib
+
+```
+
 
 ## Basic Example
 
@@ -13,13 +41,10 @@ from skilletlib import SkilletLoader
 sl = SkilletLoader()
 
 # Load all skillets from the current directory
-skillets = sl.load_all_skillets_from_dir('.')
-
-# get the first skillet found
-skillet = skillets[0]
+skillet = sl.load_skillet_from_path('.')
 
 # Every skillet requires a context, which is a dict containing
-# any user-input or other variables
+# any user-input or other variables to allow customization.
 context = dict()
 
 # In this example, our skillet needs a configuration.xml file to be loaded into a variable
