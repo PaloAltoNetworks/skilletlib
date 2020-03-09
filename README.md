@@ -79,3 +79,18 @@ for s in skillets:
     print(s.name)
 
 ```
+
+
+
+## Other projects that use Skilletlib
+
+Here are a couple of examples of other projects that use skilletlib
+
+* [Panhandler](https://github.com/PaloAltoNetworks/panhandler/)
+    Panhandler is a tool to manage collections of Skillets and their respective git repositories
+* [SkilletLoader](https://github.com/nembery/skilletLoader/)
+    SkilletLoader is a tool to load and test skillets in a CI/CD pipeline via Docker
+* [Ansible Skillets](https://github.com/PaloAltoNetworks/panw-gse.skillets)
+    Ansible roles and libraries for loading PAN-OS and related skillets via Ansible playbooks
+* [Demisto XSOAR Integration](https://github.com/nembery/content/tree/skilletlib/Packs/skilletlib)
+    Experimental in development Demisto XSOAR integration
