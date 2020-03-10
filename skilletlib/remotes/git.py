@@ -1,8 +1,25 @@
+# Copyright (c) 2020, Palo Alto Networks
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Authors: Adam Baumeister, Nathan Embery
+
 import logging
 import os
 import shutil
 
 from git import Repo
+from git.exc import GitCommandError
 
 from skilletlib.exceptions import SkilletLoaderException
 
@@ -21,6 +38,7 @@ class Git:
         :param repo_url: URL path to repository.
         :param store: Directory to store repository in. Defaults to the current directory.
         """
+
         if not self.check_git_exists():
             raise SkilletLoaderException('A git client must be installed to use this remote!')
 
@@ -46,9 +64,42 @@ class Git:
 
         if os.path.exists(path):
             self.Repo = Repo(path)
-            logger.debug("Updating repository...")
-            self.Repo.remotes.origin.pull()
+
+            # FIX for #56
+            if self.repo_url not in self.Repo.remotes.origin.urls:
+                logger.info('Found new remote URL for this named repo')
+
+                try:
+                    # only recourse is to remove the .git directory
+                    if os.path.exists(os.path.join(path, '.git')):
+                        shutil.rmtree(path)
+
+                    else:
+                        raise SkilletLoaderException('Refusing to remove non-git directory')
+
+                except OSError:
+                    raise SkilletLoaderException('Repo directory exists!')
+
+                logger.debug("Cloning into {}".format(path))
+
+                try:
+                    self.Repo = Repo.clone_from(self.repo_url, path)
+
+                except GitCommandError as gce:
+                    raise SkilletLoaderException(f'Could not clone repository {gce}')
+
+            else:
+                logger.debug("Updating repository...")
+
+                try:
+                    self.Repo.remotes.origin.pull()
+
+                except GitCommandError as gce:
+                    logger.error('Could not clone repository!')
+                    raise SkilletLoaderException(f'Error Cloning repository {gce}')
+
             return path
+
         else:
             logger.debug("Cloning into {}".format(path))
             self.Repo = Repo.clone_from(self.repo_url, path)
@@ -63,9 +114,11 @@ class Git:
         :return: None
         """
         logger.debug("Checking out: " + branch_name)
+
         if self.update:
             logger.debug("Updating branch.")
             self.Repo.remotes.origin.pull()
+
         self.Repo.git.checkout(branch_name)
 
     @staticmethod
