@@ -31,11 +31,31 @@ class DockerSnippet(Snippet):
             self.image = image
             self.tag = 'latest'
 
-        self.cmd = self.metadata.get('cmd', 'echo "you forgot a cmd silly')
+        self.cmd = self.metadata.get('cmd', 'echo "you forgot a cmd silly"')
         self.working_dir = self.metadata.get('working_dir', '/app')
-        self.path = self.metadata.get('skillet_path')
+        # this is set in the get_snippets method of the Docker Skillet class
+        # and is used if no volume mounts have been specified
+        self.path = self.metadata.get('skillet_path', None)
+
         # set up volumes
-        self.volumes = {self.path: {'bind': self.working_dir, 'mode': 'rw'}}
+        # A dictionary to configure volumes mounted inside the container.
+        # The key is either the host path or a volume name, and the value is a dictionary with the keys:
+        #     bind The path to mount the volume inside the container
+        #     mode Either rw to mount the volume read/write, or ro to mount it
+
+        # FIXME - this should be a fallback only -
+        #  if skilletlib is running in a container itself,
+        #  the self.path mount will be incorrect from the host perspective, we need to mount 'volumes-from'
+        #  the skilletlib host container. The hosting application should handle this, but we need
+        #  to add the hooks here to allows a 'volumes-from' or a way to set the volumes dynamically
+
+        volumes = self.metadata.get('volumes', None)
+
+        if volumes is None:
+            self.volumes = {self.path: {'bind': self.working_dir, 'mode': 'rw'}}
+        else:
+            # FIXME - need to validate nothing too bad can happen here :-/
+            self.volumes = volumes
 
         # track our container
         self.container_id = ''

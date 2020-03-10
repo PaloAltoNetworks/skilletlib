@@ -29,6 +29,9 @@ class DockerSkillet(Skillet):
     def get_snippets(self) -> List[DockerSnippet]:
         snippet_list = list()
         for snippet_def in self.snippet_stack:
+            # self.path is set automatically in skillet/base.py
+            # set skillet_path here for each skillet to have access to current path
+            # this is needed for host directory mapping for volume mounts
             snippet_def['skillet_path'] = self.path
             snippet = DockerSnippet(snippet_def)
             snippet_list.append(snippet)
