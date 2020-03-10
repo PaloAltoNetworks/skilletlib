@@ -94,3 +94,11 @@ Here are a couple of examples of other projects that use skilletlib
     Ansible roles and libraries for loading PAN-OS and related skillets via Ansible playbooks
 * [Demisto XSOAR Integration](https://github.com/nembery/content/tree/skilletlib/Packs/skilletlib)
     Experimental in development Demisto XSOAR integration
+    
+    
+    
+## Other utilities in Skilletlib
+
+Skilletlib includes all the necessary libraries and code to work directly with PAN-OS and Panorama devices. A call
+called 'Panoply' is included which includes many often needed methods when working with emphemeral PAN-OS devices, such
+as in a CI/CD pipeline. 
