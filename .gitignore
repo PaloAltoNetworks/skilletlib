@@ -1,5 +1,5 @@
 .idea
-venv/
+venv*/
 local_tests/
 local_t/
 docs/build
