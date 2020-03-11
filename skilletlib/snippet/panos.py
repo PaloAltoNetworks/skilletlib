@@ -434,8 +434,8 @@ class PanosSnippet(TemplateSnippet):
     def __get_value_from_path(self, obj: dict, config_path: str) -> Any:
 
         if type(obj) is not dict and type(obj) is not OrderedDict:
-            logger.warning("Supplied object is not an Object")
-            logger.warning('Ensure you are passing an object here and not a string as from capture_pattern')
+            logger.debug("Supplied object is not an Object")
+            logger.debug('Ensure you are passing an object here and not a string as from capture_pattern')
             raise SkilletLoaderException('Incorrect object format for get_value_from_path')
 
         if '.' in config_path or '/' in config_path:

@@ -40,7 +40,7 @@ class DockerSnippet(Snippet):
             self.image = image
             self.tag = 'latest'
 
-        self.cmd = self.metadata.get('cmd', 'echo "you forgot a cmd silly')
+        self.cmd = self.metadata.get('cmd', 'echo "you forgot a cmd silly"')
         self.working_dir = self.metadata.get('working_dir', '/app')
 
         # this is set in the get_snippets method of the Docker Skillet class
