@@ -97,7 +97,11 @@ class DockerSnippet(Snippet):
 
             else:
                 # return_data will be the bytes returned from the command
-                return return_data, 'success'
+                if type(return_data) is bytes:
+                    return_str = return_data.decode('UTF-8')
+                    return return_str, 'success'
+                else:
+                    return return_data, 'success'
 
         except ImageNotFound:
             raise SkilletLoaderException(f'Could not locate image {self.image} in {self.name}')
