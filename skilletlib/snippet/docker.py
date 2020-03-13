@@ -66,7 +66,34 @@ class DockerSnippet(Snippet):
         # track our container
         self.container_id = ''
 
+    def render_metadata(self, context: dict) -> dict:
+        """
+        Renders each item in the metadata using the provided context.
+        Currently renders the cmd attribute only
+        :param context: dict containing key value pairs to
+        :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
+        """
+
+        # execute super render_metadata
+        # this will set the passed context onto self.context
+        meta = super().render_metadata(context)
+
+        try:
+            if 'cmd' in self.metadata:
+                meta['cmd'] = self.render(self.metadata['cmd'], context)
+
+        except TypeError as te:
+            logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
+
+        return meta
+
     def execute(self, context) -> Tuple[dict, str]:
+        """
+        Execute this cmd in the specified docker container
+        :param context: context containing all the user-supplied input variables. Also contains output from previous
+        steps. Raises SkilletLoaderException on error
+        :return:  Tuple(dict, str) output and string representing 'success' or 'failure'
+        """
         try:
 
             output = dict()
