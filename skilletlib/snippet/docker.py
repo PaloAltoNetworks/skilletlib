@@ -55,19 +55,12 @@ class DockerSnippet(Snippet):
         #     bind The path to mount the volume inside the container
         #     mode Either rw to mount the volume read/write, or ro to mount it
 
-        # FIXME - this should be a fallback only -
-        #  if skilletlib is running in a container itself,
-        #  the self.path mount will be incorrect from the host perspective, we need to mount 'volumes-from'
-        #  the skilletlib host container. The hosting application should handle this, but we need
-        #  to add the hooks here to allows a 'volumes-from' or a way to set the volumes dynamically
-
         volumes = self.metadata.get('volumes', dict())
 
         if not volumes:
             self.volumes = {self.path: {'bind': self.working_dir, 'mode': 'rw'}}
 
         else:
-            # FIXME - need to validate nothing too bad can happen here :-/
             self.volumes = volumes
 
         # track our container

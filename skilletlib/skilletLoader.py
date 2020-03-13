@@ -264,6 +264,10 @@ class SkilletLoader:
             new_collection.append(old_value)
             skillet['labels']['collection'] = new_collection
 
+        # ensure no app_data attribute is present in the skillet definition
+        if 'app_data' in skillet:
+            skillet.pop('app_data')
+
         # verify snippets stanza is present and is a list
         if 'snippets' not in skillet:
             skillet['snippets'] = list()
