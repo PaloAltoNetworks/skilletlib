@@ -40,7 +40,6 @@ class DockerSnippet(Snippet):
             self.image = image
             self.tag = 'latest'
 
-        self.cmd = self.metadata.get('cmd', 'echo "you forgot a cmd silly"')
         self.working_dir = self.metadata.get('working_dir', '/app')
 
         # this is set in the get_snippets method of the Docker Skillet class
@@ -48,6 +47,11 @@ class DockerSnippet(Snippet):
         self.path = self.metadata.get('skillet_path', None)
 
         self.detach = self.metadata.get('async', False)
+
+        if self.detach:
+            self.auto_remove = False
+        else:
+            self.auto_remove = True
 
         # set up volumes
         # A dictionary to configure volumes mounted inside the container.
@@ -104,9 +108,9 @@ class DockerSnippet(Snippet):
 
             image = self.image + ":" + self.tag
             logger.info(f'Creating container...')
-            return_data = self.client.containers.run(image, self.cmd, volumes=vols,
+            return_data = self.client.containers.run(image, self.metadata['cmd'], volumes=vols, stderr=True,
                                                      detach=self.detach, working_dir=self.working_dir,
-                                                     auto_remove=False, environment=context)
+                                                     auto_remove=self.auto_remove, environment=context)
 
             if self.detach:
                 # return_data will be a Container object if self.detach is True
