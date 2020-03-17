@@ -16,6 +16,8 @@
 
 
 import logging
+import os
+import sys
 import time
 from abc import ABC
 from abc import abstractmethod
@@ -25,7 +27,12 @@ from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+if not len(logger.handlers):
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
 
 
 class Skillet(ABC):
@@ -51,6 +58,12 @@ class Skillet(ABC):
         self.context = dict()
         self.captured_outputs = dict()
         self.snippet_outputs = dict()
+
+        debug = os.environ.get('SKILLET_DEBUG', False)
+
+        if debug:
+            logger.setLevel(logging.DEBUG)
+            logger.debug('Debugging output enabled')
 
     @abstractmethod
     def get_snippets(self) -> List[Snippet]:
@@ -207,5 +220,3 @@ class Skillet(ABC):
         results['outputs'] = self.captured_outputs
         # results.update(self.captured_outputs)
         return results
-
-

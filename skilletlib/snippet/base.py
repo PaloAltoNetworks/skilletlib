@@ -548,8 +548,7 @@ class Snippet(ABC):
 
     def __handle_json_outputs(self, output_definition: dict, results: str) -> dict:
         """
-        Parses results and returns a dict containing base64 encoded values
-
+        Parses results using jsonpath_ng query syntax
         output_type: json
         outputs:
           - name: salt_auth_token

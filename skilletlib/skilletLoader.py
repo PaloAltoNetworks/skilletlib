@@ -47,6 +47,7 @@ class SkilletLoader:
 
         if debug:
             logger.setLevel(logging.DEBUG)
+            logger.debug('Debugging output enabled')
 
         if path is not None:
             self.load_all_skillets_from_dir(path)
