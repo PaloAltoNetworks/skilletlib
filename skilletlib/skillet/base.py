@@ -181,6 +181,7 @@ class Skillet(ABC):
                 except SkilletLoaderException as sle:
                     logger.error(f'Caught Exception during execution: {sle}')
                     snippet_outputs = snippet.get_default_output(str(sle), 'error')
+                    logger.error(snippet_outputs)
                     self.snippet_outputs.update(snippet_outputs)
 
                 except Exception as e:

@@ -50,9 +50,26 @@ class RestSnippet(TemplateSnippet):
         if self.accepts_type != '':
             self.headers['Accepts-Type'] = self.accepts_type
 
+    def sanitize_metadata(self, metadata: dict) -> dict:
+        """
+        Clean and sanitize metadata elements in this snippet definition
+        :param metadata: dict
+        :return: dict
+        """
+        metadata = super().sanitize_metadata(metadata)
+
+        # FIX for #59 - ensure operation is always lower cased
+        if 'operation' in metadata:
+            metadata['operation'] = str(metadata['operation']).lower()
+
+        if 'path' in metadata:
+            metadata['path'] = str(metadata['path']).strip().replace('\n', '')
+
+        return metadata
+
     def execute(self, raw_context: dict) -> Tuple[str, str]:
         # fixme - can we do this in sanitize_metadata ?
-        rest_path = self.path.strip().replace('\n', '')
+        # rest_path = self.path.strip().replace('\n', '')
         context = dict()
 
         if raw_context is not None:
@@ -61,7 +78,7 @@ class RestSnippet(TemplateSnippet):
                 if isinstance(v, str):
                     context[k] = quote(v)
 
-        url = self.render(rest_path, context)
+        url = self.render(self.path, context)
 
         for k, v in self.headers.items():
             self.headers[k] = self.render(v, context)
@@ -77,7 +94,8 @@ class RestSnippet(TemplateSnippet):
             return self.__handle_response(response)
 
         elif self.operation == 'get':
-            response = self.session.get(url, verify=False)
+            # FIX for #59 - Ensure we pass headers to get operations properly
+            response = self.session.get(url, verify=False, headers=self.headers)
             return self.__handle_response(response)
 
     def __handle_response(self, response: Response) -> Tuple[str, str]:
