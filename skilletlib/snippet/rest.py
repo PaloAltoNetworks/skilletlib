@@ -8,6 +8,7 @@ from requests import Response
 from requests import Session
 
 from .template import TemplateSnippet
+from ..exceptions import SkilletLoaderException
 
 logger = logging.getLogger(__name__)
 urllib3.disable_warnings()
@@ -62,6 +63,10 @@ class RestSnippet(TemplateSnippet):
         if 'operation' in metadata:
             metadata['operation'] = str(metadata['operation']).lower()
 
+        if metadata['operation'] not in ('post', 'get'):
+            err = 'Supported operations are currently post and get only'
+            raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
+
         if 'path' in metadata:
             metadata['path'] = str(metadata['path']).strip().replace('\n', '')
 
@@ -93,7 +98,7 @@ class RestSnippet(TemplateSnippet):
             response = self.session.post(url, data=payload, headers=self.headers, verify=False)
             return self.__handle_response(response)
 
-        elif self.operation == 'get':
+        else:
             # FIX for #59 - Ensure we pass headers to get operations properly
             response = self.session.get(url, verify=False, headers=self.headers)
             return self.__handle_response(response)
