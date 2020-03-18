@@ -16,6 +16,7 @@
 
 import datetime
 import logging
+import os
 import random
 import re
 import sys
@@ -30,7 +31,6 @@ import requests_toolbelt
 import xmltodict
 from lxml import etree
 from lxml.etree import Element
-import os
 from pan import xapi
 from pan.config import PanConfig
 from pan.xapi import PanXapiError
@@ -167,7 +167,7 @@ class Panoply:
         """
         Perform a commit operation on this device instance -
         :raises PanoplyException: if commit failed
-        :param force_sync: Flag to enablle synch commit or async
+        :param force_sync: Flag to enable sync commit or async
         :return: String from the API indicating success or failure
         """
 
@@ -175,27 +175,68 @@ class Panoply:
             self.xapi.commit(cmd='<commit></commit>', sync=force_sync, timeout=600)
             results = self.xapi.xml_result()
 
-            if results is None:
-                return self.xapi.status_detail
-
-            if force_sync:
-                doc = ElementTree.XML(results)
-                embedded_result = doc.find('result')
-
-                if embedded_result is not None:
-                    commit_result = embedded_result.text
-
-                    if commit_result == 'FAIL':
-                        raise PanoplyException(self.xapi.status_detail)
-
-                    else:
-                        return self.xapi.status_detail
+            if not self.__check_commit_return(results, force_sync):
+                raise PanoplyException(self.xapi.status_detail)
 
             return self.xapi.status_detail
 
         except PanXapiError as pxe:
             logger.error(pxe)
             raise PanoplyException('Could not commit configuration')
+
+    def commit_gpcs(self, force_sync=True) -> str:
+        """
+        Perform a commit operation on this device instance specifically for gpcs remote networks
+        :raises PanoplyException: if commit failed
+        :param force_sync: Flag to enable sync commit or async
+        :return: String from the API indicating success or failure
+        """
+        try:
+
+            self.xapi.commit(action='all',
+                             cmd='<commit-all><shared-policy><device-group>'
+                                 '<entry name="Remote_Network_Device_Group"/>'
+                                 '</device-group></shared-policy></commit-all>')
+
+            results = self.xapi.xml_result()
+
+            if not self.__check_commit_return(results, force_sync):
+                raise PanoplyException(self.xapi.status_detail)
+
+            return self.xapi.status_detail
+
+        except PanXapiError as pxe:
+            logger.error(pxe)
+            raise PanoplyException('Could not commit configuration')
+
+    @staticmethod
+    def __check_commit_return(results: str, force_sync: bool) -> bool:
+        """
+        Check xml result from a panos device and check for a failure condition
+
+        :param results: str returned from xapi.xml_result
+        :param force_sync: if force_sync is true, then verify the commit actually succeeded
+        :return: boolean
+        """
+
+        if results is None:
+            return False
+
+        if force_sync:
+            doc = ElementTree.XML(results)
+            embedded_result = doc.find('result')
+
+            if embedded_result is not None:
+                commit_result = embedded_result.text
+
+                if commit_result == 'FAIL':
+                    return False
+
+                else:
+                    return True
+        else:
+            # fixme - is there something else we can check here?
+            return True
 
     def set_at_path(self, name: str, xpath: str, xml_str: str) -> None:
         """
@@ -1085,7 +1126,7 @@ class Panoply:
             '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
             '/profiles/custom-url-category',  # should come before profiles/url-filtering
             '/address/entry'  # should come before rules or address-group
-            ]
+        ]
 
         ordered_snippets = list()
         for x in xpaths:
@@ -1435,4 +1476,3 @@ class Panos(Panoply):
 
         if self.xapi and 'URLError' in self.xapi.status_detail:
             raise TargetConnectionException(self.xapi.status_detail)
-
