@@ -194,9 +194,9 @@ class Panoply:
         try:
 
             self.xapi.commit(action='all',
-                             cmd='<commit-all><shared-policy><device-group>'
+                             cmd='<commit><shared-policy><device-group>'
                                  '<entry name="Remote_Network_Device_Group"/>'
-                                 '</device-group></shared-policy></commit-all>')
+                                 '</device-group></shared-policy></commit>')
 
             results = self.xapi.xml_result()
 
