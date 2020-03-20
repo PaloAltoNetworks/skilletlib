@@ -22,6 +22,7 @@ import time
 from abc import ABC
 from abc import abstractmethod
 from typing import List
+from typing import Generator
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
@@ -138,6 +139,77 @@ class Skillet(ABC):
 
     def cleanup(self):
         pass
+
+    def execute_async(self, initial_context: dict) -> Generator:
+        """
+        Returns a generator that can be used to iterate over the output as it's generated
+        from each snippet. The calling application should call 'get_results' once the execute is complete
+
+        :param initial_context:
+        :return: generator[str]
+        """
+        try:
+            context = self.initialize_context(initial_context)
+            logger.debug(f'Executing Async Skillet: {self.name}')
+
+            for snippet in self.get_snippets():
+                try:
+                    # render anything that looks like a jinja template in the snippet metadata
+                    # mostly useful for xpaths in the panos case
+                    snippet.render_metadata(context)
+                    # check the 'when' conditional against variables currently held in the context
+
+                    if snippet.should_execute(context):
+                        (output, status) = snippet.execute(context)
+                        logger.debug(f'{snippet.name} - status: {status}')
+
+                        if output:
+                            logger.debug(f'{snippet.name} - output: {output}')
+
+                        running_counter = 0
+
+                        # snippet finished right away, just go ahead and yield output now
+
+                        full_output = ''
+                        while status == 'running':
+                            # logger.info('Snippet still running...')
+                            time.sleep(5)
+                            (output, status) = snippet.get_output()
+                            running_counter += 1
+
+                            yield output
+
+                            if running_counter > 60:
+                                raise SkilletLoaderException('Snippet took too long to execute!')
+
+                        # capture all outputs
+                        snippet_outputs = snippet.get_default_output(output, status)
+                        captured_outputs = snippet.capture_outputs(output, status)
+
+                        if captured_outputs:
+                            logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+
+                        self.snippet_outputs.update(snippet_outputs)
+                        self.captured_outputs.update(captured_outputs)
+
+                        context.update(snippet_outputs)
+                        context.update(captured_outputs)
+
+                except SkilletLoaderException as sle:
+                    logger.error(f'Caught Exception during execution: {sle}')
+                    snippet_outputs = snippet.get_default_output(str(sle), 'error')
+                    logger.error(snippet_outputs)
+                    self.snippet_outputs.update(snippet_outputs)
+
+                except Exception as e:
+                    logger.error(f'Exception caught: {e}')
+                    snippet_outputs = snippet.get_default_output(str(e), 'error')
+                    self.snippet_outputs.update(snippet_outputs)
+
+        finally:
+            self.cleanup()
+
+        return None
 
     def execute(self, initial_context: dict) -> dict:
         """

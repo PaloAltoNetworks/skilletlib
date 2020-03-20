@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 from typing import Tuple
 
 from docker import DockerClient
@@ -9,6 +10,7 @@ from docker.errors import ImageNotFound
 
 from skilletlib.exceptions import *
 from .base import Snippet
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,9 @@ class DockerSnippet(Snippet):
     }
 
     output_type = 'text'
+
+    # keep track of the last time we queried the logs
+    last_logs_time = None
 
     def __init__(self, metadata):
         super().__init__(metadata)
@@ -149,10 +154,22 @@ class DockerSnippet(Snippet):
 
         try:
             container = self.get_container()
-            if container.status == 'running':
-                return container.logs(), 'running'
+
+            if self.last_logs_time is None:
+                return_data = container.logs()
             else:
-                return container.logs(), 'success'
+                return_data = container.logs(since=self.last_logs_time)
+
+            self.last_logs_time = int(time.time())
+
+            return_str = self.__clean_output(return_data)
+
+            if container.status == 'running':
+                return return_str, 'running'
+
+            else:
+                logger.info(container.status)
+                return return_str, 'success'
 
         except APIError as ae:
             raise SkilletLoaderException(f'Could not get logs for {self.name}: {ae}')
@@ -167,7 +184,20 @@ class DockerSnippet(Snippet):
 
         try:
             container = self.get_container()
+
             if container:
-                container.remove()
+                if container.status != 'running':
+                    container.remove()
+                else:
+                    logger.warning(f'Docker container {self.container_id} may need to be manually removed!')
+
         except APIError as ae:
             raise SkilletLoaderException(f'Could not clean up {self.name}: {ae}')
+
+    @staticmethod
+    def __clean_output(return_data: Any) -> str:
+        if type(return_data) is bytes:
+            return_str = return_data.decode('UTF-8')
+            return return_str
+        else:
+            return str(return_data)

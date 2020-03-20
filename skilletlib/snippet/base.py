@@ -100,7 +100,7 @@ class Snippet(ABC):
         Each snippet sub class must override this method!
 
         :param context: context to use for variable interpolation
-        :return: Tuple containng updated context dictionary and string indicated success or failure
+        :return: Tuple containing updated context dictionary and string indicated success or failure
         """
         return dict(), 'success'
 
