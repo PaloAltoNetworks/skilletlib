@@ -29,9 +29,7 @@ class DockerSkillet(Skillet):
         # grab the configured 'volumes' from the skillet app_data if present
         # note, this attribute can only be injected by the application and in the skillet definition file
         if 'app_data' in s and isinstance(s['app_data'], dict):
-            if 'volumes' in s['app_data']:
-                self.volumes = s['app_data']['volumes']
-
+            self.volumes = s['app_data'].get('volumes', list())
         else:
             self.volumes = list()
 
