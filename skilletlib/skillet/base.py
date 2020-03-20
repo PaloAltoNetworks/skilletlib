@@ -166,8 +166,6 @@ class Skillet(ABC):
                         if output:
                             logger.debug(f'{snippet.name} - output: {output}')
 
-                        running_counter = 0
-
                         # snippet finished right away, just go ahead and yield output now
 
                         output = ''
@@ -175,14 +173,10 @@ class Skillet(ABC):
                             # logger.info('Snippet still running...')
                             time.sleep(5)
                             (partial_output, status) = snippet.get_output()
-                            running_counter += 1
 
                             output += partial_output
 
                             yield partial_output
-
-                            if running_counter > 60:
-                                raise SkilletLoaderException('Snippet took too long to execute!')
 
                         # capture all outputs
                         snippet_outputs = snippet.get_default_output(output, status)
