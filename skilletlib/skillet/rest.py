@@ -22,7 +22,7 @@ class RestSkillet(Skillet):
         snippet_path = Path(snippet_path_str)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
-            operation = snippet_def.get('operation', 'get')
+            operation = snippet_def.get('operation', 'get').lower()
             if operation == 'post' and 'payload' in snippet_def:
                 snippet_file = snippet_path.joinpath(snippet_def['payload'])
                 if snippet_file.exists():
