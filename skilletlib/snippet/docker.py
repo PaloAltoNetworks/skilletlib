@@ -99,7 +99,7 @@ class DockerSnippet(Snippet):
 
         return meta
 
-    def execute(self, context) -> Tuple[dict, str]:
+    def execute(self, context) -> Tuple[str, str]:
         """
         Execute this cmd in the specified docker container
         :param context: context containing all the user-supplied input variables. Also contains output from previous
@@ -108,7 +108,7 @@ class DockerSnippet(Snippet):
         """
         try:
 
-            output = dict()
+            output = ''
             logger.info(f'Pulling image: {self.image} with tag: {self.tag}')
             # self.client.images.pull(self.image, self.tag)
 
@@ -123,7 +123,7 @@ class DockerSnippet(Snippet):
             if self.detach:
                 # return_data will be a Container object if self.detach is True
                 self.container_id = return_data.id
-                output[f'{self.name}_container_id'] = self.container_id
+                output = self.container_id
                 print('container id is ' + self.container_id)
                 return output, 'running'
 

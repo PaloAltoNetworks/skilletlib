@@ -92,17 +92,17 @@ class Snippet(ABC):
         self.context.update(context)
 
     @abstractmethod
-    def execute(self, context: dict) -> Tuple[dict, str]:
+    def execute(self, context: dict) -> Tuple[str, str]:
         """
-        Execute this Snippet and return a tuple consisting on the updated context and a string representing
+        Execute this Snippet and return a tuple consisting on raw output and a string representing
         success, failure, or running.
 
         Each snippet sub class must override this method!
 
         :param context: context to use for variable interpolation
-        :return: Tuple containing updated context dictionary and string indicated success or failure
+        :return: Tuple containing raw snippet output and string indicated success or failure
         """
-        return dict(), 'success'
+        return '', 'success'
 
     def should_execute(self, context: dict) -> bool:
         """

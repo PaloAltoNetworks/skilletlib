@@ -166,14 +166,16 @@ class Skillet(ABC):
                         if output:
                             logger.debug(f'{snippet.name} - output: {output}')
 
+                        full_output = ''
                         while status == 'running':
                             # logger.info('Snippet still running...')
                             time.sleep(5)
                             (partial_output, status) = snippet.get_output()
 
-                            output += partial_output
+                            full_output += partial_output
 
                             yield partial_output
+                            output = full_output
 
                         # capture all outputs
                         snippet_outputs = snippet.get_default_output(output, status)
