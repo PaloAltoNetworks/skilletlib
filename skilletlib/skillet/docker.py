@@ -28,10 +28,14 @@ class DockerSkillet(Skillet):
 
         # grab the configured 'volumes' from the skillet app_data if present
         # note, this attribute can only be injected by the application and in the skillet definition file
+        # also grab the working dir that should be used in the app, this will depend on any volumes that may be
+        # passed in as well
         if 'app_data' in s and isinstance(s['app_data'], dict):
             self.volumes = s['app_data'].get('volumes', list())
+            self.working_dir = s['app_data'].get('working_dir', '/app')
         else:
             self.volumes = list()
+            self.working_dir = None
 
     def get_snippets(self) -> List[DockerSnippet]:
         snippet_list = list()
@@ -46,6 +50,20 @@ class DockerSkillet(Skillet):
                 snippet_def['volumes'] = self.volumes
             else:
                 snippet_def['volumes'] = list()
+
+            # ensure working dir gets passed in as well...
+            # prefer working set on the snippet metadata
+            # then prefer
+            working_dir = snippet_def.get('working_dir', None)
+
+            if self.working_dir is not None:
+                snippet_def['working_dir'] = self.working_dir
+
+            elif working_dir is not None:
+                snippet_def['working_dir'] = working_dir
+
+            else:
+                snippet_def['working_dir'] = '/app'
 
             snippet = DockerSnippet(snippet_def)
             snippet_list.append(snippet)
