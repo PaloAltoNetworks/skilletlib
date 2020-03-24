@@ -24,7 +24,7 @@ class DockerSnippet(Snippet):
     # optional parameters that may be set in the snippet metadata
     optional_metadata = {
         'volumes': dict(),
-        'async': False
+        'async': True
     }
 
     output_type = 'text'
