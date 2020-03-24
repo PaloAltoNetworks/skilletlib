@@ -166,9 +166,6 @@ class Skillet(ABC):
                         if output:
                             logger.debug(f'{snippet.name} - output: {output}')
 
-                        # snippet finished right away, just go ahead and yield output now
-
-                        output = ''
                         while status == 'running':
                             # logger.info('Snippet still running...')
                             time.sleep(5)
