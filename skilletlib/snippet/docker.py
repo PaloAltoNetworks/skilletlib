@@ -71,6 +71,9 @@ class DockerSnippet(Snippet):
 
         else:
             self.volumes = volumes
+            # if we have a volume passed in, ensure the working dir is set to the path of this skillet so
+            # relative commands will work as intended
+            self.working_dir = self.path
 
         # track our container
         self.container_id = ''
@@ -145,6 +148,7 @@ class DockerSnippet(Snippet):
         try:
             return self.client.containers.get(self.container_id)
         except DockerException as de:
+            logger.error(de)
             logger.error('Could not get container!')
             return None
 
