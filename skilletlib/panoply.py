@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Optional
 from typing import Tuple
 from xml.etree import ElementTree
+from xml.etree.ElementTree import ParseError
 
 import requests
 import requests_toolbelt
@@ -193,17 +194,50 @@ class Panoply:
         """
         try:
 
-            self.xapi.commit(action='all',
-                             cmd='<commit><shared-policy><device-group>'
-                                 '<entry name="Remote_Network_Device_Group"/>'
-                                 '</device-group></shared-policy></commit>')
+            running_config = self.get_configuration(config_source='running')
+            config_doc = etree.fromstring(running_config)
 
-            results = self.xapi.xml_result()
+            sc = config_doc.xpath("/config/devices/entry[@name='localhost.localdomain']/"
+                                  "device-group/entry[@name='Service_Conn_Device_Group']")
+            rn = config_doc.xpath("/config/devices/entry[@name='localhost.localdomain']/"
+                                  "device-group/entry[@name='Remote_Network_Device_Group']")
+            mu = config_doc.xpath("/config/devices/entry[@name='localhost.localdomain']/"
+                                  "device-group/entry[@name='Mobile_User_Device_Groupp']")
 
-            if not self.__check_commit_return(results, force_sync):
-                raise PanoplyException(self.xapi.status_detail)
+            if sc:
+                self.xapi.commit(action='all',
+                                 cmd='<commit-all><shared-policy><device-group>'
+                                     '<entry name="Service_Conn_Device_Group"/>'
+                                     '</device-group></shared-policy></commit-all>')
 
-            return self.xapi.status_detail
+                results = self.xapi.xml_result()
+
+                if not self.__check_commit_return(results, force_sync):
+                    raise PanoplyException(self.xapi.status_detail)
+
+            if rn:
+                self.xapi.commit(action='all',
+                                 cmd='<commit-all><shared-policy><device-group>'
+                                     '<entry name="Remote_Network_Device_Group"/>'
+                                     '</device-group></shared-policy></commit-all>')
+
+                results = self.xapi.xml_result()
+
+                if not self.__check_commit_return(results, force_sync):
+                    raise PanoplyException(self.xapi.status_detail)
+
+            if mu:
+                self.xapi.commit(action='all',
+                                 cmd='<commit-all><shared-policy><device-group>'
+                                     '<entry name="Mobile_User_Device_Group"/>'
+                                     '</device-group></shared-policy></commit-all>')
+
+                results = self.xapi.xml_result()
+
+                if not self.__check_commit_return(results, force_sync):
+                    raise PanoplyException(self.xapi.status_detail)
+
+            return 'Prisma Access Committed Successfully'
 
         except PanXapiError as pxe:
             logger.error(pxe)
@@ -223,8 +257,14 @@ class Panoply:
             return False
 
         if force_sync:
-            doc = ElementTree.XML(results)
-            embedded_result = doc.find('result')
+            try:
+                doc = ElementTree.XML(results)
+                embedded_result = doc.find('result')
+
+            except ParseError:
+                # results can be malformed xml from gpcs
+                if 'jobid' in results:
+                    return True
 
             if embedded_result is not None:
                 commit_result = embedded_result.text
