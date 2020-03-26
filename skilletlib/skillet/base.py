@@ -38,6 +38,12 @@ if not len(logger.handlers):
 
 class Skillet(ABC):
 
+    # each skillet type can override this and set what metadata attributes are required
+    snippet_required_metadata = {'name'}
+
+    # optional metadata that can be present on each snippet
+    snippet_optional_metadata = dict()
+
     def __init__(self, s: dict):
         """
         Initialize the base skillet type
@@ -59,6 +65,9 @@ class Skillet(ABC):
         self.context = dict()
         self.captured_outputs = dict()
         self.snippet_outputs = dict()
+
+        # ensure all values are set appropriately in the snippet definition
+        self.__validate_snippet_metadata()
 
         debug = os.environ.get('SKILLET_DEBUG', False)
 
@@ -287,3 +296,24 @@ class Skillet(ABC):
         results['outputs'] = self.captured_outputs
         # results.update(self.captured_outputs)
         return results
+
+    def __validate_snippet_metadata(self) -> None:
+        """
+        Perform snippet metadata validation before we attempt to instantiate the snippet
+
+        This will throw a SkilletLoaderException if a required attribute is not present in the metadata
+        Will also set all optional metadata attributes with their default values
+
+        :raises: SkilletLoaderException if a required field is not present
+        :return: None
+        """
+        for s in self.snippet_stack:
+            name = s.get('name', '')
+            for r in self.snippet_required_metadata:
+                if r not in s:
+                    raise SkilletLoaderException(f'Invalid snippet metadata configuration: attribute: {r} '
+                                                 f'is required for snippet: {name}')
+
+            for k, v in self.snippet_optional_metadata.items():
+                if k not in s:
+                    s[k] = v

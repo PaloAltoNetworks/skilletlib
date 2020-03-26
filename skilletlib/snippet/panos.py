@@ -36,12 +36,6 @@ logger = logging.getLogger(__name__)
 class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
-    # optional metadata that may be overridden in the snippet definition / metadata
-    optional_metadata = {
-        'fail_message': 'Snippet Validation Failed',
-        'pass_message': 'Snippet Validation Passed'
-    }
-
     # default output_type for each snippet of this type
     output_type = 'xml'
 
@@ -501,18 +495,6 @@ class PanosSnippet(TemplateSnippet):
 
         return obj
 
-    def handle_output_type_validation(self, results: str):
-
-        output = dict()
-        output['results'] = results
-        output['label'] = self.metadata.get('label', '')
-        output['severity'] = self.metadata.get('severity', 'low')
-        output['documentation_link'] = self.metadata.get('documentation_link', '')
-        output['test'] = self.metadata.get('test', '')
-
-        o = dict()
-        o[self.name] = output
-        return o
 
     def get_default_output(self, results: str, status: str) -> dict:
         """

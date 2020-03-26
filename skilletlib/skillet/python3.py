@@ -23,6 +23,8 @@ from .base import Skillet
 
 class Python3Skillet(Skillet):
 
+    snippet_required_metadata = {'name', 'file'}
+
     def get_snippets(self) -> List[Snippet]:
         snippet_list = list()
         for snippet_def in self.snippet_stack:

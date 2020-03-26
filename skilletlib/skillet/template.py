@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 class TemplateSkillet(Skillet):
 
+    snippet_required_metadata = {'name', 'file'}
+
     def get_snippets(self) -> List[TemplateSnippet]:
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)

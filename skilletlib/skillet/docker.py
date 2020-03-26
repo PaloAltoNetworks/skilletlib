@@ -22,6 +22,14 @@ from .base import Skillet
 
 class DockerSkillet(Skillet):
 
+    snippet_required_metadata = {'name', 'image', 'cmd'}
+
+    # optional parameters that may be set in the snippet metadata
+    snippet_optional_metadata = {
+        'volumes': dict(),
+        'async': True
+    }
+
     def __init__(self, s: dict):
         super().__init__(s)
         self.snippet_list = List[DockerSnippet]

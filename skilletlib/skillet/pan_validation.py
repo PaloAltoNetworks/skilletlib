@@ -17,7 +17,7 @@
 from pathlib import Path
 from typing import List
 
-from skilletlib.snippet.panos import PanosSnippet
+from skilletlib.snippet.pan_validation import PanValidationSnippet
 from .panos import PanosSkillet
 
 
@@ -28,7 +28,7 @@ class PanValidationSkillet(PanosSkillet):
 
     snippet_list = list()
 
-    def get_snippets(self) -> List[PanosSnippet]:
+    def get_snippets(self) -> List[PanValidationSnippet]:
 
         if len(self.snippet_list) > 0:
             return self.snippet_list
@@ -47,7 +47,7 @@ class PanValidationSkillet(PanosSkillet):
             if 'severity' not in snippet_def:
                 snippet_def['severity'] = 'low'
 
-            snippet = PanosSnippet(snippet_def, self.panoply)
+            snippet = PanValidationSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
 
         self.snippet_list = snippet_list

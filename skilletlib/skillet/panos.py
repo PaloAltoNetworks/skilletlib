@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 class PanosSkillet(Skillet):
     panoply = None
 
+    snippet_required_metadata = {'name'}
+
     def __init__(self, metadata: dict, panoply: Panoply = None):
         """
         Initialize a new PanosSkillet class.

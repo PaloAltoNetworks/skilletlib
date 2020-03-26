@@ -13,6 +13,16 @@ logger = logging.getLogger(__name__)
 
 class RestSkillet(Skillet):
 
+    snippet_required_metadata = {'name', 'path'}
+
+    snippet_optional_metadata = {
+        'operation': 'get',
+        'payload': '',
+        'headers': {},
+        'content_type': '',
+        'accepts_type': ''
+    }
+
     def __init__(self, metadata: dict):
         super().__init__(metadata)
         self.session = requests.Session()

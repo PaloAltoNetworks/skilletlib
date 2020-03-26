@@ -369,8 +369,8 @@ class SkilletLoader:
             except SkilletNotFoundException:
                 err_condition = f'Skillet not found in dir {d.name}'
 
-            except SkilletLoaderException:
-                err_condition = f'Loader Error for dir {d.name}'
+            except SkilletLoaderException as sle:
+                err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
         # Do not descend into sub dirs after a .meta-cnc file has already been found
         if skillet_list:

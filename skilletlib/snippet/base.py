@@ -295,17 +295,11 @@ class Snippet(ABC):
 
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
-        Ensure the configured metadata is valid for this snippet type
-        :param metadata: dict
-        :return: validated metadata dict
+        method to sanitize metadata. Each snippet type can override this provide extra logic over and above
+        just checking the required and optional fields
+        :param metadata: snippet metadata
+        :return: sanitized snippet metadata
         """
-        name = metadata.get('name', '')
-        if not self.required_metadata.issubset(metadata):
-            for attr_name in metadata:
-                if attr_name not in self.required_metadata:
-                    raise SkilletLoaderException(f'Invalid snippet metadata configuration: attribute: {attr_name} '
-                                                 f'is required for snippet: {name}')
-
         return metadata
 
     def render_metadata(self, context: dict) -> dict:
