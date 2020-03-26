@@ -188,6 +188,7 @@ class Panoply:
     def commit_gpcs(self, force_sync=True) -> str:
         """
         Perform a commit operation on this device instance specifically for gpcs remote networks
+        Note - you must do a full commit to panorama before you invoke this commit!
         :raises PanoplyException: if commit failed
         :param force_sync: Flag to enable sync commit or async
         :return: String from the API indicating success or failure
