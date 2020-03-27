@@ -100,6 +100,10 @@ class SkilletLoader:
             from skilletlib.skillet.workflow import WorkflowSkillet
             return WorkflowSkillet(skillet_dict, self)
 
+        elif skillet_type == 'terraform':
+            from skilletlib.skillet.terraform import TerraformSkillet
+            return TerraformSkillet(skillet_dict)
+
         else:
             raise SkilletLoaderException('Unknown Skillet Type!')
 

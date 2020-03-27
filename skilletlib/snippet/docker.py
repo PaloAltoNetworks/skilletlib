@@ -94,6 +94,12 @@ class DockerSnippet(Snippet):
             if 'cmd' in self.metadata:
                 meta['cmd'] = self.render(self.metadata['cmd'], context)
 
+            if 'tag' in self.metadata:
+                meta['tag'] = self.render(self.metadata['tag'], context)
+                # fixme - this feels like it should be done automatically for all snippets just after this step
+                # i.e. sanitize metadata, render metadata, set all attribute on the class
+                self.tag = meta['tag']
+
         except TypeError as te:
             logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
 
