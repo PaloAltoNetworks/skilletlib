@@ -258,6 +258,7 @@ class Panoply:
             return False
 
         if force_sync:
+            embedded_result = None
             try:
                 doc = ElementTree.XML(results)
                 embedded_result = doc.find('result')
@@ -310,6 +311,21 @@ class Panoply:
             return self.xapi.xml_result()
 
         except PanXapiError as pxe:
+            if 'ParseError' in str(pxe):
+                # some op commands do not properly wrap data in CDATA tags, so let's try to
+                # replace some chars manually and re-parse...
+                x = self.xapi.xml_document
+                cx = x.replace('&', '&amp;')
+
+                try:
+                    # make sure our little 'fix' didn't completely ruin the xml structure and return what we got
+                    s = ElementTree.fromstring(cx)
+                    return ElementTree.tostring(s)
+
+                except Exception as e:
+                    logger.error(e)
+                    raise PanoplyException(pxe)
+
             raise PanoplyException(pxe)
 
     def execute_cli(self, cmd_str: str) -> str:

@@ -426,7 +426,7 @@ class Snippet(ABC):
                 elif len(entries) == 1:
                     entry = entries.pop()
                     if isinstance(entry, str):
-                        captured_output[var_name] = entry
+                        captured_output[var_name] = str(entry)
                     else:
                         if len(entry) == 0:
                             # this tag has no children, so try to grab the text
