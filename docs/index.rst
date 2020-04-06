@@ -11,11 +11,11 @@ Welcome to Skilletlib's documentation!
    :caption: Contents:
 
    examples
-   jinja_filters
-   outputs
-   panoply
-   skillet
+   skillet_classes
    skilletloader
+   panoply
+   outputs
+   jinja_filters
 
 
 About

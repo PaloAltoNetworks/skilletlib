@@ -294,7 +294,21 @@ class Skillet(ABC):
 
     def get_results(self) -> dict:
         """
-        Returns the results from the skillet execution. This must be called manually if using 'execute_async'
+        Returns the results from the skillet execution. This must be called manually if using 'execute_async'. The
+        returned dict will include a 'snippets' dictionary that contains a key for each snippet that was executed. Each
+        snippet dictionary will contain the 'results' and 'raw' attributes.
+
+        .. code-block: python
+
+            {
+                'snippets': {
+                    'snippet_name_that_was_executed': {
+                        'results': 'success',
+                        'raw': 'raw output from the snippet'
+                    }
+                }
+            }
+
 
         :return: dictionary of results from the Skillet execute or execute_async method
         """

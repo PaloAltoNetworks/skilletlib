@@ -161,7 +161,7 @@ class Snippet(ABC):
         get_output can be used when a snippet executes async and cannot or will not return output right away
         snippets that operate async must override this method
 
-        :return:
+        :return: Tuple containing the skillet output as a str and a str indicating success of failure
         """
 
         return '', 'success'
@@ -295,6 +295,13 @@ class Snippet(ABC):
         return filtered_items
 
     def render(self, template_str: str, context: (dict, None)) -> str:
+        """
+        Convenience method to quickly render a template_str using the provided context
+
+        :param template_str: jinja2 template to render
+        :param context: context to pass to the jinja2 environment
+        :return: rendered string
+        """
         if context is None:
             context = self.context
         t = self._env.from_string(template_str)
@@ -350,7 +357,7 @@ class Snippet(ABC):
         """
         Each snippet sub-class can add additional filters. See the PanosSnippet for examples
 
-        :return:
+        :return: None
         """
         pass
 
