@@ -38,5 +38,6 @@ with each key being the name of a snippet that was executed. It's value will be 
 Outputs Per Type
 ~~~~~~~~~~~~~~~~
 
-
+View the documentation for the 'get_results' method of each skillet class to determine what structure
+is returned by the Skillet type.
 

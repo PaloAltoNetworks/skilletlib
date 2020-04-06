@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 class Snippet(ABC):
     """
-    BaseSnippet implements a basic template object snippet
+    BaseSnippet implements a basic Noop snippet
     """
     # set of required metadata, each snippet will define what attributes are required in the snippet definition
     # by default, we only require a 'name' attribute, but sub-classes will require more
@@ -86,6 +86,7 @@ class Snippet(ABC):
         """
         This will update the snippet context with the passed in dict.
         This gets called before render_metadata
+
         :param context:
         :return:
         """
@@ -107,6 +108,7 @@ class Snippet(ABC):
     def should_execute(self, context: dict) -> bool:
         """
         Evaluate 'when' conditionals and return a bool if this snippet should be executed
+
         :param context: jinja context containing previous outputs and user supplied variables
         :return: boolean
         """
@@ -125,6 +127,7 @@ class Snippet(ABC):
     def execute_conditional(self, test: str, context: dict) -> bool:
         """
         Evaluate 'test' conditionals and return a bool
+
         :param test: string of the conditional to execute
         :param context: jinja context containing previous outputs and user supplied variables
         :return: boolean
@@ -157,6 +160,7 @@ class Snippet(ABC):
         """
         get_output can be used when a snippet executes async and cannot or will not return output right away
         snippets that operate async must override this method
+
         :return:
         """
 
@@ -166,6 +170,7 @@ class Snippet(ABC):
         """
         each snippet type can override this method to provide it's own default output. This is used
         when there are no variables defined to be captured
+
         :param results: raw output from snippet execution
         :param status: status of the snippet.execute method
         :return: dict of default outputs
@@ -182,6 +187,7 @@ class Snippet(ABC):
     def capture_outputs(self, results: str, status: str) -> dict:
         """
         All snippet output or portions of snippet output can be captured and saved on the context as a new variable
+
         :param results: the raw output from the snippet execution
         :param status: status of the snippet.execute method
         :return: a dictionary containing all captured variables
@@ -250,6 +256,7 @@ class Snippet(ABC):
     def __filter_outputs(self, output_definition: dict, output: (str, dict, list), local_context: dict) -> (list, None):
         """
         Filter OUT items that do not pass the test
+
         :param output_definition: the output definition from the skillet
         :param output: the captured object to test
         :param local_context: local context for the jinja expression based tests
@@ -297,6 +304,7 @@ class Snippet(ABC):
         """
         method to sanitize metadata. Each snippet type can override this provide extra logic over and above
         just checking the required and optional fields
+
         :param metadata: snippet metadata
         :return: sanitized snippet metadata
         """
@@ -307,6 +315,7 @@ class Snippet(ABC):
         Each snippet sub class can override this method to perform jinja variable interpolation on various items
         in it's snippet definition. For example, the PanosSnippet will check the 'xpath' attribute and perform
         the required interpolation
+
         :param context: context from environment
         :return: metadata with jinja rendered variables
         """
@@ -319,6 +328,7 @@ class Snippet(ABC):
     def __md5_hash(txt: str) -> str:
         """
         Returns the MD5 Hashed secret for use as a password hash in the PAN-OS configuration
+
         :param txt: text to be hashed
         :return: password hash of the string with salt and configuration information. Suitable to place in the phash field
         in the configurations
@@ -329,6 +339,7 @@ class Snippet(ABC):
     def __init_env(self) -> None:
         """
         init the jinja2 environment and add any required filters
+
         :return: Jinja2 environment object
         """
         self._env = Environment(loader=BaseLoader)
@@ -338,6 +349,7 @@ class Snippet(ABC):
     def add_filters(self) -> None:
         """
         Each snippet sub-class can add additional filters. See the PanosSnippet for examples
+
         :return:
         """
         pass
@@ -376,6 +388,7 @@ class Snippet(ABC):
                 capture_value: result/system/uptime
               - name: sw_version
                 capture_value: result/system/sw-version
+
 
         :param results: string as returned from some action, to be parsed as XML document
         :return: dict containing all outputs found from the capture pattern in each output
@@ -510,10 +523,11 @@ class Snippet(ABC):
 
     def _handle_base64_outputs(self, results: str) -> dict:
         """
-         Parses results and returns a dict containing base64 encoded values
-         :param results: string as returned from some action, to be encoded as base64
-         :return: dict containing all outputs found from the capture pattern in each output
-         """
+        Parses results and returns a dict containing base64 encoded values
+
+        :param results: string as returned from some action, to be encoded as base64
+        :return: dict containing all outputs found from the capture pattern in each output
+        """
 
         outputs = dict()
 
@@ -607,6 +621,7 @@ class Snippet(ABC):
     def __handle_manual_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Manually set a value in the context, this could be useful with 'when' conditionals
+
         :param results: results from snippet execution, ignored in this method
         :return: dict containing manually defined name / value pair
         """
@@ -625,6 +640,7 @@ class Snippet(ABC):
     def _handle_manual_outputs(self, results: str) -> dict:
         """
         Manually set a value in the context, this could be useful with 'when' conditionals
+
         :param results: results from snippet execution, ignored in this method
         :return: dict containing manually defined name / value pair
         """

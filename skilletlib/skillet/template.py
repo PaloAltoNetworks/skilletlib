@@ -29,7 +29,17 @@ class TemplateSkillet(Skillet):
         """
         TemplateSkillet will add an additional attribute into the results dict containing the value of
         the first snippet found to have been successfully executed
-        :return: dict containing default outputs plus the rendered template
+
+        .. code-block: json
+
+            {
+              "snippets": {
+                "config_template": "success"
+              },
+              "template": "Rendered Template output"
+            }
+
+        :return: dict containing default outputs plus the rendered template contained in the 'template' attribute
         """
 
         results = super().get_results()

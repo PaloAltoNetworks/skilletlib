@@ -231,6 +231,7 @@ class PanosSnippet(TemplateSnippet):
         Grab an xml fragment from the config given at xpath and compare it to this element
 
         :param config: XML document string from which to pull the XML element to compare
+
         :param element: element to check against
         :param xpath: xpath to grab an xml fragment from the config for comparison
         :param context: jinja context used to interpolate any variables that may be present in the template

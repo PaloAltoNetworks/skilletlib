@@ -36,7 +36,7 @@ class WorkflowSnippet(Snippet):
             return dict()
 
     def get_default_output(self, results: dict, status: str) -> dict:
-        # The underlaying skillet will return us a dict with keys 'skillets' and also any skillet specific keys
+        # The underlying skillet will return us a dict with keys 'skillets' and also any skillet specific keys
         # such as panos will add a top level 'result' key. template type will add a top level 'template' type
         # we need to include all those here as well
         workflow_results = dict()

@@ -46,3 +46,61 @@ class RestSkillet(Skillet):
                 snippet_list.append(snippet)
 
         return snippet_list
+
+    def get_results(self) -> dict:
+        """
+        Gets the results from the REST skillet execution. This skillet does not add any additional attirubutes to the
+        normal output.
+
+        The following snippet will generate the following output:
+
+        .. code-block: yaml
+
+              - name: Retrieve Remote Network Service IP from Prisma Access
+                path: https://api.gpcloudservice.com/getAddrList/latest?fwType=gpcs_remote_network&addrType=public_ip
+                operation: GET
+                headers:
+                  header-api-key: '{{ api_key }}'
+                output_type: json
+                outputs:
+                  - name: status
+                    capture_pattern: $.status
+                  - name: fwType
+                    capture_pattern: $.result.fwType
+                  - name: addrList
+                    capture_pattern: $.result.addrList
+
+
+        .. code-block: python
+
+            {
+                'snippets': {
+                    'Retrieve Remote Network Service IP from Prisma Access': {
+                        'results': 'success',
+                        'raw': {
+                            'status': 'success',
+                            'result': {
+                                'fwType': 'gpcs_remote_network',
+                                'addrListType': 'public_ip',
+                                'total-count': 2,
+                                'addrList': [
+                                    'test-XXX:x.x.x.x',
+                                    'pa220-test, pa220-test-2:x.x.x.x'
+                                ]
+                            }
+                        }
+                    }
+                },
+                'outputs': {
+                    'status': 'success',
+                    'fwType': 'gpcs_remote_network',
+                    'addrList': "['test-XXX:x.x.x.x', 'pa220-test, pa220-test-2:x.x.x.x']"
+                }
+            }
+
+
+        :return: dictionary of results from the REST Skillet execute or execute_async method
+        """
+
+        # this override is only here to provide the docstring
+        return super().get_results()

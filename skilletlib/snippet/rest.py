@@ -54,6 +54,7 @@ class RestSnippet(TemplateSnippet):
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
         Clean and sanitize metadata elements in this snippet definition
+
         :param metadata: dict
         :return: dict
         """

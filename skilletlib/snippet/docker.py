@@ -82,6 +82,7 @@ class DockerSnippet(Snippet):
         """
         Renders each item in the metadata using the provided context.
         Currently renders the cmd attribute only
+
         :param context: dict containing key value pairs to
         :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
         """
@@ -108,6 +109,7 @@ class DockerSnippet(Snippet):
     def execute(self, context) -> Tuple[str, str]:
         """
         Execute this cmd in the specified docker container
+
         :param context: context containing all the user-supplied input variables. Also contains output from previous
         steps. Raises SkilletLoaderException on error
         :return:  Tuple(dict, str) output and string representing 'success' or 'failure'

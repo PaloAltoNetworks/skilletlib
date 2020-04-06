@@ -156,6 +156,7 @@ class PanosSkillet(Skillet):
     def get_snippets(self) -> List[PanosSnippet]:
         """
         Perform Panos Skillet specific tasks while loading each snippet
+
         :return: a List of PanosSnippets
         """
         snippet_path = Path(self.path)
@@ -176,7 +177,7 @@ class PanosSkillet(Skillet):
         """
         This method will load the snippet file found on disk into the 'element' attribute if the element
         is not already populated. This allows snippets to be 'all-in-one' i.e. there is no requirement for the snippets
-        to be split into seperate files. The meta-cnc.yaml file can contain all the snippets 'inline' in the 'element'
+        to be split into separate files. The meta-cnc.yaml file can contain all the snippets 'inline' in the 'element'
         attribute if desired.
         An example snippet def:
 
@@ -218,6 +219,38 @@ class PanosSkillet(Skillet):
         PanosSkillet will return a dict containing three keys:
         result, changed, and snippets. If any snippet failed, the result will be 'failure' otherwise 'success'
         If any successful snippet may have caused a change to the device, the 'changed' attribute will be 'True'
+
+        A skillet that contains only the following snippet, will generate the output below:
+
+        .. code-block:: yaml
+
+              - name: check_hostname_again
+                cmd: op
+                cmd_str: <show><system><info/></system></show>
+                outputs:
+                  - name: url-db
+                    capture_pattern: ./url-db
+                  - name: pa-version
+                    capture_pattern: ./plugin_versions/entry[@name="cloud_services"]/@version
+
+
+        .. code-block:: json
+
+            {
+              'snippets': {
+                'check_hostname_again': {
+                  'results': 'success',
+                  'changed': True
+                }
+              },
+              'outputs': {
+                'url-db': 'paloaltonetworks',
+                'pa-version': '1.5.0'
+              },
+              'result': 'success',
+              'changed': True
+            }
+
 
         :return: dict containing default outputs plus the overall result and changed flag
         """

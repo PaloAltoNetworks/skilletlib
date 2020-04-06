@@ -54,6 +54,31 @@ class PanValidationSkillet(PanosSkillet):
         return snippet_list
 
     def get_results(self) -> dict:
+        """
+        Pan-validation skillets return a dictionary with a key for each test that was executed. Each value of those
+        keys will be a dict containing the following keys:
+            * results - whether the test conditional was true or false
+            * label - human readable label of the test
+            * severity - a string that may be set to indicate the severity of a test
+            * documentation_link - an HTTP link where the user can get more information about this test
+            * output_message - A rendered output message regarding the test results
+
+        .. code-block: json
+
+                {
+                    "update_schedule_configured": {
+                        "results": true,
+                        "label": "Ensure Update Schedules are Configured",
+                        "severity": "low",
+                        "documentation_link": "https://iron-skillet.readthedocs.io",
+                        "test": "update_schedule_object is not none",
+                        "output_message": "Snippet Validation Passed"
+                    },
+                }
+
+
+        :return: dictionary with the aforementioned keys
+        """
         # do not call super() as this subclasses panos and not base directly
         results = dict()
         results['snippets'] = dict()
