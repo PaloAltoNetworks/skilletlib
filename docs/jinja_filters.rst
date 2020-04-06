@@ -62,7 +62,7 @@ that matches both the name and value, this filter will return True.
 
 
 element_value_contains
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 This filter is useful for times when the xpath may contain a list of items. The path argument is a '.' or '/'
 separated list. The variable object is inspected to verify each item in the path list is present. If all elements are

@@ -21,6 +21,9 @@ project = 'skilletlib'
 copyright = '2019, gse-automation'
 author = 'gse-automation'
 
+# set the master doc to 'index' instead of
+master_doc = 'index'
+
 # The full version, including alpha/beta/rc tags
 release = '0.1'
 
