@@ -24,7 +24,7 @@ This filter will validate that the given path is present in the variable object.
 separated list. The variable object is inspected to verify each item in the path list is present. If all elements are
 found, this filter will return True. This is useful to validate a specific element is present.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: update_schedule_stats_service_configured
     label: Ensure Statistics Service is enabled
@@ -38,7 +38,7 @@ valid jinja expression. The path argument is a '.' or '/'
 separated list. The variable object is inspected to verify each item in the path list is present. If all elements are
 found, this filter will return leaf node text value.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: ensure_ip_address
     label: Ensure IP Address is configured
@@ -53,7 +53,7 @@ This filter takes a configuration path as the first argument, similar to the tag
 is the attribute name and the third is the attribute value. If the configuration path is found, and has an attribute
 that matches both the name and value, this filter will return True.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: check_profile_exists
     when: network_profiles is not none
@@ -70,7 +70,7 @@ found, this filter will inspect the found value. If the value is a list, this fi
 argument is present in the list. If the value is a string, the filter will check if the string matches the second
 argument.
 
-.. code-block::
+.. code-block:: yaml
 
   - name: security_rules_outbound_edl
     label: check for IronSkillet outbound EDL block rule member
