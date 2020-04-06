@@ -37,7 +37,9 @@ class PanosSkillet(Skillet):
     def __init__(self, metadata: dict, panoply: Panoply = None):
         """
         Initialize a new PanosSkillet class.
+
         :param metadata: loaded dict from the Skillet YAML file
+
         :param panoply: optional panoply object. This can be passed in if the outer application scope has
         already been in contact with the device for things like checking auth, etc. If not passed in,
         you can invoke it in 'online' mode by passing in 'panos_username', 'panos_password' and 'panos_hostname' in the
@@ -51,6 +53,7 @@ class PanosSkillet(Skillet):
         """
         In this panos case, we want to stash the current configuration of the panos device in question in the
         context, check for online mode, offline mode, or an existing panoply object
+
         :param initial_context: dict to use to initialize the context
         :return: context with additional initialized items
         """
@@ -152,7 +155,7 @@ class PanosSkillet(Skillet):
 
     def get_snippets(self) -> List[PanosSnippet]:
         """
-        Every skillet type determines how to load and initialize all of it's snippets
+        Perform Panos Skillet specific tasks while loading each snippet
         :return: a List of PanosSnippets
         """
         snippet_path = Path(self.path)
@@ -215,6 +218,7 @@ class PanosSkillet(Skillet):
         PanosSkillet will return a dict containing three keys:
         result, changed, and snippets. If any snippet failed, the result will be 'failure' otherwise 'success'
         If any successful snippet may have caused a change to the device, the 'changed' attribute will be 'True'
+
         :return: dict containing default outputs plus the overall result and changed flag
         """
 

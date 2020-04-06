@@ -134,6 +134,7 @@ class PanosSnippet(TemplateSnippet):
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
         Ensure all required keys are present in the snippet definition
+
         :param metadata: dict
         :return: dict
         """
@@ -194,6 +195,7 @@ class PanosSnippet(TemplateSnippet):
         """
         Renders each item in the metadata using the provided context.
         Currently renders the xpath and element for PANOS type skillets
+
         :param context: dict containing key value pairs to
         :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
         """
@@ -227,6 +229,7 @@ class PanosSnippet(TemplateSnippet):
     def compare_element_at_xpath(config: str, element: str, xpath: str, context: dict) -> bool:
         """
         Grab an xml fragment from the config given at xpath and compare it to this element
+
         :param config: XML document string from which to pull the XML element to compare
         :param element: element to check against
         :param xpath: xpath to grab an xml fragment from the config for comparison
@@ -256,10 +259,10 @@ class PanosSnippet(TemplateSnippet):
         """
         Cherry picking allows the skillet builder to pull out specific bits of a larger configuration
         and load only the smaller chunks. This is especially useful when combined with 'when' conditionals
+
         :param element: string containing the jinja templated xml fragment
         :param cherry_pick_path: string describing the relative xpath to use to cherry pick an xml node from the
             element given as a parameter
-        :param context: jinja context used to interpolate any variables that may be present in the template
         :return: rendered and cherry_picked element
         """
 
@@ -350,6 +353,7 @@ class PanosSnippet(TemplateSnippet):
     def __node_attribute_present(self, obj: dict, config_path: str, attribute_name: str, attribute_value: str) -> bool:
         """
         Ensure a node with the named attribute and value does exist
+
         :param obj: obj to check
         :param config_path: path or child attribute(s) to check
         :param attribute_name: name of the attribute
@@ -381,6 +385,7 @@ class PanosSnippet(TemplateSnippet):
     def __node_attribute_absent(self, obj: dict, config_path: str, attribute_name: str, attribute_value: str) -> bool:
         """
         Ensure a node with the named attribute and value does not exist
+
         :param obj: obj to check
         :param config_path: path or child attribute(s) to check
         :param attribute_name: name of the attribute
@@ -467,6 +472,7 @@ class PanosSnippet(TemplateSnippet):
     def __append_uuid(self, string_input: str) -> str:
         """
         Simple filter to append a generated UUID to the end of the given string
+
         :param string_input: string to which to append the UUID
         :return: string with a dash and a string UUID
         """
@@ -481,6 +487,7 @@ class PanosSnippet(TemplateSnippet):
         and we need to know if the child key name exists on either the outer dict or the inner dict
         return the inner dict if the child key name is found there, or punt and return the outer dict
         otherwise
+
         :param obj: dict to check for child key name
         :param child: name of a key we want to find
         :return: inner dict if it contains the child key, outer dict otherwise
@@ -495,10 +502,10 @@ class PanosSnippet(TemplateSnippet):
 
         return obj
 
-
     def get_default_output(self, results: str, status: str) -> dict:
         """
         Override the default snippet get_default_output to not include raw results
+
         :param results: raw output from snippet execution
         :param status: status of the snippet.execute method
         :return: dict of default outputs

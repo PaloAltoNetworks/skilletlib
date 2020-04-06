@@ -47,6 +47,7 @@ class Skillet(ABC):
     def __init__(self, s: dict):
         """
         Initialize the base skillet type
+
         :param s: loaded dictionary from the .meta-cnc.yaml file
         """
 
@@ -80,7 +81,8 @@ class Skillet(ABC):
         """
         Each skillet determines how it's snippets are to be loaded and initialized. Each Skillet type must
         implement this method.
-        :return:
+
+        :return: List of Snippets for this Skillet Class
         """
         snippet_list = list()
         for snippet_def in self.snippet_stack:
@@ -93,6 +95,7 @@ class Skillet(ABC):
         """
         Take the input dict d and update the skillet context. I.e. any variables passed in via environment variables
         will be used to update the context stored on this skillet.
+
         :param d: dictionary of key value pairs. Any keys that match 'variable' keys will be used to update the context
         :return: updated context stored on this skillet
         """
@@ -106,7 +109,9 @@ class Skillet(ABC):
 
     def initialize_context(self, initial_context: dict) -> dict:
         """
-        Child classes can override this to provide any initialization information in the context
+        Child classes can override this to provide any initialization information in the context. For example, 'panos'
+        skillets use this to set up and initialize a Panos device object
+
         :param initial_context: Initial Context from user input, environment vars, etc
         :return: updated context with initial context items plus any initialization items
         """
@@ -118,6 +123,7 @@ class Skillet(ABC):
     def __initialize_variables(vars_dict: dict) -> dict:
         """
         Ensure the proper default values are configured for each type of variable that may be present in the skillet
+
         :param vars_dict: Skillet 'variables' stanza
         :return: variables stanza with default values correctly parsed
         """
@@ -154,7 +160,9 @@ class Skillet(ABC):
         Returns a generator that can be used to iterate over the output as it's generated
         from each snippet. The calling application should call 'get_results' once the execute is complete
 
-        :param initial_context:
+        :param initial_context: context of key values pairs to use for the execution. By default this is all the
+        variables defined in the skillet file with their default values. Updates from user input, the environment, etc
+        will override these default values via the 'update_context' method.
         :return: generator[str]
         """
         try:
@@ -220,9 +228,10 @@ class Skillet(ABC):
         The heart of the Skillet class. This method executes the skillet by iterating over all the skillets returned
         from the 'get_skillets' method. Each one is checked if it should be executed if a 'when' conditional attribute
         is found, and if so, is executed using the snippet execute method.
+
         :param initial_context: context of key values pairs to use for the execution. By default this is all the
         variables defined in the skillet file with their default values. Updates from user input, the environment, etc
-        will override these default values vai the 'update_context' method.
+        will override these default values via the 'update_context' method.
         :return: a dict containing the updated context containing the output of each of the snippets
         """
         try:
@@ -284,6 +293,11 @@ class Skillet(ABC):
         return self.get_results()
 
     def get_results(self) -> dict:
+        """
+        Returns the results from the skillet execution. This must be called manually if using 'execute_async'
+
+        :return: dictionary of results from the Skillet execute or execute_async method
+        """
         results = dict()
         results['snippets'] = dict()
 
