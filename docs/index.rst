@@ -13,6 +13,9 @@ Welcome to Skilletlib's documentation!
    examples
    jinja_filters
    outputs
+   panoply
+   skillet
+   skilletloader
 
 
 About
