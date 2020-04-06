@@ -63,7 +63,7 @@ class PanValidationSkillet(PanosSkillet):
             * documentation_link - an HTTP link where the user can get more information about this test
             * output_message - A rendered output message regarding the test results
 
-        .. code-block: json
+        .. code-block:: json
 
                 {
                     "update_schedule_configured": {

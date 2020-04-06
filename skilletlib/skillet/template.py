@@ -30,7 +30,7 @@ class TemplateSkillet(Skillet):
         TemplateSkillet will add an additional attribute into the results dict containing the value of
         the first snippet found to have been successfully executed
 
-        .. code-block: json
+        .. code-block:: json
 
             {
               "snippets": {

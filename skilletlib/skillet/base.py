@@ -298,15 +298,21 @@ class Skillet(ABC):
         returned dict will include a 'snippets' dictionary that contains a key for each snippet that was executed. Each
         snippet dictionary will contain the 'results' and 'raw' attributes.
 
-        .. code-block: json
+        .. code-block:: json
 
             {
-                'snippets': {
-                    'snippet_name_that_was_executed': {
-                        'results': 'success',
-                        'raw': 'raw output from the snippet'
-                    }
+              'snippets': {
+                'check_hostname_again': {
+                  'results': 'success',
+                  'changed': True
                 }
+              },
+              'outputs': {
+                'url-db': 'paloaltonetworks',
+                'pa-version': '1.5.0'
+              },
+              'result': 'success',
+              'changed': True
             }
 
 

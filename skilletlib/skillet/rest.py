@@ -60,7 +60,7 @@ class RestSkillet(Skillet):
 
         The following snippet will generate the following output:
 
-        .. code-block: yaml
+        .. code-block:: yaml
 
             - name: Retrieve Remote Network Service IP from Prisma Access
               path: https://api.gpcloudservice.com/getAddrList/latest?fwType=gpcs_remote_network&addrType=public_ip
@@ -77,7 +77,7 @@ class RestSkillet(Skillet):
                   capture_pattern: $.result.addrList
 
 
-        .. code-block: json
+        .. code-block:: json
 
             {
                 'snippets': {
