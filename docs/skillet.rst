@@ -1,7 +1,12 @@
-Skilletlib Skillet Classes
-**************************
+Skilletlib Skillet Base Class
+******************************
 
-.. automodule:: skilletlib.skillet
+.. autoclass:: skilletlib.skillet.base.Skillet
    :members:
 
+
+Panos Skillet
+
+.. autoclass:: skilletlib.skillet.panos.PanosSkillet
+   :members:
 

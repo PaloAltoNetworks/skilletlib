@@ -1,7 +1,7 @@
 SkilletLoader
 *************
 
-.. automodule:: skilletlib.skilletLoader
+.. autoclass:: skilletlib.SkilletLoader
    :members:
 
 
