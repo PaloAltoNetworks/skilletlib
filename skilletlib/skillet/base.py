@@ -298,7 +298,7 @@ class Skillet(ABC):
         returned dict will include a 'snippets' dictionary that contains a key for each snippet that was executed. Each
         snippet dictionary will contain the 'results' and 'raw' attributes.
 
-        .. code-block: python
+        .. code-block: json
 
             {
                 'snippets': {

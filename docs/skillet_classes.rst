@@ -1,5 +1,5 @@
-Skilletlib Skillet Base Class
-******************************
+Skilletlib Skillet Types
+************************
 
 
 Panos Skillet

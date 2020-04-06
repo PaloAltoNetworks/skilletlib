@@ -28,6 +28,12 @@ class RestSkillet(Skillet):
         self.session = requests.Session()
 
     def get_snippets(self) -> List[Snippet]:
+        """
+        Loads and validates each Snippet in the REST skillet metadata file
+
+        :return: List of Snippets for this Skillet Class
+        """
+
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)
         snippet_list = list()
@@ -56,22 +62,22 @@ class RestSkillet(Skillet):
 
         .. code-block: yaml
 
-              - name: Retrieve Remote Network Service IP from Prisma Access
-                path: https://api.gpcloudservice.com/getAddrList/latest?fwType=gpcs_remote_network&addrType=public_ip
-                operation: GET
-                headers:
-                  header-api-key: '{{ api_key }}'
-                output_type: json
-                outputs:
-                  - name: status
-                    capture_pattern: $.status
-                  - name: fwType
-                    capture_pattern: $.result.fwType
-                  - name: addrList
-                    capture_pattern: $.result.addrList
+            - name: Retrieve Remote Network Service IP from Prisma Access
+              path: https://api.gpcloudservice.com/getAddrList/latest?fwType=gpcs_remote_network&addrType=public_ip
+              operation: GET
+              headers:
+                header-api-key: '{{ api_key }}'
+              output_type: json
+              outputs:
+                - name: status
+                  capture_pattern: $.status
+                - name: fwType
+                  capture_pattern: $.result.fwType
+                - name: addrList
+                  capture_pattern: $.result.addrList
 
 
-        .. code-block: python
+        .. code-block: json
 
             {
                 'snippets': {

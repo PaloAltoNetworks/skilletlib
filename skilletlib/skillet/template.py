@@ -39,6 +39,7 @@ class TemplateSkillet(Skillet):
               "template": "Rendered Template output"
             }
 
+
         :return: dict containing default outputs plus the rendered template contained in the 'template' attribute
         """
 
