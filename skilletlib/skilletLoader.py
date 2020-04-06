@@ -39,10 +39,16 @@ if not len(logger.handlers):
 
 
 class SkilletLoader:
+    """
+
+    SkilletLoader is used to find and load Skillets from their metadata files, either from on filesystem path
+    or from a git repository URL
+
+    :param path: local relative path to search for all Skillet meta-data files
+    """
     skillets = List[Skillet]
 
     def __init__(self, path=None):
-
         debug = os.environ.get('SKILLET_DEBUG', False)
 
         if debug:
@@ -55,6 +61,7 @@ class SkilletLoader:
     def load_skillet_dict_from_path(self, skillet_path: str) -> dict:
         """
         Loads the skillet metadata file into a skillet_dict dictionary
+
         :param skillet_path: path in which to look for a metadata file
         :return: skillet dictionary
         """
@@ -63,6 +70,7 @@ class SkilletLoader:
     def load_skillet_from_path(self, skillet_path: (str, Path)) -> Skillet:
         """
         Returns a Skillet object from the given path.
+
         :param skillet_path: path in which to search for a skillet
         :return: Skillet object of the correct type
         """
@@ -70,6 +78,12 @@ class SkilletLoader:
         return self.create_skillet(skillet_dict)
 
     def create_skillet(self, skillet_dict: dict) -> Skillet:
+        """
+        Creates a Skillet object from the given skillet definition
+
+        :param skillet_dict: Dictionary loaded from the .meta-cnc.yaml skillet definition file
+        :return: Skillet Object
+        """
         skillet_type = skillet_dict['type']
 
         if skillet_type == 'panos' or skillet_type == 'panorama' or skillet_type == 'panorama-gpcs':
@@ -170,6 +184,7 @@ class SkilletLoader:
     def normalize_skillet_dict(skillet: dict) -> dict:
         """
         Attempt to resolve common configuration file format errors
+
         :param skillet: a loaded skillet/snippet
         :return: skillet/snippet that has been 'fixed'
         """
@@ -289,6 +304,7 @@ class SkilletLoader:
     def debug_skillet_structure(skillet: dict) -> list:
         """
         Verifies the structure of a skillet and returns a list of errors or warning if found
+
         :param skillet: Skillet Definition Dictionary
         :return: list of errors or warnings if found
         """
@@ -324,6 +340,12 @@ class SkilletLoader:
         return errs
 
     def get_skillet_with_name(self, skillet_name: str) -> (Skillet, None):
+        """
+        Returns a single skillet from the loaded skillets list that has the matching 'name' attribute
+
+        :param skillet_name: Name of the skillet to return
+        :return: Skillet
+        """
 
         if not self.skillets:
             raise SkilletLoaderException('No Skillets have been loaded!')
@@ -338,6 +360,7 @@ class SkilletLoader:
         """
         Recursively iterate through all sub-directories and locate all found skillets
         Returns a list of Loaded Skillets
+
         :param directory: parent directory in which to start iterating
         :return: list of skillets
         """
@@ -357,6 +380,7 @@ class SkilletLoader:
         otherwise, iterate through all sub-dirs and skip dirs with name that match '.git', '.venv', and '.terraform'
         will descend into all other dirs and call itself again.
         Returns a list of compiled skillets
+
         :param directory: PosixPath of directory to begin searching
         :param skillet_list: combined list of all loaded skillets
         :return: list of Skillets
@@ -409,6 +433,16 @@ class SkilletLoader:
         return self.load_from_git(repo_url, repo_name, repo_branch, local_dir)
 
     def load_from_git(self, repo_url, repo_name, repo_branch, local_dir='~/.pan_cnc/skilletlib') -> List[Skillet]:
+        """
+        Performs a local clone of the given Git repository URL and returns a list of all found skillets defined
+        therein.
+
+        :param repo_url: Repository URL
+        :param repo_name: name given to the repository
+        :param repo_branch: branch to checkout
+        :param local_dir: local directory where to clone the git repository into
+        :return: List of Skillets
+        """
         g = Git(repo_url, local_dir)
         d = g.clone(repo_name)
         g.branch(repo_branch)
@@ -420,6 +454,7 @@ class SkilletLoader:
         """
         Returns a list of label values defined across all snippets with a given label
         for example:
+
         labels:
             label_name: label_value
 

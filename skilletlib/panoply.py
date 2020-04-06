@@ -65,6 +65,7 @@ class Panoply:
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
         to connect to the device and set offline_mode to False. Otherwise, offline mode will be set to True
+
         :param hostname: hostname or ip address of target device`
         :param api_username: username
         :param api_password: password
@@ -131,6 +132,7 @@ class Panoply:
     def connect(self, allow_offline: Optional[bool] = False) -> None:
         """
         Attempt to connect to this device instance
+
         :param allow_offline: Do not raise an exception if this device is offline unless there is an authentication
         error
         :return: None
@@ -167,6 +169,7 @@ class Panoply:
     def commit(self, force_sync=True) -> str:
         """
         Perform a commit operation on this device instance -
+
         :raises PanoplyException: if commit failed
         :param force_sync: Flag to enable sync commit or async
         :return: String from the API indicating success or failure
@@ -189,6 +192,7 @@ class Panoply:
         """
         Perform a commit operation on this device instance specifically for gpcs remote networks
         Note - you must do a full commit to panorama before you invoke this commit!
+
         :raises PanoplyException: if commit failed
         :param force_sync: Flag to enable sync commit or async
         :return: String from the API indicating success or failure
@@ -283,6 +287,7 @@ class Panoply:
     def set_at_path(self, name: str, xpath: str, xml_str: str) -> None:
         """
         Insert XML into the configuration tree at the specified xpath
+
         :param name: name of the snippet - used in logging and debugging only
         :param xpath: full xpath where the xml element will be inserted
         :param xml_str: string representation of the XML element to insert
@@ -301,6 +306,7 @@ class Panoply:
     def execute_op(self, cmd_str: str, cmd_xml=False) -> str:
         """
         Executes an 'op' command on the NGFW
+
         :param cmd_str: op command to send
         :param cmd_xml: Flag to determine if op command requires XML encoding
         :return: raw output from the device
@@ -331,6 +337,7 @@ class Panoply:
     def execute_cli(self, cmd_str: str) -> str:
         """
         Short-cut to execute a simple CLI op cmd
+
         :param cmd_str: CLI command to send to the NGFW
         :return: raw output from the command
         """
@@ -339,6 +346,7 @@ class Panoply:
     def execute_cmd(self, cmd: str, params: dict, context=None) -> str:
         """
         Execute the given cmd using the xapi.
+
         :param cmd: Valid options are: 'op', 'show', 'get', 'delete', 'set', 'edit', 'override', 'move', 'rename',
                                        'clone', 'validate'
         :param params: valid parameters for the given cmd type
@@ -399,6 +407,7 @@ class Panoply:
     def fetch_license(self, auth_code: str) -> bool:
         """
         Fetch and install licenses for PAN-OS NGFW
+
         :param auth_code: Authorization code to use to license the NGFW
         :return: True when license installation succeeds / False otherwise
         """
@@ -443,6 +452,7 @@ class Panoply:
     def set_license_api_key(self, api_key: str) -> bool:
         """
         Set's the Palo Alto Networks Support API Key in the firewall. This is required to deactivate a VM-Series NGFW.
+
         :param api_key: Your support account API Key found on the support.paloaltonetworks.com site
         :return: boolean True on success / False otherwise
         """
@@ -487,6 +497,7 @@ class Panoply:
     def deactivate_vm_license(self, api_key: str = None) -> bool:
         """
         Deactivate VM-Series Licenses. Will set the API Key is not already set.
+
         :param api_key: Optional api_key.
         :return: boolean True on success / False otherwise
         """
@@ -531,6 +542,7 @@ class Panoply:
     def sanitize_element(element: str) -> str:
         """
         Eliminate some unneeded characters from the XML snippet if they appear.
+
         :param element: element str
         :return: sanitized element str
         """
@@ -542,6 +554,7 @@ class Panoply:
     def backup_config(self):
         """
         Saves a named backup on the PAN-OS device. The format for the backup is 'panhandler-20190424000000.xml'
+
         :return:  xml results from the op command sequence
         """
         d = datetime.datetime.today()
@@ -562,6 +575,7 @@ class Panoply:
         """
         Gather system info and keep on self.facts
         This gets called on every connect
+
         :return: dict containing all system facts
         """
         facts = {}
@@ -601,6 +615,7 @@ class Panoply:
         Load baseline config that contains ONLY connecting username / password
         use device facts to determine which baseline template to load
         see template/panos/baseline_80.xml for example
+
         :param self:
         :return: bool true on success
         """
@@ -615,6 +630,7 @@ class Panoply:
         Load baseline config that contains ONLY connecting username / password
         use device facts to determine which baseline template to load
         see template/panos/baseline_80.xml for example
+
         :param self:
         :param reset_hostname: Flag to reset hostname back to a default value (baseline in this case)
         :return: string contents of baseline config
@@ -697,6 +713,7 @@ class Panoply:
     def import_file(self, filename: str, file_contents: (str, bytes), category: str) -> bool:
         """
         Import the given file into this device
+
         :param filename:
         :param file_contents:
         :param category: 'configuration'
@@ -735,6 +752,7 @@ class Panoply:
     def load_config(self, filename: str) -> bool:
         """
         Loads the named configuration file into this device
+
         :param filename: name of the configuration file on the device to load. Note this filename must already exist
         on the target device
         :return: bool True on success
@@ -752,6 +770,11 @@ class Panoply:
     def wait_for_device_ready(self, interval=30, timeout=600) -> bool:
         """
         Loop and wait until device is ready or times out
+
+        .. note::
+
+            This currently only supports PAN-OS devices and not Panorama
+
         :param interval: how often to check in seconds
         :param timeout: how long to wait until we declare a timeout condition
         :return: boolean true on ready, false on timeout
@@ -786,6 +809,7 @@ class Panoply:
     def update_dynamic_content(self, content_type: str) -> bool:
         """
         Check for newer dynamic content and install if found
+
         :param content_type: type of content to check. can be either: 'content', 'anti-virus', 'wildfire'
         :return: bool True on success
         """
@@ -838,6 +862,7 @@ class Panoply:
         """
         Iterate through all available content of the specified type, locate and return the version with the highest
         version number. If that version is already installed, return None as no further action is necessary
+
         :param content_type: type of content to check
         :return: version-number to download and install or None if already at the latest
         """
@@ -878,6 +903,7 @@ class Panoply:
         """
         Loops until a given job id is completed. Will timeout after the timeout period if the device is
         offline or otherwise unavailable.
+
         :param job_id: id the job to check and wait for
         :param interval: how long to wait between checks
         :param timeout: how long to wait with no response before we give up
@@ -931,6 +957,7 @@ class Panoply:
     def get_configuration(self, config_source='running') -> str:
         """
         Get the configuration from the device.
+
         :return: configuration xml as a string or a blank string if not connected
         """
 
@@ -960,6 +987,7 @@ class Panoply:
         """
         Generates a skillet from the changes detected on this device.
         This will attempt to create the xml and xpaths for everything that is found to have changed
+
         :param from_candidate: If your changes on in the candidate config, this will detect changes between the running
         config and the candidate config. If False, this will detect changes between the running config and a generic
         baseline configuration
@@ -980,6 +1008,18 @@ class Panoply:
         return self.generate_skillet_from_configs(previous_config, latest_config)
 
     def generate_skillet_from_configs(self, previous_config: str, latest_config: str) -> list:
+        """
+        Generates a skillet from the diffs between two XML configuration files
+
+        :param previous_config: Configuration backup taken before desired changes are made to the device
+        :param latest_config: Configuration backup taken after desired changes are made
+
+        :return: list of dictionaries that contain the following keys:
+            * name
+            * element
+            * xpath
+            * full_xpath
+        """
         # convert the config string to an xml doc
         latest_doc = etree.fromstring(latest_config)
 
@@ -1038,6 +1078,7 @@ class Panoply:
         Takes two configuration files, converts them to set commands, then returns only the commands found
         in the 'latest_config' vs the 'previous_config'. This allows the user to quickly configure one firewall,
         generate a 'set cli' diff and move those configs to another firewall
+
         :param previous_config: Starting config
         :param latest_config: Ending config
         :return: list of set cli commands required to convert previous to latest
@@ -1066,6 +1107,7 @@ class Panoply:
         """
         recursive function to determine if the 'el' Element found at 'xpath' can also be found at the same
         xpath in the 'pc' previous_config. Keep tabs on what has not been found using the 'not_founds' list
+
         :param el: The element in question from the latest_config
         :param xpath: the xpath to the element in question
         :param pc:  the previous config Element
@@ -1209,6 +1251,7 @@ class Panoply:
     def __filter_snippets_by_xpath(snippets: list, xpath: str) -> list:
         """
         Check the each snippet in the list and return those that has a full_xpath matching the xpath param
+
         :param snippets: list of snippets
         :param xpath: xpath to check
         :return: list of only those that contain the xpath in their full_xpath attribute
@@ -1513,6 +1556,10 @@ class Panoply:
 
 
 class EphemeralPanos(Panoply):
+    """
+    EphemeralPanos is used when a Panos instance may or may not be online and available at all times. This is useful
+    when instantiating instances via a CI/CD pipeline or other automation tool.
+    """
     pass
 
 
