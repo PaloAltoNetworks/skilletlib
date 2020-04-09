@@ -118,7 +118,7 @@ class DockerSnippet(Snippet):
 
             output = ''
             logger.info(f'Pulling image: {self.image} with tag: {self.tag}')
-            # self.client.images.pull(self.image, self.tag)
+            self.client.images.pull(self.image, self.tag)
 
             vols = self.volumes
 
