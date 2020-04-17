@@ -275,6 +275,3 @@ class PanosSkillet(Skillet):
         results['changed'] = changed
 
         return results
-
-
-

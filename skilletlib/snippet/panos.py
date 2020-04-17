@@ -279,7 +279,7 @@ class PanosSnippet(TemplateSnippet):
             new_element = elementTree.tostring(cherry_picked_element).strip()
             return new_element
 
-        except ParseError as pe:
+        except ParseError:
             raise SkilletLoaderException(f'Could not parse element for cherry picking for snippet: {self.name}')
 
     def cherry_pick_xpath(self, base_xpath: str, cherry_picked_xpath: str) -> str:
@@ -513,9 +513,9 @@ class PanosSnippet(TemplateSnippet):
         """
 
         r = {
-                self.name: {
-                    'results': status,
-                    'changed': self.destructive
-                }
+            self.name: {
+                'results': status,
+                'changed': self.destructive
+            }
         }
         return r

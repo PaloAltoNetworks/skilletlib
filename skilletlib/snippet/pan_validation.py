@@ -25,5 +25,3 @@ class PanValidationSnippet(PanosSnippet):
         o = dict()
         o[self.name] = output
         return o
-
-

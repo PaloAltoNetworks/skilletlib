@@ -21,6 +21,3 @@ class TemplateSnippet(Snippet):
 
     def template(self, context) -> str:
         return self.execute(context)[0]
-
-
-

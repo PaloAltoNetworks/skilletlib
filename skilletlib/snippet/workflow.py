@@ -51,4 +51,3 @@ class WorkflowSnippet(Snippet):
                     workflow_results['skillets'][k] = v
 
         return workflow_results
-

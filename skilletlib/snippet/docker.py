@@ -8,7 +8,7 @@ from docker.errors import ContainerError
 from docker.errors import DockerException
 from docker.errors import ImageNotFound
 
-from skilletlib.exceptions import *
+from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
 import time
 

@@ -166,7 +166,7 @@ class SkilletLoader:
                 skillet['snippet_path'] = snippet_path
                 return skillet
 
-        except IOError as ioe:
+        except IOError:
             logger.error('Could not open metadata file in dir %s' % meta_cnc_file.parent)
             raise SkilletLoaderException('IOError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
 

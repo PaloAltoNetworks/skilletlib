@@ -1308,9 +1308,6 @@ class Panoply:
         # convert the config string to an xml doc
         latest_doc = ElementTree.fromstring(latest_config)
 
-        # let's grab the previous as well
-        previous_doc = ElementTree.fromstring(previous_config)
-
         for d in diffs:
             logger.debug(d)
             # step 1 - find all inserted nodes (future enhancement can consider other types of detected changes as well

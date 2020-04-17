@@ -1,4 +1,4 @@
-from .skilletLoader import SkilletLoader
-from .panoply import Panoply
-from .panoply import Panos
-from .panoply import EphemeralPanos
+from .skilletLoader import SkilletLoader # noqa
+from .panoply import Panoply # noqa
+from .panoply import Panos # noqa
+from .panoply import EphemeralPanos # noqa
