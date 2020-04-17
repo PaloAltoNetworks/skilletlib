@@ -1,0 +1,22 @@
+name: example-panos-cmd-op
+label: Example of how use the 'op' command for PAN-OS
+
+description: |
+  This example Skillet shows how to retrive information from a PAN-OS device using the 'op' command type. This
+  command type allows you to query the firewall using XML based op commands
+
+type: panos
+
+labels:
+  collection:
+    - Example Skillets
+
+snippets:
+    # example output capture and test structure layout
+  - name: check_cloud_service_plugin_version
+    cmd: op
+    cmd_str: <show><system><info/></system></show>
+    # capture the output of the 'capture_object' xpath query into a variable called 'cs_plugin'
+    outputs:
+      - name: cs_plugin
+        capture_object: clouds_service

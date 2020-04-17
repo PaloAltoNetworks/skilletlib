@@ -1,0 +1,41 @@
+name: example-panos-cmd-cli
+label: Example of how use the 'cli' command for PAN-OS
+
+description: |
+  This example Skillet shows how to retrive information from a PAN-OS device using the 'cli' command type. This
+  command type allows you to quickly grab CLI based information from the NGFW or Panorama.
+
+type: panos
+
+labels:
+  collection:
+    - Example Skillets
+
+
+variables:
+  # only 1 variable here, which is the cli input you would like to run on the device
+  - name: cli_command
+    description: CLI Command
+    default: show system info
+    type_hint: text
+
+snippets:
+  - name: execute_cli
+    cmd: cli
+    cmd_str: '{{ cli_command }}'
+    # in this example, we'll return the output as raw text using the variable name: cli_output
+    output_type: text
+    outputs:
+      - name: cli_output
+
+  - name: convert_output
+    # cmd parse allows you to parse and modify existing variables. In this case, we'll take the previously saved
+    # cli_output variable and now perform an xpath query against it. This is mostly useful when you capture a large
+    # amount of data and want to perform multiple different xpath queries against it. Here, we just convert the full
+    # xml document into an object using 'capture_object'
+    cmd: parse
+    variable: cli_output
+    output_type: xml
+    outputs:
+      - name: cli_output_as_object
+        capture_object: .
