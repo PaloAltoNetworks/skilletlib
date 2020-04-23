@@ -1026,9 +1026,7 @@ class Panoply:
         # let's grab the previous as well
         previous_doc = etree.fromstring(previous_config)
 
-        ignored_xpaths = [
-            '/config/mgt-config/users/entry[@name="admin"]'
-        ]
+
         current_xpath = '.'
         not_found_xpaths = list()
 
@@ -1047,8 +1045,8 @@ class Panoply:
             full_relative_xpath = re.sub(r'^/config/', r'\./', xpath)
             tag = re.sub(r'\[.*\]', '', entry)
 
-            if set_xpath in ignored_xpaths:
-                logger.debug(f'Skipping ignored xpath: {xpath}')
+            # check if this xpath is actually user configurable
+            if self.__is_ignored_xpath(set_xpath):
                 continue
 
             changed_elements = latest_doc.xpath(xpath)
@@ -1071,6 +1069,27 @@ class Panoply:
             snippets.append(snippet)
 
         return self.__order_snippets(snippets)
+
+    @staticmethod
+    def __is_ignored_xpath(set_xpath: str) -> bool:
+        """
+        Determines if the given set_xpath should be used for skillet generation purposes. Certain xpaths will be
+        changed, however, they are not user configurable, and therefore should not be included
+
+        :param set_xpath: xpath string to check
+        :return: boolean true if the xpath should be skipped
+        """
+        ignored_xpaths = (
+            '/config/mgt-config/users/entry[@name="admin"]',
+            '/config/shared/content-preview'
+        )
+
+        for ignored_xpath in ignored_xpaths:
+            if ignored_xpath in set_xpath:
+                logger.debug(f'Skipping ignored xpath: {set_xpath}')
+                return True
+
+        return False
 
     @staticmethod
     def generate_set_cli_from_configs(previous_config: str, latest_config: str) -> list:
@@ -1162,7 +1181,8 @@ class Panoply:
                         if k != 'uuid':
                             attribs.append(f'@{k}="{v}"')
 
-                    attrib_str = " ".join(attribs)
+                    # fix for #71
+                    attrib_str = " and ".join(attribs)
                     # track the attributes in the xpath by virtue of the 'path_entry' which will be appended to the
                     # xpath later
                     path_entry = f'{e.tag}[{attrib_str}]'
