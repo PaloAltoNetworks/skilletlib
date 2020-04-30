@@ -22,10 +22,12 @@ from .base import Skillet
 
 
 class Python3Skillet(Skillet):
-
     snippet_required_metadata = {'name', 'file'}
 
     def get_snippets(self) -> List[Snippet]:
+        if hasattr(self, 'snippets'):
+            return self.snippets
+
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             snippet = Python3Snippet(snippet_def)

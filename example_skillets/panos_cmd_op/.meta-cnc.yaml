@@ -12,7 +12,7 @@ labels:
     - Example Skillets
 
 snippets:
-    # example output capture and test structure layout
+  # example output capture and test structure layout
   - name: check_cloud_service_plugin_version
     cmd: op
     cmd_str: <show><system><info/></system></show>

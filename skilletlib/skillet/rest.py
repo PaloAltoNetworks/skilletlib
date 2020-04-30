@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import List
 
 import requests
@@ -12,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class RestSkillet(Skillet):
-
     snippet_required_metadata = {'name', 'path'}
 
     snippet_optional_metadata = {

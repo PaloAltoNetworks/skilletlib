@@ -74,6 +74,9 @@ class Skillet(ABC):
         # initialize our snippets
         self.snippets = self.get_snippets()
 
+        # update our list of declared variables
+        self.declared_variables = self.get_declared_variables()
+
         debug = os.environ.get('SKILLET_DEBUG', False)
 
         if debug:
@@ -372,3 +375,16 @@ class Skillet(ABC):
             for k, v in self.snippet_optional_metadata.items():
                 if k not in s:
                     s[k] = v
+
+    def get_declared_variables(self) -> List[str]:
+        """
+        Return a list of all variables defined in all the snippets
+
+        :return: list of variable names
+        """
+
+        declared_variables = list()
+        for s in self.snippets:
+            declared_variables.extend(s.get_snippet_variables())
+
+        return declared_variables

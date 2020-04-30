@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any
 from typing import Tuple
 
@@ -10,7 +11,6 @@ from docker.errors import ImageNotFound
 
 from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,8 @@ class DockerSnippet(Snippet):
         'volumes': dict(),
         'async': True
     }
+
+    template_metadata = {'cmd', 'tag'}
 
     output_type = 'text'
 
@@ -77,34 +79,6 @@ class DockerSnippet(Snippet):
 
         # track our container
         self.container_id = ''
-
-    def render_metadata(self, context: dict) -> dict:
-        """
-        Renders each item in the metadata using the provided context.
-        Currently renders the cmd attribute only
-
-        :param context: dict containing key value pairs to
-        :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
-        """
-
-        # execute super render_metadata
-        # this will set the passed context onto self.context
-        meta = super().render_metadata(context)
-
-        try:
-            if 'cmd' in self.metadata:
-                meta['cmd'] = self.render(self.metadata['cmd'], context)
-
-            if 'tag' in self.metadata:
-                meta['tag'] = self.render(self.metadata['tag'], context)
-                # fixme - this feels like it should be done automatically for all snippets just after this step
-                # i.e. sanitize metadata, render metadata, set all attribute on the class
-                self.tag = meta['tag']
-
-        except TypeError as te:
-            logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
-
-        return meta
 
     def execute(self, context) -> Tuple[str, str]:
         """

@@ -51,6 +51,9 @@ class Snippet(ABC):
     # will not throw an exeption is they are not present
     optional_metadata = dict()
 
+    # metadata fields that should be considered templates and rendered
+    template_metadata = set()
+
     # set a default output type. this can be overridden for each SnippetType. This is used to determine the default
     # output handler to use for each snippet class. This can be set on a per snippet basis, but this allows a
     # short-cut on each
@@ -319,6 +322,20 @@ class Snippet(ABC):
         parsed_template_str = self._env.parse(template_str)
         return meta.find_undeclared_variables(parsed_template_str)
 
+    def get_snippet_variables(self) -> list:
+        """
+        Returns a list of variables defined in this snippet
+
+        :return: list of str representing variable found in the jinja templates
+        """
+
+        variables = list()
+        for i in self.template_metadata:
+            if i in self.metadata:
+                variables.extend(self.get_variables_from_template(self.metadata[i]))
+
+        return variables
+
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
         method to sanitize metadata. Each snippet type can override this provide extra logic over and above
@@ -333,12 +350,54 @@ class Snippet(ABC):
         """
         Each snippet sub class can override this method to perform jinja variable interpolation on various items
         in it's snippet definition. For example, the PanosSnippet will check the 'xpath' attribute and perform
-        the required interpolation
+        the required interpolation.
+
+        This handles regular strings, lists, and dictionaries such as:
+
+        in snippet class
+        template_metadata = {'render_me', 'render_all', 'render_list'}
+
+        in metadata
+        snippets:
+         - name: render_me_snippet
+           render_me: render_{{ this }}
+         - name: render_all_snippet
+           render_all:
+             a_key: some_{{ value }}
+             another_key: some_other_{{ value }}
+         - name: render_list_snippet
+           render_list:
+             - here_is_a_{{ value }}
+             - another_{{ value }}
 
         :param context: context from environment
         :return: metadata with jinja rendered variables
         """
         self.context.update(context)
+
+        # render all template metadata fields
+        for key_name in self.template_metadata:
+
+            if key_name in self.metadata:
+                key = self.metadata[key_name]
+
+                if isinstance(key, str):
+                    rendered_str = self.render(key, context)
+                    self.metadata[key_name] = rendered_str
+
+                elif isinstance(key, dict):
+                    rendered_dict = dict()
+                    for k, v in key.items():
+                        rendered_dict[k] = self.render(v, context)
+
+                    self.metadata[key_name] = rendered_dict
+
+                elif isinstance(key, list):
+                    rendered_list = list()
+                    for v in key:
+                        rendered_list.append(self.render(v, context))
+
+                    self.metadata[key_name] = rendered_list
 
         return self.metadata
 

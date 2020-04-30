@@ -1026,7 +1026,6 @@ class Panoply:
         # let's grab the previous as well
         previous_doc = etree.fromstring(previous_config)
 
-
         current_xpath = '.'
         not_found_xpaths = list()
 

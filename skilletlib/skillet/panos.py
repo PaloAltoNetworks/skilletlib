@@ -17,7 +17,8 @@
 import html
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import skilletlib
 from skilletlib.panoply import Panoply
@@ -159,7 +160,9 @@ class PanosSkillet(Skillet):
 
         :return: a List of PanosSnippets
         """
-        snippet_path = Path(self.path)
+        if hasattr(self, 'snippets'):
+            return self.snippets
+
         snippet_list = list()
 
         for snippet_def in self.snippet_stack:

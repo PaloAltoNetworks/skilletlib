@@ -25,13 +25,12 @@ from .panos import PanosSkillet
 
 
 class PanValidationSkillet(PanosSkillet):
-
     snippet_list = list()
 
     def get_snippets(self) -> List[PanValidationSnippet]:
 
-        if len(self.snippet_list) > 0:
-            return self.snippet_list
+        if hasattr(self, 'snippets'):
+            return self.snippets
 
         snippet_path_str = self.skillet_dict['snippet_path']
         snippet_path = Path(snippet_path_str)
@@ -50,7 +49,6 @@ class PanValidationSkillet(PanosSkillet):
             snippet = PanValidationSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
 
-        self.snippet_list = snippet_list
         return snippet_list
 
     def get_results(self) -> dict:
