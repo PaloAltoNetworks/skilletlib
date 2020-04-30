@@ -48,7 +48,7 @@ class Snippet(ABC):
     required_metadata = {'name'}
 
     # dict of optional metadata  and their default values. These values will be set on the snippet class but
-    # will not throw an exeption is they are not present
+    # will not throw an exception is they are not present
     optional_metadata = dict()
 
     # metadata fields that should be considered templates and rendered
