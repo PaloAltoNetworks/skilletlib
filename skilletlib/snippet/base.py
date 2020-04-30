@@ -26,6 +26,7 @@ from xml.etree.ElementTree import ParseError
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
+from jinja2 import meta
 from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
 from jsonpath_ng import parse
@@ -306,6 +307,17 @@ class Snippet(ABC):
             context = self.context
         t = self._env.from_string(template_str)
         return t.render(context)
+
+    def get_variables_from_template(self, template_str: str) -> list:
+        """
+        Returns a list of jinja2 variable found in the template
+
+        :param template_str: jinja2 template
+        :return: list of variables declared in the template
+        """
+
+        parsed_template_str = self._env.parse(template_str)
+        return meta.find_undeclared_variables(parsed_template_str)
 
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
