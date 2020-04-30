@@ -23,12 +23,22 @@ from .base import Skillet
 
 class WorkflowSkillet(Skillet):
 
+    initialized = False
+
     def __init__(self, skillet_dict: dict, skillet_loader: SkilletLoader) -> None:
         self.skillet_loader = skillet_loader
         super().__init__(skillet_dict)
 
+    def initialize_context(self, initial_context: dict) -> dict:
+        self.initialized = True
+        return super().initialize_context(initial_context)
+
     def get_snippets(self) -> List[WorkflowSnippet]:
         snippet_list = list()
+        # chicken / egg avoidance
+        if not self.initialized:
+            return snippet_list
+
         for snippet_def in self.snippet_stack:
             skillet = self.skillet_loader.get_skillet_with_name(snippet_def['name'])
             snippet = WorkflowSnippet(snippet_def, skillet, self.skillet_loader)
