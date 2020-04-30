@@ -165,7 +165,8 @@ class PanosSkillet(Skillet):
         for snippet_def in self.snippet_stack:
 
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
-                snippet_def = self.load_element(snippet_def, snippet_path)
+                if 'element' not in snippet_def or snippet_def['element'] == '':
+                    snippet_def['element'] = self.load_template(snippet_def['file'])
 
             snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)

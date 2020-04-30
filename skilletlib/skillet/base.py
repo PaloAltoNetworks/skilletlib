@@ -15,14 +15,16 @@
 # Authors: Adam Baumeister, Nathan Embery
 
 
+import html
 import logging
 import os
 import sys
 import time
 from abc import ABC
 from abc import abstractmethod
-from typing import List
+from pathlib import Path
 from typing import Generator
+from typing import List
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.snippet.base import Snippet
@@ -37,7 +39,6 @@ if not len(logger.handlers):
 
 
 class Skillet(ABC):
-
     # each skillet type can override this and set what metadata attributes are required
     snippet_required_metadata = {'name'}
 
@@ -70,6 +71,9 @@ class Skillet(ABC):
         # ensure all values are set appropriately in the snippet definition
         self.__validate_snippet_metadata()
 
+        # initialize our snippets
+        self.snippets = self.get_snippets()
+
         debug = os.environ.get('SKILLET_DEBUG', False)
 
         if debug:
@@ -90,6 +94,23 @@ class Skillet(ABC):
             snippet_list.append(snippet)
 
         return snippet_list
+
+    def load_template(self, template_path: str) -> str:
+        """
+        Utility method to load a template file and return the contents as str
+
+        :param template_path: relative path to the template to load
+        :return: str contents
+        """
+        skillet_path = Path(self.path)
+        template_file = skillet_path.joinpath(template_path).resolve()
+
+        if template_file.exists():
+            with template_file.open() as sf:
+                return html.unescape(sf.read())
+
+        else:
+            raise SkilletLoaderException('Could not resolve template path!')
 
     def update_context(self, d: dict) -> dict:
         """

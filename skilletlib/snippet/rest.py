@@ -41,7 +41,9 @@ class RestSnippet(TemplateSnippet):
     accepts_type = ''
 
     def __init__(self, payload_str: str, metadata: dict, session: Session):
-        super().__init__(payload_str, metadata)
+
+        # use element loaded in metadata if found, otherwise use passed in payload_str
+        super().__init__(metadata.get('element', payload_str), metadata)
         # keep track of session from the parent skillet
         self.session = session
 
