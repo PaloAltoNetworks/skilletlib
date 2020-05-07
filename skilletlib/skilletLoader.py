@@ -204,6 +204,9 @@ class SkilletLoader:
         if 'type' not in skillet:
             skillet['type'] = 'template'
 
+        if 'description' not in skillet:
+            skillet['description'] = 'template skillet'
+
         # first verify the variables stanza is present and is a list
         if 'variables' not in skillet:
             skillet['variables'] = list()

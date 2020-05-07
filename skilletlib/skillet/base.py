@@ -52,7 +52,7 @@ class Skillet(ABC):
         :param s: loaded dictionary from the .meta-cnc.yaml file
         """
 
-        self.skillet_dict = s
+        self.skillet_dict = self.__normalize_skillet_dict(s)
         self.name = self.skillet_dict['name']
         self.label = self.skillet_dict['label']
         self.description = self.skillet_dict['description']
@@ -63,7 +63,7 @@ class Skillet(ABC):
         # path is needed only when snippets are held in a relative file path
         self.path = self.skillet_dict.get('snippet_path', '')
         self.labels = self.skillet_dict['labels']
-        self.collections = self.skillet_dict['labels']['collection']
+        self.collections = self.skillet_dict['labels'].get('collection', list())
         self.context = dict()
         self.captured_outputs = dict()
         self.snippet_outputs = dict()
@@ -388,3 +388,39 @@ class Skillet(ABC):
             declared_variables.extend(s.get_snippet_variables())
 
         return declared_variables
+
+    @staticmethod
+    def __normalize_skillet_dict(skillet: dict) -> dict:
+
+        if skillet is None:
+            skillet = dict()
+
+        if type(skillet) is not dict:
+            skillet = dict()
+
+        if 'name' not in skillet:
+            skillet['name'] = 'Unknown Skillet'
+
+        if 'label' not in skillet:
+            skillet['label'] = 'Unknown Skillet'
+
+        if 'type' not in skillet:
+            skillet['type'] = 'template'
+
+        if 'description' not in skillet:
+            skillet['description'] = 'Unknown Skillet'
+
+        if 'variables' not in skillet:
+            skillet['variables'] = list()
+
+        if 'snippets' not in skillet:
+            skillet['snippets'] = list()
+
+        if 'labels' not in skillet:
+            skillet['labels'] = dict()
+
+        if 'collection' not in skillet['labels']:
+            skillet['labels']['collection'] = list()
+            skillet['labels']['collection'].append('Kitchen Sink')
+
+        return skillet
