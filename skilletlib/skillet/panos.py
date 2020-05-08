@@ -163,9 +163,9 @@ class PanosSkillet(Skillet):
 
         :return: a List of PanosSnippets
         """
-        if hasattr(self, 'snippets'):
-            if self.initialized:
-                return self.snippets
+        # if hasattr(self, 'snippets'):
+        #     if self.initialized:
+        #         return self.snippets
 
         snippet_list = list()
 
