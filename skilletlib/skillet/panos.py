@@ -35,6 +35,8 @@ class PanosSkillet(Skillet):
 
     snippet_required_metadata = {'name'}
 
+    initialized = False
+
     def __init__(self, metadata: dict, panoply: Panoply = None):
         """
         Initialize a new PanosSkillet class.
@@ -139,6 +141,7 @@ class PanosSkillet(Skillet):
             else:
                 raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
+        self.initialized = True
         return context
 
     @staticmethod
@@ -161,7 +164,8 @@ class PanosSkillet(Skillet):
         :return: a List of PanosSnippets
         """
         if hasattr(self, 'snippets'):
-            return self.snippets
+            if self.initialized:
+                return self.snippets
 
         snippet_list = list()
 
