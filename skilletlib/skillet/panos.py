@@ -37,6 +37,8 @@ class PanosSkillet(Skillet):
 
     initialized = False
 
+    allow_snippet_cache = False
+
     def __init__(self, metadata: dict, panoply: Panoply = None):
         """
         Initialize a new PanosSkillet class.
@@ -163,9 +165,9 @@ class PanosSkillet(Skillet):
 
         :return: a List of PanosSnippets
         """
-        # if hasattr(self, 'snippets'):
-        #     if self.initialized:
-        #         return self.snippets
+        if hasattr(self, 'snippets'):
+            if self.initialized and self.allow_snippet_cache:
+                return self.snippets
 
         snippet_list = list()
 
@@ -177,6 +179,9 @@ class PanosSkillet(Skillet):
 
             snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
+
+        if self.initialized:
+            self.allow_snippet_cache = True
 
         return snippet_list
 
