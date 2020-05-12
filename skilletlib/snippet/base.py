@@ -218,6 +218,10 @@ class Snippet(ABC):
             if 'name' not in output:
                 continue
 
+            if not results:
+                outputs[output['name']] = ''
+                continue
+
             if 'capture_variable' in output:
                 outputs[output['name']] = self.render(output['capture_variable'], self.context)
             else:

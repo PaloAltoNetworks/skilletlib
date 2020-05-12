@@ -358,7 +358,7 @@ class Panoply:
 
         # this code happily borrowed from ansible-pan module
         # https://raw.githubusercontent.com/PaloAltoNetworks/ansible-pan/develop/library/panos_type_cmd.py
-        cmd = params['cmd']
+
         func = getattr(self.xapi, cmd)
 
         # shortcut for op cmd types
