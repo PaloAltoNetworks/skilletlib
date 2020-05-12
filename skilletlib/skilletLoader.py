@@ -118,6 +118,10 @@ class SkilletLoader:
             from skilletlib.skillet.terraform import TerraformSkillet
             return TerraformSkillet(skillet_dict)
 
+        elif skillet_type == 'app':
+            from skilletlib.skillet.app import AppSkillet
+            return AppSkillet(skillet_dict)
+
         else:
             raise SkilletLoaderException('Unknown Skillet Type!')
 
@@ -336,7 +340,7 @@ class SkilletLoader:
             errs.append('No type attribute in skillet')
         else:
             valid_types = ['panos', 'panorama', 'panorama-gpcs', 'pan_validation',
-                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker']
+                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker', 'app']
             if skillet['type'] not in valid_types:
                 errs.append(f'Unknown type {skillet["type"]} in skillet')
 
