@@ -33,6 +33,8 @@ from jsonpath_ng import parse
 from lxml import etree
 from passlib.hash import md5_crypt
 
+from jinja2_ansible_filters import AnsibleCoreFiltersExtension
+
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
 
@@ -361,7 +363,7 @@ class Snippet(ABC):
 
         :return: Jinja2 environment object
         """
-        self._env = Environment(loader=BaseLoader)
+        self._env = Environment(loader=BaseLoader, extensions=[AnsibleCoreFiltersExtension])
         self._env.filters["md5_hash"] = self.__md5_hash
         self.add_filters()
 

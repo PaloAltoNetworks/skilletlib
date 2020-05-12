@@ -10,6 +10,7 @@ To make working with objects easier, we have created the following jinja filters
 - element_value
 - element_value_contains
 - append_uuid
+- md5_hash
 
 
 .. _jinja_filters_section:
@@ -76,3 +77,57 @@ argument.
     label: check for IronSkillet outbound EDL block rule member
     test: security_rule_outbound_edl | element_value_contains('destination.member', 'panw-bulletproof-ip-list')
     documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-telemetry-telemetry
+
+
+Additional Filters
+==================
+
+Additional filters have been included from the `Jinja2 Ansible Filters <https://pypi.org/project/jinja2-ansible-filters/>`_
+project. 
+
+Included filters
+
+  * b64decode
+  * b64encode
+  * basename
+  * bool
+  * checksum
+  * comment
+  * dirname
+  * expanduser
+  * expandvars
+  * extract
+  * fileglob
+  * flatten
+  * from_json
+  * from_yaml
+  * from_yaml_all
+  * ans_groupby
+  * hash
+  * mandatory
+  * md5
+  * quote
+  * ans_random
+  * random_mac
+  * realpath
+  * regex_escape
+  * regex_findall
+  * regex_replace
+  * regex_search
+  * relpath
+  * sha1
+  * shuffle
+  * splitext
+  * strftime
+  * subelements
+  * ternary
+  * to_datetime
+  * to_json
+  * to_nice_json
+  * to_nice_yaml
+  * to_uuid
+  * to_yaml
+  * type_debug
+  * win_basename
+  * win_dirname
+  * win_splitdrive
