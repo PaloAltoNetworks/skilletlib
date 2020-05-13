@@ -97,7 +97,7 @@ class DockerSnippet(Snippet):
             vols = self.volumes
 
             image = self.image + ":" + self.tag
-            logger.info(f'Creating container...')
+            logger.info('Creating container...')
             return_data = self.client.containers.run(image, self.metadata['cmd'], volumes=vols, stderr=True,
                                                      detach=self.detach, working_dir=self.working_dir,
                                                      auto_remove=self.auto_remove, environment=context)

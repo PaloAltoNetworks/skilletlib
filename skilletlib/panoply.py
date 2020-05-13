@@ -516,8 +516,8 @@ class Panoply:
                 return False
 
         try:
-            cmd = f'<request><license><deactivate><VM-Capacity><mode>auto</mode>' \
-                  f'</VM-Capacity></deactivate></license></request>'
+            cmd = '<request><license><deactivate><VM-Capacity><mode>auto</mode>' \
+                  '</VM-Capacity></deactivate></license></request>'
             logger.debug(f'Using request cmd: {cmd}')
             results = self.execute_op(cmd)
             logger.debug(f'deactivate_vm_license results: {results}')
@@ -850,7 +850,7 @@ class Panoply:
                     raise PanoplyException('Could not install dynamic content')
 
             else:
-                logger.info(f'No job returned to track')
+                logger.info('No job returned to track')
 
             return True
 
@@ -980,7 +980,7 @@ class Panoply:
                 return ''
 
         except PanXapiError:
-            logger.error(f'Could not get configuration from device')
+            logger.error('Could not get configuration from device')
             raise PanoplyException('Could not get configuration from the device')
 
     def generate_skillet(self, from_candidate=False) -> list:
