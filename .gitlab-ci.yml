@@ -30,7 +30,6 @@ before_script:
 
 test:
   script:
-    - python setup.py test
     - pip install tox flake8
     - tox -e py37,flake8
 
