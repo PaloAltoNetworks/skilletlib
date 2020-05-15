@@ -132,7 +132,7 @@ class SkilletLoader:
             path_obj = path
 
         else:
-            raise SkilletLoaderException(f'Invalid path type found in _parse_skillet!')
+            raise SkilletLoaderException('Invalid path type found in _parse_skillet!')
 
         if 'meta-cnc' in path_str:
             meta_cnc_file = path_obj
