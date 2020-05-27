@@ -1,4 +1,5 @@
 import logging
+import shlex
 import time
 import traceback
 from typing import Any
@@ -196,3 +197,25 @@ class DockerSnippet(Snippet):
             return return_str
         else:
             return str(return_data)
+
+    # Fix for GL #77 - escape cmd variables before passing into render_metadata
+    def render_metadata(self, context: dict) -> dict:
+        """
+        render_metadata will ensure all metadata vars that contain jinja2 variables will be rendered properly.
+        i.e. cmd: ansible-playbook -e 'somevar={{ some_value }}' will be converted to 'somevar='value_from_context'
+
+        For docker snippets, we need to ensure each item in the context is properly escaped before being rendered
+
+        :param context: context as provided from the user
+        :return: fully rendered metadata
+        """
+
+        # only get the variables that are used in the 'cmd'
+        affected_vars = self.get_variables_from_template(self.metadata['cmd'])
+
+        # iterate over each var, get it's value from the context, quote it, and set back into the context
+        for v in affected_vars:
+            if v in context:
+                context[v] = shlex.quote(context[v])
+
+        return super().render_metadata(context)
