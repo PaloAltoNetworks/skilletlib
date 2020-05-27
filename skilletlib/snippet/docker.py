@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 from typing import Any
 from typing import Tuple
 
@@ -118,13 +119,21 @@ class DockerSnippet(Snippet):
                     return return_data, 'success'
 
         except ImageNotFound:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Could not locate image {self.image} in {self.name}')
         except APIError as ae:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Error communicating with Docker API: {ae}')
         except ContainerError as ce:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Container command failed: {ce}')
         except DockerException as de:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Could not execute docker container {self.name}: {de}')
+        except ValueError as ve:
+            # added or GL #77 - add diagnostics for failed docker container creation
+            logger.error(traceback.format_exc())
+            raise SkilletLoaderException(f'Could not execute docker container ValueError in {self.name}: {ve}')
 
     def get_container(self):
         try:
