@@ -1,0 +1,17 @@
+name: template_example
+label: Template Example
+description: Simple Example to show how a template skillet can be used
+type: template
+labels:
+  collection:
+    - Example Skillets
+
+variables:
+  - name: SOME_VARIABLE
+    description: Some VARIABLE
+    default: present
+    type_hint: text
+
+snippets:
+  - name: config_template
+    file: template_file.j2
