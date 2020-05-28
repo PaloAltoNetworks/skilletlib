@@ -249,7 +249,8 @@ class Snippet(ABC):
         return captured_outputs
 
     def __render_output_metadata(self, output: dict, context: dict) -> dict:
-        keys = ('capture_value', 'capture_pattern', 'capture_object', 'capture_list')
+        # fix for #78 allow filter_items to be rendered
+        keys = ('capture_value', 'capture_pattern', 'capture_object', 'capture_list', 'filter_items')
         for k in keys:
             if k in output:
                 output[k] = self.render(output[k], context)
