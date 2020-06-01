@@ -16,6 +16,9 @@ snippets:
   - name: check_cloud_service_plugin_version
     cmd: op
     cmd_str: <show><system><info/></system></show>
+    # parse_result defaults to True, so this is optional. However, some commands return invalid xml when parsed
+    # in which case, you can pass the parse_result False option
+    parse_result: True
     # capture the output of the 'capture_object' xpath query into a variable called 'cs_plugin'
     outputs:
       - name: cs_plugin
