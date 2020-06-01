@@ -303,18 +303,22 @@ class Panoply:
         except PanXapiError as pxe:
             raise PanoplyException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
 
-    def execute_op(self, cmd_str: str, cmd_xml=False) -> str:
+    def execute_op(self, cmd_str: str, cmd_xml=False, parse_result=True) -> str:
         """
         Executes an 'op' command on the NGFW
 
         :param cmd_str: op command to send
         :param cmd_xml: Flag to determine if op command requires XML encoding
+        :param parse_result: Optional flag to indicate whether to return parsed xml results (xml_result) from xapi
         :return: raw output from the device
         """
 
         try:
             self.xapi.op(cmd=cmd_str, cmd_xml=cmd_xml)
-            return self.xapi.xml_result()
+            if parse_result:
+                return self.xapi.xml_result()
+            else:
+                return self.xapi.xml_document
 
         except PanXapiError as pxe:
             if 'ParseError' in str(pxe):
@@ -364,7 +368,11 @@ class Panoply:
         # shortcut for op cmd types
         if cmd == 'op':
             cmd_str = ''.join(params['cmd_str'].strip().split('\n'))
-            return self.execute_op(cmd_str)
+
+            # fix for GL #79
+            parse_result = params.get('parse_result', True)
+
+            return self.execute_op(cmd_str, cmd_xml=False, parse_result=parse_result)
 
         # in all other cases, the xpath is a required attribute
         kwargs = {
