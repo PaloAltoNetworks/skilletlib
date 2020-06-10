@@ -1247,9 +1247,21 @@ class Panoply:
             '/shared/',  # catch the rest of the shared items here
             '/tag/entry',
             '/deviceconfig/system',
-            '/network/interface', '/network/virtual-wire', '/network/vlan',
-            '/network/ike', '/network/tunnel',
-            '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
+            '/network/profiles',
+            '/network/interface',
+            '/network/virtual-wire',
+            '/network/vlan',
+            '/network/ike',
+            '/network/tunnel',
+            '/import/network/interface'  # for use with panorama plugin import (SD-WAN)
+            '/network/virtual-router',
+            '/network/profiles/zone-protection-profile',
+            'routing-table/ip/static-route/entry/next-hop',  # try to keep next-hop before path-monitor for set cli
+            'routing-table/ip/static-route/entry/path-monitor',  # #70
+            '/dynamic-ip-and-port/interface-address',  # GH #70
+            '/dynamic-ip-and-port/interface',  # GH #70
+            '/dynamic-ip-and-port/ip',  # GH #70
+            '/zone/entry',
             '/profiles/custom-url-category',  # should come before profiles/url-filtering
             '/address/entry'  # should come before rules or address-group
         ]
