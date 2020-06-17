@@ -702,6 +702,7 @@ class Panoply:
             # load the 9.1 baseline with
             skillet_dir = 'baseline_91'
 
+        # Support 9.2 Beta and 10.0 for GL #80
         elif '9.2' in version:
             # load the 9.1 baseline with
             skillet_dir = 'baseline_91'
