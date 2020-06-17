@@ -699,7 +699,15 @@ class Panoply:
             skillet_dir = 'baseline_90'
 
         elif '9.1' in version:
-            # load the 9.0 baseline with
+            # load the 9.1 baseline with
+            skillet_dir = 'baseline_91'
+
+        elif '9.2' in version:
+            # load the 9.1 baseline with
+            skillet_dir = 'baseline_91'
+
+        elif '10.0' in version:
+            # load the 9.1 baseline with
             skillet_dir = 'baseline_91'
 
         else:
