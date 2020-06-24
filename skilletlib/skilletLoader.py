@@ -47,6 +47,7 @@ class SkilletLoader:
     :param path: local relative path to search for all Skillet meta-data files
     """
     skillets = List[Skillet]
+    skillet_errors = list()
 
     def __init__(self, path=None):
         debug = os.environ.get('SKILLET_DEBUG', False)
@@ -377,6 +378,8 @@ class SkilletLoader:
         else:
             d = directory
 
+        # reset skillet errors list here
+        self.skillet_errors = list()
         self.skillets = self._check_dir(d, list())
 
         return self.skillets
@@ -405,6 +408,7 @@ class SkilletLoader:
                 err_condition = f'Skillet not found in dir {d.name}'
 
             except SkilletLoaderException as sle:
+                self.skillet_errors.append(str(sle))
                 err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
         # Do not descend into sub dirs after a .meta-cnc file has already been found
