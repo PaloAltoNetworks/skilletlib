@@ -175,7 +175,13 @@ class PanosSkillet(Skillet):
 
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
                 if 'element' not in snippet_def or snippet_def['element'] == '':
-                    snippet_def['element'] = self.load_template(snippet_def['file'])
+                    try:
+                        snippet_def['element'] = self.load_template(snippet_def['file'])
+                    except SkilletLoaderException as sle:
+                        # Add the snippet name here as well to allow for more context
+                        logger.error(f'Snippet: {snippet_def["name"]} has file attribute that does not exist')
+                        logger.error(f'Snippet file path is: {snippet_def["file"]}')
+                        raise SkilletLoaderException(f'Snippet: {snippet_def["name"]} - {sle}')
 
             snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
