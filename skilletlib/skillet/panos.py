@@ -153,11 +153,16 @@ class PanosSkillet(Skillet):
                        port: Optional[int] = 443,
                        api_key: Optional[str] = None):
 
-        return skilletlib.panoply.Panoply(hostname=hostname,
-                                          api_username=username,
-                                          api_password=password,
-                                          api_port=port,
-                                          api_key=api_key)
+        if hostname is None or username is None:
+            # allow offline mode if these items are not passed in
+            return skilletlib.panoply.EphemeralPanos()
+        else:
+            # otherwise, throw an exception when the device isn't ready
+            return skilletlib.panoply.Panos(hostname=hostname,
+                                            api_username=username,
+                                            api_password=password,
+                                            api_port=port,
+                                            api_key=api_key)
 
     def get_snippets(self) -> List[PanosSnippet]:
         """

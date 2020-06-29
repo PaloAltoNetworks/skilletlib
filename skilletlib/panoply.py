@@ -1616,9 +1616,9 @@ class Panos(Panoply):
 
     def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
                  api_port: Optional[int] = 443, serial_number: Optional[str] = None,
-                 debug: Optional[bool] = False):
+                 debug: Optional[bool] = False, api_key: Optional[str] = None):
 
-        super().__init__(hostname, api_username, api_password, api_port, serial_number, debug)
+        super().__init__(hostname, api_username, api_password, api_port, serial_number, debug, api_key)
 
         if self.connected:
             return
