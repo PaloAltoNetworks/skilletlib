@@ -16,6 +16,7 @@
 
 import json
 import logging
+import re
 import xml.etree.ElementTree as elementTree
 from abc import ABC
 from abc import abstractmethod
@@ -88,15 +89,16 @@ class Snippet(ABC):
 
         self.context = dict()
 
-    def update_context(self, context: dict) -> None:
+    def update_context(self, context: dict) -> dict:
         """
         This will update the snippet context with the passed in dict.
-        This gets called before render_metadata
+        This gets called inside of 'should_execute'
 
-        :param context:
-        :return:
+        :param context: dict of the outer context
+        :return: newly updated context
         """
         self.context.update(context)
+        return self.context
 
     @abstractmethod
     def execute(self, context: dict) -> Tuple[str, str]:
@@ -121,6 +123,14 @@ class Snippet(ABC):
 
         logger.debug(f'Checking snippet: {self.name}')
 
+        # hook for pre-conditional checks
+        context = self.update_context(context)
+
+        # check if this snippet should be filtered out of execution based on the context object __filter_snippets
+        if self.is_filtered(context):
+            logger.debug('Skipping this snippet due to snippet inclusion rules')
+            return False
+
         if 'when' not in self.metadata:
             # always execute when no when conditional is present
             logger.debug(f'No conditional present, proceeding with skillet: {self.name}')
@@ -129,6 +139,109 @@ class Snippet(ABC):
         results = self.execute_conditional(self.metadata['when'], context)
         logger.debug(f'  Conditional Evaluation results: {results} ')
         return results
+
+    def is_filtered(self, context) -> bool:
+        """
+        Determines if a snippet should be available for execution based on the presence of the `__filter_snippets`
+        object in the context. Snippets can be filtered by the following:
+
+        include_by_name: list of names to check. Only snippet names included in this list will be executed
+        include_by_tag: list of tags to check. Only snippets with those tags will be executed
+        include_by_regex: regular expression match. Only snippets whose name matches the regex will be executed
+
+        any snippet that does not match any of the above rules will be filtered out. The rules are inclusive OR
+
+        :param context: Snippet Context
+        :return: bool
+        """
+
+        # by default, nothing is filtered out
+        is_filtered = None
+
+        if '__filter_snippets' in context:
+            logger.debug('filtering snippet...')
+
+            fc = context['__filter_snippets']
+            if type(fc) is not dict:
+                logger.warning('Snippet filter is malformed...')
+                return False
+            for filter_def in ('include_by_tag', 'include_by_name', 'include_by_regex', 'exclude_by_tag',
+                               'exclude_by_name', 'exclude_by_regex'):
+                if filter_def in fc:
+                    if type(fc[filter_def]) is list:
+                        for item in fc[filter_def]:
+                            is_filtered = self.__consider_filter(filter_def, item)
+                    elif type(fc[filter_def]) is str:
+                        item = fc[filter_def]
+                        is_filtered = self.__consider_filter(filter_def, item)
+
+                # we have discovered this snippet should not be filtered, jump out now
+                if is_filtered is not None:
+                    return is_filtered
+
+            # we have considered all rules, and still no determination, however, because we have some rules due to
+            # presence of '__filter_snippets' any item that is not specifically included or excluded, should be
+            # excluded
+
+            if is_filtered is None:
+                return True
+        else:
+            # there is not filter snippets config present, so include all snippets by default
+            return False
+
+    def __consider_filter(self, filter_def: str, item: str) -> (bool, None):
+        """
+        Rules that positively match are returned immediately, any snippet that does NOT specifically match any rule
+        is excluded (True response == snippet is NOT executed)
+
+        :param filter_def: type of filter to consider
+        :param item: specific filter item
+        :return: bool or None if not match
+        """
+        if filter_def == 'include_by_name':
+            # this name matches, do NOT filter it out
+            if self.name == item:
+                return False
+
+        elif filter_def == 'exclude_by_name':
+            # name matches exclusion rule, filter it out
+            if self.name == item:
+                return True
+
+        if filter_def == 'include_by_tag':
+            if self.__has_tag(item):
+                # snippet has this tag, do not filter out
+                return False
+
+        elif filter_def == 'exclude_by_tag':
+            if self.__has_tag(item):
+                # snippet has this tag, filter it out
+                return True
+
+        if '_by_regex' in filter_def:
+            match = re.match(item, self.name)
+            if 'include_by_regex' == filter_def:
+                if match:
+                    return False
+            elif 'exclude_by_regex' == filter_def:
+                if match:
+                    return True
+
+        # this snippet does not match any of the rules above, one way or the other, so filter it out of consideration
+        return None
+
+    def __has_tag(self, tag_to_check: str):
+        if 'tag' in self.metadata and type(self.metadata['tag']) is list:
+            for tag in self.metadata['tag']:
+                if tag_to_check == tag:
+                    return True
+
+            return False
+
+        elif 'tag' in self.metadata and type(self.metadata['tag']) is str:
+            return self.metadata['tag'] == tag_to_check
+        else:
+            return False
 
     def execute_conditional(self, test: str, context: dict) -> bool:
         """
