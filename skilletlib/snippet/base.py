@@ -569,6 +569,14 @@ class Snippet(ABC):
         outputs[output_name] = ''
 
         # enhancement for https://gitlab.com/panw-gse/as/skilletlib/-/issues/86
+        if 'capture_value' in output_definition:
+            # allow capture_value to be equivalent to capture_pattern
+            output_definition['capture_pattern'] = output_definition['capture_value']
+
+        if 'capture_object' in output_definition:
+            # allow capture_object to be equivalent to capture_list
+            output_definition['capture_list'] = output_definition['capture_object']
+
         if 'capture_pattern' in output_definition:
             # this is a regex pattern we should use for a match
             pattern = re.compile(output_definition['capture_pattern'])
