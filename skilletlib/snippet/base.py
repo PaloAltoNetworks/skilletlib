@@ -566,7 +566,32 @@ class Snippet(ABC):
         """
         outputs = dict()
         output_name = output_definition.get('name', self.name)
-        outputs[output_name] = results
+        outputs[output_name] = ''
+
+        # enhancement for https://gitlab.com/panw-gse/as/skilletlib/-/issues/86
+        if 'capture_pattern' in output_definition:
+            # this is a regex pattern we should use for a match
+            pattern = re.compile(output_definition['capture_pattern'])
+            matches = pattern.findall(results)
+            if matches:
+                # capture pattern should only return the first match
+                outputs[output_name] = matches[0]
+
+        elif 'capture_list' in output_definition:
+            # this is a regex pattern we should use for a match
+            pattern = re.compile(output_definition['capture_list'])
+            matches = pattern.findall(results)
+            if matches:
+                # capture list should only the full list of matches
+                outputs[output_name] = matches
+            else:
+                # no matches should return an empty list
+                outputs[output_name] = list()
+
+        else:
+            output_name = output_definition.get('name', self.name)
+            outputs[output_name] = results
+
         return outputs
 
     def __handle_xml_outputs(self, output_definition: dict, results: str) -> dict:
