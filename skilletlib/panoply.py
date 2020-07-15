@@ -309,7 +309,8 @@ class Panoply:
 
         :param cmd_str: op command to send
         :param cmd_xml: Flag to determine if op command requires XML encoding
-        :param parse_result: Optional flag to indicate whether to return parsed xml results (xml_result) from xapi
+        :param parse_result: Optional flag to indicate whether to return parsed xml results (xml_result) from xapi - not
+        all commands return valid XML. Setting this to 'false' will return the raw string from the API.
         :return: raw output from the device
         """
 
@@ -822,6 +823,55 @@ class Panoply:
 
             logger.info(f'Waiting for {self.hostname} to become ready...')
             time.sleep(interval)
+
+    def filter_connected_devices(self, filter_terms=None) -> list:
+        """
+        Returns the list of connected devices filtered according to the given terms.
+
+        Filter terms are based on keys in the device facts. Matches are done using simple regex match
+
+        :param filter_terms: dict containing key value pairs. Keys match keys from the return device facts and values
+        are regex expressions used to match those keys
+        :return: list of devices that match ALL filter terms
+        """
+
+        if filter_terms is None:
+            filter_terms = {}
+
+        if self.facts.get('model', '') != 'Panorama':
+            logger.info('Method only supported on Panorama Devices')
+            return list()
+
+        connected_devices_xml = self.execute_cli('show devices connected')
+        connected_devices_dict = xmltodict.parse(connected_devices_xml)
+
+        if 'devices' in connected_devices_xml and 'entry' in connected_devices_dict['devices']:
+            connected_devices = connected_devices_dict['devices']['entry']
+
+        else:
+            return list()
+
+        if not filter_terms:
+            # no terms given, return all devices
+            return connected_devices
+
+        filtered_devices = list()
+
+        for device in connected_devices:
+            match = False
+
+            for term in filter_terms:
+                if term in device:
+
+                    if re.match(filter_terms[term], device[term]):
+                        match = True
+                    else:
+                        match = False
+
+            if match:
+                filtered_devices.append(device)
+
+        return filtered_devices
 
     def update_dynamic_content(self, content_type: str) -> bool:
         """
