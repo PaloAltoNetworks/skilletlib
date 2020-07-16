@@ -303,18 +303,23 @@ class Panoply:
         except PanXapiError as pxe:
             raise PanoplyException(f'Could not push skillet {name} / snippet {xpath}! {pxe}')
 
-    def execute_op(self, cmd_str: str, cmd_xml=False) -> str:
+    def execute_op(self, cmd_str: str, cmd_xml=False, parse_result=True) -> str:
         """
         Executes an 'op' command on the NGFW
 
         :param cmd_str: op command to send
         :param cmd_xml: Flag to determine if op command requires XML encoding
+        :param parse_result: Optional flag to indicate whether to return parsed xml results (xml_result) from xapi - not
+        all commands return valid XML. Setting this to 'false' will return the raw string from the API.
         :return: raw output from the device
         """
 
         try:
             self.xapi.op(cmd=cmd_str, cmd_xml=cmd_xml)
-            return self.xapi.xml_result()
+            if parse_result:
+                return self.xapi.xml_result()
+            else:
+                return self.xapi.xml_document
 
         except PanXapiError as pxe:
             if 'ParseError' in str(pxe):
@@ -358,12 +363,17 @@ class Panoply:
 
         # this code happily borrowed from ansible-pan module
         # https://raw.githubusercontent.com/PaloAltoNetworks/ansible-pan/develop/library/panos_type_cmd.py
+
         func = getattr(self.xapi, cmd)
 
         # shortcut for op cmd types
         if cmd == 'op':
             cmd_str = ''.join(params['cmd_str'].strip().split('\n'))
-            return self.execute_op(cmd_str)
+
+            # fix for GL #79
+            parse_result = params.get('parse_result', True)
+
+            return self.execute_op(cmd_str, cmd_xml=False, parse_result=parse_result)
 
         # in all other cases, the xpath is a required attribute
         kwargs = {
@@ -814,6 +824,55 @@ class Panoply:
             logger.info(f'Waiting for {self.hostname} to become ready...')
             time.sleep(interval)
 
+    def filter_connected_devices(self, filter_terms=None) -> list:
+        """
+        Returns the list of connected devices filtered according to the given terms.
+
+        Filter terms are based on keys in the device facts. Matches are done using simple regex match
+
+        :param filter_terms: dict containing key value pairs. Keys match keys from the return device facts and values
+        are regex expressions used to match those keys
+        :return: list of devices that match ALL filter terms
+        """
+
+        if filter_terms is None:
+            filter_terms = {}
+
+        if self.facts.get('model', '') != 'Panorama':
+            logger.info('Method only supported on Panorama Devices')
+            return list()
+
+        connected_devices_xml = self.execute_cli('show devices connected')
+        connected_devices_dict = xmltodict.parse(connected_devices_xml)
+
+        if 'devices' in connected_devices_xml and 'entry' in connected_devices_dict['devices']:
+            connected_devices = connected_devices_dict['devices']['entry']
+
+        else:
+            return list()
+
+        if not filter_terms:
+            # no terms given, return all devices
+            return connected_devices
+
+        filtered_devices = list()
+
+        for device in connected_devices:
+            match = False
+
+            for term in filter_terms:
+                if term in device:
+
+                    if re.match(filter_terms[term], device[term]):
+                        match = True
+                    else:
+                        match = False
+
+            if match:
+                filtered_devices.append(device)
+
+        return filtered_devices
+
     def update_dynamic_content(self, content_type: str) -> bool:
         """
         Check for newer dynamic content and install if found
@@ -1247,9 +1306,21 @@ class Panoply:
             '/shared/',  # catch the rest of the shared items here
             '/tag/entry',
             '/deviceconfig/system',
-            '/network/interface', '/network/virtual-wire', '/network/vlan',
-            '/network/ike', '/network/tunnel',
-            '/network/virtual-router', '/network/profiles/zone-protection-profile', '/zone/entry',
+            '/network/profiles',
+            '/network/interface',
+            '/network/virtual-wire',
+            '/network/vlan',
+            '/network/ike',
+            '/network/tunnel',
+            '/import/network/interface'  # for use with panorama plugin import (SD-WAN)
+            '/network/virtual-router',
+            '/network/profiles/zone-protection-profile',
+            'routing-table/ip/static-route/entry/next-hop',  # try to keep next-hop before path-monitor for set cli
+            'routing-table/ip/static-route/entry/path-monitor',  # #70
+            '/dynamic-ip-and-port/interface-address',  # GH #70
+            '/dynamic-ip-and-port/interface',  # GH #70
+            '/dynamic-ip-and-port/ip',  # GH #70
+            '/zone/entry',
             '/profiles/custom-url-category',  # should come before profiles/url-filtering
             '/address/entry'  # should come before rules or address-group
         ]
@@ -1595,9 +1666,9 @@ class Panos(Panoply):
 
     def __init__(self, hostname: Optional[str], api_username: Optional[str], api_password: Optional[str],
                  api_port: Optional[int] = 443, serial_number: Optional[str] = None,
-                 debug: Optional[bool] = False):
+                 debug: Optional[bool] = False, api_key: Optional[str] = None):
 
-        super().__init__(hostname, api_username, api_password, api_port, serial_number, debug)
+        super().__init__(hostname, api_username, api_password, api_port, serial_number, debug, api_key)
 
         if self.connected:
             return

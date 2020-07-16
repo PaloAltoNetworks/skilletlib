@@ -24,6 +24,8 @@ class RestSnippet(TemplateSnippet):
     name = ''
     path = ''
 
+    template_metadata = {'path', 'element', 'headers'}
+
     output_type = 'rest'
     # optional metadata items and their default values
     optional_metadata = {
@@ -41,7 +43,9 @@ class RestSnippet(TemplateSnippet):
     accepts_type = ''
 
     def __init__(self, payload_str: str, metadata: dict, session: Session):
-        super().__init__(payload_str, metadata)
+
+        # use element loaded in metadata if found, otherwise use passed in payload_str
+        super().__init__(metadata.get('element', payload_str), metadata)
         # keep track of session from the parent skillet
         self.session = session
 
@@ -74,8 +78,7 @@ class RestSnippet(TemplateSnippet):
         return metadata
 
     def execute(self, raw_context: dict) -> Tuple[str, str]:
-        # fixme - can we do this in sanitize_metadata ?
-        # rest_path = self.path.strip().replace('\n', '')
+
         context = dict()
 
         if raw_context is not None:
@@ -84,24 +87,21 @@ class RestSnippet(TemplateSnippet):
                 if isinstance(v, str):
                     context[k] = quote(v)
 
-        url = self.render(self.path, context)
-
-        for k, v in self.headers.items():
-            self.headers[k] = self.render(v, context)
+        url = self.metadata['path']
 
         if self.operation == 'post':
-            rendered_payload = self.render(self.template_str, context)
+            rendered_payload = self.metadata['element']
             if 'form' in self.headers.get('Content-Type', ''):
                 payload = json.loads(rendered_payload)
             else:
                 payload = rendered_payload
 
-            response = self.session.post(url, data=payload, headers=self.headers, verify=False)
+            response = self.session.post(url, data=payload, headers=self.metadata['headers'], verify=False)
             return self.__handle_response(response)
 
         else:
             # FIX for #59 - Ensure we pass headers to get operations properly
-            response = self.session.get(url, verify=False, headers=self.headers)
+            response = self.session.get(url, verify=False, headers=self.metadata['headers'])
             return self.__handle_response(response)
 
     def __handle_response(self, response: Response) -> Tuple[str, str]:

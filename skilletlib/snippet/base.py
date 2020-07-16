@@ -16,6 +16,7 @@
 
 import json
 import logging
+import re
 import xml.etree.ElementTree as elementTree
 from abc import ABC
 from abc import abstractmethod
@@ -50,8 +51,11 @@ class Snippet(ABC):
     required_metadata = {'name'}
 
     # dict of optional metadata  and their default values. These values will be set on the snippet class but
-    # will not throw an exeption is they are not present
+    # will not throw an exception is they are not present
     optional_metadata = dict()
+
+    # metadata fields that should be considered templates and rendered
+    template_metadata = set()
 
     # set a default output type. this can be overridden for each SnippetType. This is used to determine the default
     # output handler to use for each snippet class. This can be set on a per snippet basis, but this allows a
@@ -85,15 +89,16 @@ class Snippet(ABC):
 
         self.context = dict()
 
-    def update_context(self, context: dict) -> None:
+    def update_context(self, context: dict) -> dict:
         """
         This will update the snippet context with the passed in dict.
-        This gets called before render_metadata
+        This gets called inside of 'should_execute'
 
-        :param context:
-        :return:
+        :param context: dict of the outer context
+        :return: newly updated context
         """
         self.context.update(context)
+        return self.context
 
     @abstractmethod
     def execute(self, context: dict) -> Tuple[str, str]:
@@ -118,6 +123,14 @@ class Snippet(ABC):
 
         logger.debug(f'Checking snippet: {self.name}')
 
+        # hook for pre-conditional checks
+        context = self.update_context(context)
+
+        # check if this snippet should be filtered out of execution based on the context object __filter_snippets
+        if self.is_filtered(context):
+            logger.debug('Skipping this snippet due to snippet inclusion rules')
+            return False
+
         if 'when' not in self.metadata:
             # always execute when no when conditional is present
             logger.debug(f'No conditional present, proceeding with skillet: {self.name}')
@@ -126,6 +139,109 @@ class Snippet(ABC):
         results = self.execute_conditional(self.metadata['when'], context)
         logger.debug(f'  Conditional Evaluation results: {results} ')
         return results
+
+    def is_filtered(self, context) -> bool:
+        """
+        Determines if a snippet should be available for execution based on the presence of the `__filter_snippets`
+        object in the context. Snippets can be filtered by the following:
+
+        include_by_name: list of names to check. Only snippet names included in this list will be executed
+        include_by_tag: list of tags to check. Only snippets with those tags will be executed
+        include_by_regex: regular expression match. Only snippets whose name matches the regex will be executed
+
+        any snippet that does not match any of the above rules will be filtered out. The rules are inclusive OR
+
+        :param context: Snippet Context
+        :return: bool
+        """
+
+        # by default, nothing is filtered out
+        is_filtered = None
+
+        if '__filter_snippets' in context:
+            logger.debug('filtering snippet...')
+
+            fc = context['__filter_snippets']
+            if type(fc) is not dict:
+                logger.warning('Snippet filter is malformed...')
+                return False
+            for filter_def in ('include_by_tag', 'include_by_name', 'include_by_regex', 'exclude_by_tag',
+                               'exclude_by_name', 'exclude_by_regex'):
+                if filter_def in fc:
+                    if type(fc[filter_def]) is list:
+                        for item in fc[filter_def]:
+                            is_filtered = self.__consider_filter(filter_def, item)
+                    elif type(fc[filter_def]) is str:
+                        item = fc[filter_def]
+                        is_filtered = self.__consider_filter(filter_def, item)
+
+                # we have discovered this snippet should not be filtered, jump out now
+                if is_filtered is not None:
+                    return is_filtered
+
+            # we have considered all rules, and still no determination, however, because we have some rules due to
+            # presence of '__filter_snippets' any item that is not specifically included or excluded, should be
+            # excluded
+
+            if is_filtered is None:
+                return True
+        else:
+            # there is not filter snippets config present, so include all snippets by default
+            return False
+
+    def __consider_filter(self, filter_def: str, item: str) -> (bool, None):
+        """
+        Rules that positively match are returned immediately, any snippet that does NOT specifically match any rule
+        is excluded (True response == snippet is NOT executed)
+
+        :param filter_def: type of filter to consider
+        :param item: specific filter item
+        :return: bool or None if not match
+        """
+        if filter_def == 'include_by_name':
+            # this name matches, do NOT filter it out
+            if self.name == item:
+                return False
+
+        elif filter_def == 'exclude_by_name':
+            # name matches exclusion rule, filter it out
+            if self.name == item:
+                return True
+
+        if filter_def == 'include_by_tag':
+            if self.__has_tag(item):
+                # snippet has this tag, do not filter out
+                return False
+
+        elif filter_def == 'exclude_by_tag':
+            if self.__has_tag(item):
+                # snippet has this tag, filter it out
+                return True
+
+        if '_by_regex' in filter_def:
+            match = re.match(item, self.name)
+            if 'include_by_regex' == filter_def:
+                if match:
+                    return False
+            elif 'exclude_by_regex' == filter_def:
+                if match:
+                    return True
+
+        # this snippet does not match any of the rules above, one way or the other, so filter it out of consideration
+        return None
+
+    def __has_tag(self, tag_to_check: str):
+        if 'tag' in self.metadata and type(self.metadata['tag']) is list:
+            for tag in self.metadata['tag']:
+                if tag_to_check == tag:
+                    return True
+
+            return False
+
+        elif 'tag' in self.metadata and type(self.metadata['tag']) is str:
+            return self.metadata['tag'] == tag_to_check
+        else:
+            return False
 
     def execute_conditional(self, test: str, context: dict) -> bool:
         """
@@ -215,6 +331,10 @@ class Snippet(ABC):
             outputs = dict()
 
             if 'name' not in output:
+                continue
+
+            if not results:
+                outputs[output['name']] = ''
                 continue
 
             if 'capture_variable' in output:
@@ -322,6 +442,20 @@ class Snippet(ABC):
         parsed_template_str = self._env.parse(template_str)
         return meta.find_undeclared_variables(parsed_template_str)
 
+    def get_snippet_variables(self) -> list:
+        """
+        Returns a list of variables defined in this snippet
+
+        :return: list of str representing variable found in the jinja templates
+        """
+
+        variables = list()
+        for i in self.template_metadata:
+            if i in self.metadata:
+                variables.extend(self.get_variables_from_template(self.metadata[i]))
+
+        return variables
+
     def sanitize_metadata(self, metadata: dict) -> dict:
         """
         method to sanitize metadata. Each snippet type can override this provide extra logic over and above
@@ -336,12 +470,54 @@ class Snippet(ABC):
         """
         Each snippet sub class can override this method to perform jinja variable interpolation on various items
         in it's snippet definition. For example, the PanosSnippet will check the 'xpath' attribute and perform
-        the required interpolation
+        the required interpolation.
+
+        This handles regular strings, lists, and dictionaries such as:
+
+        in snippet class
+        template_metadata = {'render_me', 'render_all', 'render_list'}
+
+        in metadata
+        snippets:
+         - name: render_me_snippet
+           render_me: render_{{ this }}
+         - name: render_all_snippet
+           render_all:
+             a_key: some_{{ value }}
+             another_key: some_other_{{ value }}
+         - name: render_list_snippet
+           render_list:
+             - here_is_a_{{ value }}
+             - another_{{ value }}
 
         :param context: context from environment
         :return: metadata with jinja rendered variables
         """
         self.context.update(context)
+
+        # render all template metadata fields
+        for key_name in self.template_metadata:
+
+            if key_name in self.metadata:
+                key = self.metadata[key_name]
+
+                if isinstance(key, str):
+                    rendered_str = self.render(key, context)
+                    self.metadata[key_name] = rendered_str
+
+                elif isinstance(key, dict):
+                    rendered_dict = dict()
+                    for k, v in key.items():
+                        rendered_dict[k] = self.render(v, context)
+
+                    self.metadata[key_name] = rendered_dict
+
+                elif isinstance(key, list):
+                    rendered_list = list()
+                    for v in key:
+                        rendered_list.append(self.render(v, context))
+
+                    self.metadata[key_name] = rendered_list
 
         return self.metadata
 
@@ -391,7 +567,40 @@ class Snippet(ABC):
         """
         outputs = dict()
         output_name = output_definition.get('name', self.name)
-        outputs[output_name] = results
+        outputs[output_name] = ''
+
+        # enhancement for https://gitlab.com/panw-gse/as/skilletlib/-/issues/86
+        if 'capture_value' in output_definition:
+            # allow capture_value to be equivalent to capture_pattern
+            output_definition['capture_pattern'] = output_definition['capture_value']
+
+        if 'capture_object' in output_definition:
+            # allow capture_object to be equivalent to capture_list
+            output_definition['capture_list'] = output_definition['capture_object']
+
+        if 'capture_pattern' in output_definition:
+            # this is a regex pattern we should use for a match
+            pattern = re.compile(output_definition['capture_pattern'])
+            matches = pattern.findall(results)
+            if matches:
+                # capture pattern should only return the first match
+                outputs[output_name] = matches[0]
+
+        elif 'capture_list' in output_definition:
+            # this is a regex pattern we should use for a match
+            pattern = re.compile(output_definition['capture_list'])
+            matches = pattern.findall(results)
+            if matches:
+                # capture list should only the full list of matches
+                outputs[output_name] = matches
+            else:
+                # no matches should return an empty list
+                outputs[output_name] = list()
+
+        else:
+            output_name = output_definition.get('name', self.name)
+            outputs[output_name] = results
+
         return outputs
 
     def __handle_xml_outputs(self, output_definition: dict, results: str) -> dict:

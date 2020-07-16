@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import List
 
 from skilletlib.snippet.template import TemplateSnippet
@@ -9,19 +8,28 @@ logger = logging.getLogger(__name__)
 
 
 class TemplateSkillet(Skillet):
+    snippet_required_metadata = {'name'}
 
-    snippet_required_metadata = {'name', 'file'}
+    snippet_optional_metadata = {
+        'file': '',
+        'element': ''
+    }
 
     def get_snippets(self) -> List[TemplateSnippet]:
-        snippet_path_str = self.skillet_dict['snippet_path']
-        snippet_path = Path(snippet_path_str)
+        if hasattr(self, 'snippets'):
+            return self.snippets
+
         snippet_list = list()
         for snippet_def in self.snippet_stack:
-            snippet_file = snippet_path.joinpath(snippet_def['file'])
-            if snippet_file.exists():
-                with open(snippet_file, 'r') as sf:
-                    snippet = TemplateSnippet(sf.read(), snippet_def)
-                    snippet_list.append(snippet)
+            if 'element' not in snippet_def or snippet_def['element'] == '':
+                template_str = self.load_template(snippet_def['file'])
+                snippet_def['element'] = template_str
+
+            else:
+                template_str = ''
+
+            snippet = TemplateSnippet(template_str, snippet_def)
+            snippet_list.append(snippet)
 
         return snippet_list
 

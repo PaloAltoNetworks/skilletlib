@@ -34,7 +34,11 @@ logger = logging.getLogger(__name__)
 
 
 class PanosSnippet(TemplateSnippet):
+    # fields that are required in the metadata definition
     required_metadata = {'name'}
+
+    # attribute fields that should be rendered during render_metadata
+    template_metadata = {'xpath', 'element', 'cmd_str'}
 
     # default output_type for each snippet of this type
     output_type = 'xml'
@@ -210,15 +214,6 @@ class PanosSnippet(TemplateSnippet):
                                                            self.metadata['cherry_pick'])
                 meta['xpath'] = self.cherry_pick_xpath(self.metadata['xpath'],
                                                        self.metadata['cherry_pick'])
-            else:
-                if 'xpath' in self.metadata:
-                    meta['xpath'] = self.render(self.metadata['xpath'], context)
-
-                if 'element' in self.metadata:
-                    meta['element'] = self.render(self.metadata['element'], context)
-
-            if 'cmd_str' in self.metadata:
-                meta['cmd_str'] = self.render(self.metadata['cmd_str'], context)
 
         except TypeError as te:
             logger.info(f'Could not render metadata for snippet: {self.name}: {te}')

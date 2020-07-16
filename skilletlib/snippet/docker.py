@@ -1,4 +1,7 @@
 import logging
+import shlex
+import time
+import traceback
 from typing import Any
 from typing import Tuple
 
@@ -10,7 +13,6 @@ from docker.errors import ImageNotFound
 
 from skilletlib.exceptions import SkilletLoaderException
 from .base import Snippet
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,8 @@ class DockerSnippet(Snippet):
         'volumes': dict(),
         'async': True
     }
+
+    template_metadata = {'cmd', 'tag'}
 
     output_type = 'text'
 
@@ -78,34 +82,6 @@ class DockerSnippet(Snippet):
         # track our container
         self.container_id = ''
 
-    def render_metadata(self, context: dict) -> dict:
-        """
-        Renders each item in the metadata using the provided context.
-        Currently renders the cmd attribute only
-
-        :param context: dict containing key value pairs to
-        :return: dict containing the snippet definition metadata with the attribute values rendered accordingly
-        """
-
-        # execute super render_metadata
-        # this will set the passed context onto self.context
-        meta = super().render_metadata(context)
-
-        try:
-            if 'cmd' in self.metadata:
-                meta['cmd'] = self.render(self.metadata['cmd'], context)
-
-            if 'tag' in self.metadata:
-                meta['tag'] = self.render(self.metadata['tag'], context)
-                # fixme - this feels like it should be done automatically for all snippets just after this step
-                # i.e. sanitize metadata, render metadata, set all attribute on the class
-                self.tag = meta['tag']
-
-        except TypeError as te:
-            logger.info(f'Could not render metadata for snippet: {self.name}: {te}')
-
-        return meta
-
     def execute(self, context) -> Tuple[str, str]:
         """
         Execute this cmd in the specified docker container
@@ -144,13 +120,21 @@ class DockerSnippet(Snippet):
                     return return_data, 'success'
 
         except ImageNotFound:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Could not locate image {self.image} in {self.name}')
         except APIError as ae:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Error communicating with Docker API: {ae}')
         except ContainerError as ce:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Container command failed: {ce}')
         except DockerException as de:
+            logger.error(traceback.format_exc())
             raise SkilletLoaderException(f'Could not execute docker container {self.name}: {de}')
+        except ValueError as ve:
+            # added or GL #77 - add diagnostics for failed docker container creation
+            logger.error(traceback.format_exc())
+            raise SkilletLoaderException(f'Could not execute docker container ValueError in {self.name}: {ve}')
 
     def get_container(self):
         try:
@@ -213,3 +197,25 @@ class DockerSnippet(Snippet):
             return return_str
         else:
             return str(return_data)
+
+    # Fix for GL #77 - escape cmd variables before passing into render_metadata
+    def render_metadata(self, context: dict) -> dict:
+        """
+        render_metadata will ensure all metadata vars that contain jinja2 variables will be rendered properly.
+        i.e. cmd: ansible-playbook -e 'somevar={{ some_value }}' will be converted to 'somevar='value_from_context'
+
+        For docker snippets, we need to ensure each item in the context is properly escaped before being rendered
+
+        :param context: context as provided from the user
+        :return: fully rendered metadata
+        """
+
+        # only get the variables that are used in the 'cmd'
+        affected_vars = self.get_variables_from_template(self.metadata['cmd'])
+
+        # iterate over each var, get it's value from the context, quote it, and set back into the context
+        for v in affected_vars:
+            if v in context:
+                context[v] = shlex.quote(context[v])
+
+        return super().render_metadata(context)

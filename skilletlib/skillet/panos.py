@@ -17,7 +17,8 @@
 import html
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 import skilletlib
 from skilletlib.panoply import Panoply
@@ -33,6 +34,10 @@ class PanosSkillet(Skillet):
     panoply = None
 
     snippet_required_metadata = {'name'}
+
+    initialized = False
+
+    allow_snippet_cache = False
 
     def __init__(self, metadata: dict, panoply: Panoply = None):
         """
@@ -138,6 +143,7 @@ class PanosSkillet(Skillet):
             else:
                 raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
+        self.initialized = True
         return context
 
     @staticmethod
@@ -147,11 +153,16 @@ class PanosSkillet(Skillet):
                        port: Optional[int] = 443,
                        api_key: Optional[str] = None):
 
-        return skilletlib.panoply.Panoply(hostname=hostname,
-                                          api_username=username,
-                                          api_password=password,
-                                          api_port=port,
-                                          api_key=api_key)
+        if hostname is None or username is None:
+            # allow offline mode if these items are not passed in
+            return skilletlib.panoply.EphemeralPanos()
+        else:
+            # otherwise, throw an exception when the device isn't ready
+            return skilletlib.panoply.Panos(hostname=hostname,
+                                            api_username=username,
+                                            api_password=password,
+                                            api_port=port,
+                                            api_key=api_key)
 
     def get_snippets(self) -> List[PanosSnippet]:
         """
@@ -159,16 +170,29 @@ class PanosSkillet(Skillet):
 
         :return: a List of PanosSnippets
         """
-        snippet_path = Path(self.path)
+        if hasattr(self, 'snippets'):
+            if self.initialized and self.allow_snippet_cache:
+                return self.snippets
+
         snippet_list = list()
 
         for snippet_def in self.snippet_stack:
 
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
-                snippet_def = self.load_element(snippet_def, snippet_path)
+                if 'element' not in snippet_def or snippet_def['element'] == '':
+                    try:
+                        snippet_def['element'] = self.load_template(snippet_def['file'])
+                    except SkilletLoaderException as sle:
+                        # Add the snippet name here as well to allow for more context
+                        logger.error(f'Snippet: {snippet_def["name"]} has file attribute that does not exist')
+                        logger.error(f'Snippet file path is: {snippet_def["file"]}')
+                        raise SkilletLoaderException(f'Snippet: {snippet_def["name"]} - {sle}')
 
             snippet = PanosSnippet(snippet_def, self.panoply)
             snippet_list.append(snippet)
+
+        if self.initialized:
+            self.allow_snippet_cache = True
 
         return snippet_list
 

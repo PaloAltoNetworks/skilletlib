@@ -77,16 +77,6 @@ def test_fail_message():
     load_and_execute_skillet(skillet_path)
 
 
-def test_tag_present():
-    skillet_path = '../example_skillets/filter_tag_present'
-    load_and_execute_skillet(skillet_path)
-
-
-def test_tag_absent():
-    skillet_path = '../example_skillets/filter_tag_absent'
-    load_and_execute_skillet(skillet_path)
-
-
 def test_element_value():
     skillet_path = '../example_skillets/filter_element_value'
     load_and_execute_skillet(skillet_path)

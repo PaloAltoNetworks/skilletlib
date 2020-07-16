@@ -14,7 +14,6 @@ class PanValidationSnippet(PanosSnippet):
     }
 
     def handle_output_type_validation(self, results: str):
-
         output = dict()
         output['results'] = results
         output['label'] = self.metadata.get('label', '')

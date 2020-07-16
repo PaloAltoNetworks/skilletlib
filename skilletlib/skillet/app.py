@@ -14,23 +14,10 @@
 
 # Authors: Nathan Embery
 
-from typing import List
-
-from skilletlib.snippet.base import Snippet
-from skilletlib.snippet.python3 import Python3Snippet
 from .base import Skillet
 
 
-class Python3Skillet(Skillet):
-    snippet_required_metadata = {'name', 'file'}
+class AppSkillet(Skillet):
 
-    def get_snippets(self) -> List[Snippet]:
-        if hasattr(self, 'snippets'):
-            return self.snippets
-
-        snippet_list = list()
-        for snippet_def in self.snippet_stack:
-            snippet = Python3Snippet(snippet_def)
-            snippet_list.append(snippet)
-
-        return snippet_list
+    def get_snippets(self) -> list():
+        return list()

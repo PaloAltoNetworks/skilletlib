@@ -11,6 +11,8 @@ class TemplateSnippet(Snippet):
 
     output_type = 'text'
 
+    template_metadata = {'element'}
+
     def __init__(self, template_str, metadata):
         self.template_str = template_str
         self.rendered_template = ""

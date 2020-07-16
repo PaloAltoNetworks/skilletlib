@@ -1,6 +1,5 @@
-
-import pathlib
 import os
+import pathlib
 
 
 def setup_dir():

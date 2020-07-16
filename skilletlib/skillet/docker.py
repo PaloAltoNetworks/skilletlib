@@ -21,7 +21,6 @@ from .base import Skillet
 
 
 class DockerSkillet(Skillet):
-
     snippet_required_metadata = {'name', 'image', 'cmd'}
 
     # optional parameters that may be set in the snippet metadata
@@ -31,9 +30,6 @@ class DockerSkillet(Skillet):
     }
 
     def __init__(self, s: dict):
-        super().__init__(s)
-        self.snippet_list = List[DockerSnippet]
-
         # grab the configured 'volumes' from the skillet app_data if present
         # note, this attribute can only be injected by the application and in the skillet definition file
         # also grab the working dir that should be used in the app, this will depend on any volumes that may be
@@ -45,7 +41,13 @@ class DockerSkillet(Skillet):
             self.volumes = list()
             self.working_dir = None
 
+        super().__init__(s)
+
     def get_snippets(self) -> List[DockerSnippet]:
+
+        if hasattr(self, 'snippets'):
+            return self.snippets
+
         snippet_list = list()
 
         for snippet_def in self.snippet_stack:
@@ -76,9 +78,8 @@ class DockerSkillet(Skillet):
             snippet = DockerSnippet(snippet_def)
             snippet_list.append(snippet)
 
-        self.snippet_list = snippet_list
-        return self.snippet_list
+        return snippet_list
 
     def cleanup(self):
-        for snippet in self.snippet_list:
+        for snippet in self.snippets:
             snippet.cleanup()

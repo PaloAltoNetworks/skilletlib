@@ -1,0 +1,26 @@
+name: panorama-move-dg-test
+label: Move DG Test
+description: moves a dg from one parent to another
+type: panorama
+labels:
+  collection: Unknown
+variables:
+- name: new_parent_dg
+  description: New Variable
+  type_hint: text
+  default: parent-02-dg
+- name: child_dg
+  description: New Variable
+  type_hint: text
+  default: child-01-dg
+snippets:
+- name: move_dg
+  cmd: op
+  cmd_str: <request><move-dg><entry name='{{ child_dg }}'><new-parent-dg>{{ new_parent_dg }}</new-parent-dg></entry></move-dg></request>
+  # Notice that this command returns invalid XML unless you pass the 'parse_result: False' option. This instructs
+  # skilletlib to pass the raw xml_document from the pan-python xapi back to the output parser
+  parse_result: False
+  output_type: xml
+  outputs:
+  - name: full_output_as_object
+    capture_object: .

@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import List
 
 import requests
@@ -12,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class RestSkillet(Skillet):
-
     snippet_required_metadata = {'name', 'path'}
 
     snippet_optional_metadata = {
@@ -24,8 +22,8 @@ class RestSkillet(Skillet):
     }
 
     def __init__(self, metadata: dict):
-        super().__init__(metadata)
         self.session = requests.Session()
+        super().__init__(metadata)
 
     def get_snippets(self) -> List[Snippet]:
         """
@@ -33,23 +31,19 @@ class RestSkillet(Skillet):
 
         :return: List of Snippets for this Skillet Class
         """
+        if hasattr(self, 'snippets'):
+            return self.snippets
 
-        snippet_path_str = self.skillet_dict['snippet_path']
-        snippet_path = Path(snippet_path_str)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             operation = snippet_def.get('operation', 'get').lower()
-            if operation == 'post' and 'payload' in snippet_def:
-                snippet_file = snippet_path.joinpath(snippet_def['payload'])
-                if snippet_file.exists():
-                    with open(snippet_file, 'r') as sf:
-                        snippet = RestSnippet(sf.read(), snippet_def, self.session)
-                        snippet_list.append(snippet)
-                else:
-                    logger.warning(f'Snippet file: {snippet_def["name"]} was not found!')
-            else:
-                snippet = RestSnippet('', snippet_def, self.session)
-                snippet_list.append(snippet)
+            if 'element' not in snippet_def or snippet_def['element'] == '':
+                # load the element attribute if we have a payload
+                if operation == 'post' and 'payload' in snippet_def:
+                    snippet_def['element'] = self.load_template(snippet_def['payload'])
+
+            snippet = RestSnippet('', snippet_def, self.session)
+            snippet_list.append(snippet)
 
         return snippet_list
 

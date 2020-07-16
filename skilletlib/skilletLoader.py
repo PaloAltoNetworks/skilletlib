@@ -47,6 +47,7 @@ class SkilletLoader:
     :param path: local relative path to search for all Skillet meta-data files
     """
     skillets = List[Skillet]
+    skillet_errors = list()
 
     def __init__(self, path=None):
         debug = os.environ.get('SKILLET_DEBUG', False)
@@ -117,6 +118,10 @@ class SkilletLoader:
         elif skillet_type == 'terraform':
             from skilletlib.skillet.terraform import TerraformSkillet
             return TerraformSkillet(skillet_dict)
+
+        elif skillet_type == 'app':
+            from skilletlib.skillet.app import AppSkillet
+            return AppSkillet(skillet_dict)
 
         else:
             raise SkilletLoaderException('Unknown Skillet Type!')
@@ -203,6 +208,9 @@ class SkilletLoader:
 
         if 'type' not in skillet:
             skillet['type'] = 'template'
+
+        if 'description' not in skillet:
+            skillet['description'] = 'template skillet'
 
         # first verify the variables stanza is present and is a list
         if 'variables' not in skillet:
@@ -333,7 +341,7 @@ class SkilletLoader:
             errs.append('No type attribute in skillet')
         else:
             valid_types = ['panos', 'panorama', 'panorama-gpcs', 'pan_validation',
-                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker']
+                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker', 'app']
             if skillet['type'] not in valid_types:
                 errs.append(f'Unknown type {skillet["type"]} in skillet')
 
@@ -370,6 +378,8 @@ class SkilletLoader:
         else:
             d = directory
 
+        # reset skillet errors list here
+        self.skillet_errors = list()
         self.skillets = self._check_dir(d, list())
 
         return self.skillets
@@ -398,6 +408,7 @@ class SkilletLoader:
                 err_condition = f'Skillet not found in dir {d.name}'
 
             except SkilletLoaderException as sle:
+                self.skillet_errors.append(str(sle))
                 err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
         # Do not descend into sub dirs after a .meta-cnc file has already been found
