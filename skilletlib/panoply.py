@@ -630,9 +630,9 @@ class Panoply:
         """
 
         file_contents = self.generate_baseline()
-        self.import_file('skillet_baseline', file_contents, 'configuration')
+        self.import_file('skillet_baseline.xml', file_contents, 'configuration')
 
-        return self.load_config('skillet_baseline')
+        return self.load_config('skillet_baseline.xml')
 
     def generate_baseline(self, reset_hostname=False) -> str:
         """
