@@ -408,7 +408,11 @@ class SkilletLoader:
                 err_condition = f'Skillet not found in dir {d.name}'
 
             except SkilletLoaderException as sle:
-                self.skillet_errors.append(str(sle))
+                # for panhandler gl #19 - keep track of loader errors and associated directory
+                err_dict = dict()
+                err_dict['path'] = str(d.absolute())
+                err_dict['error'] = sle
+                self.skillet_errors.append(err_dict)
                 err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
         # Do not descend into sub dirs after a .meta-cnc file has already been found
