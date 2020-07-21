@@ -411,7 +411,7 @@ class SkilletLoader:
                 # for panhandler gl #19 - keep track of loader errors and associated directory
                 err_dict = dict()
                 err_dict['path'] = str(d.absolute())
-                err_dict['error'] = sle
+                err_dict['error'] = str(sle)
                 self.skillet_errors.append(err_dict)
                 err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
