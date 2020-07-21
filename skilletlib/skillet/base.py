@@ -113,7 +113,11 @@ class Skillet(ABC):
                 return html.unescape(sf.read())
 
         else:
-            raise SkilletLoaderException('Could not resolve template path!')
+            # Add the snippet name here as well to allow for more context
+            # fix for https://gitlab.com/panw-gse/as/panhandler/-/issues/19
+            logger.error(f'Snippet: {self.name} has file attribute that does not exist')
+            logger.error(f'Snippet file path is: {template_path}')
+            raise SkilletLoaderException(f'Snippet: {self.name} - Could not resolve template path!')
 
     def update_context(self, d: dict) -> dict:
         """
