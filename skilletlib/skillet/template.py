@@ -22,11 +22,11 @@ class TemplateSkillet(Skillet):
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             if 'element' not in snippet_def or snippet_def['element'] == '':
-                template_str = self.load_template(snippet_def['file'])
+                template_str = self.load_template(snippet_def.get('file', ''))
                 snippet_def['element'] = template_str
 
             else:
-                template_str = ''
+                template_str = snippet_def['element']
 
             snippet = TemplateSnippet(template_str, snippet_def)
             snippet_list.append(snippet)
