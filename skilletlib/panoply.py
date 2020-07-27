@@ -1157,8 +1157,7 @@ class Panoply:
 
         return False
 
-    @staticmethod
-    def generate_set_cli_from_configs(previous_config: str, latest_config: str) -> list:
+    def generate_set_cli_from_configs(self, previous_config: str, latest_config: str) -> list:
         """
         Takes two configuration files, converts them to set commands, then returns only the commands found
         in the 'latest_config' vs the 'previous_config'. This allows the user to quickly configure one firewall,
@@ -1180,13 +1179,29 @@ class Panoply:
 
         for cmd in l_set:
 
+            # do not remove vsys if a vsys import statement is found
+            if cmd not in p_set:
+
+                # skip admin user
+                if 'mgt-config users admin phash' in cmd:
+                    continue
+
+                match = re.search('vsys (.*)? import', cmd)
+                if match:
+                    # do not replace vsys in import statements...
+                    cmd_cleaned = cmd.replace('devices localhost.localdomain ', '') \
+                        .replace('\n', ' ')
+                    diffs.append(cmd_cleaned)
+                    continue
+
+            # no vsys import statement found, go ahead and remove all occurrences
             if cmd not in p_set and 'set readonly' not in cmd:
                 cmd_cleaned = cmd.replace('devices localhost.localdomain ', '') \
                     .replace('\n', ' ') \
                     .replace('vsys vsys1 ', '')
                 diffs.append(cmd_cleaned)
 
-        return diffs
+        return self.__order_set_commands(diffs)
 
     def __check_element(self, el: etree.Element, xpath: str, pc: etree.Element, not_founds: list) -> list:
         """
@@ -1293,47 +1308,32 @@ class Panoply:
 
         return new_xpath, entry
 
-    def __order_snippets(self, snippets: list):
+    def __order_snippets(self, snippets: list) -> list:
+        """
+        Orders a set of snippets according to PAN-OS rules. This is an evolving list, which will almost certainly
+        be 100% correct. Please file issues if you find an ordering issue in auto-generated snippets or set commands
+
+        :param snippets: list of snippet dictionaries to order
+        :return:  list of a snippet dictionary in the order in which they need to be applied to a NGFW or Panorama
+        """
         # Attempt to order the snippets in a cohesive ordering. Will never be 100% perfect,
         # but at least make the attempt
 
-        xpaths = [
-            '/shared/certificate',
-            '/shared/ssl-tls-service-profile',
-            '/shared/tag',
-            '/shared/profiles',
-            '/shared/reports',
-            '/shared/',  # catch the rest of the shared items here
-            '/tag/entry',
-            '/deviceconfig/system',
-            '/network/profiles',
-            '/network/interface',
-            '/network/virtual-wire',
-            '/network/vlan',
-            '/network/ike',
-            '/network/tunnel',
-            '/import/network/interface'  # for use with panorama plugin import (SD-WAN)
-            '/network/virtual-router',
-            '/network/profiles/zone-protection-profile',
-            'routing-table/ip/static-route/entry/next-hop',  # try to keep next-hop before path-monitor for set cli
-            'routing-table/ip/static-route/entry/path-monitor',  # #70
-            '/dynamic-ip-and-port/interface-address',  # GH #70
-            '/dynamic-ip-and-port/interface',  # GH #70
-            '/dynamic-ip-and-port/ip',  # GH #70
-            '/zone/entry',
-            '/profiles/custom-url-category',  # should come before profiles/url-filtering
-            '/address/entry'  # should come before rules or address-group
-        ]
+        xpaths, post_xpaths = self.get_ordered_xpaths()
 
         ordered_snippets = list()
         for x in xpaths:
-            ordered_snippets.extend(self.__filter_snippets_by_xpath(snippets, x))
-
-        post_xpaths = ['/rulebase']
+            found_snippets = self.__filter_snippets_by_xpath(snippets, x)
+            for s in found_snippets:
+                if s not in ordered_snippets:
+                    ordered_snippets.append(s)
 
         post_snippets = list()
         for p in post_xpaths:
-            post_snippets.extend(self.__filter_snippets_by_xpath(snippets, p))
+            filtered_snippets = self.__filter_snippets_by_xpath(snippets, p)
+            for f in filtered_snippets:
+                if f not in post_snippets:
+                    post_snippets.append(f)
 
         for s in snippets:
             if s not in ordered_snippets and s not in post_snippets:
@@ -1344,6 +1344,33 @@ class Panoply:
                 ordered_snippets.append(ps)
 
         return ordered_snippets
+
+    def __order_set_commands(self, set_commands: list) -> list:
+        """
+        This will attempt to order a list of set commands using the same logic as ordering snippets.
+        This is done by converting the set command into a 'fake' xpath, creating a fake snippet dictionary
+        and sending those through the order_snippets method
+
+        :param set_commands: list of set commands to order
+        :return: a list of ordered set commands
+        """
+
+        ordered_set_commands = list()
+
+        fake_snippets = list()
+
+        for set_cmd in set_commands:
+            snippet = dict()
+            snippet['full_xpath'] = set_cmd.replace(' ', '/')
+            fake_snippets.append(snippet)
+
+        ordered_fake_snippets = self.__order_snippets(fake_snippets)
+
+        for fake_snippet in ordered_fake_snippets:
+            new_set_command = fake_snippet['full_xpath'].replace('/', ' ')
+            ordered_set_commands.append(new_set_command)
+
+        return ordered_set_commands
 
     @staticmethod
     def __filter_snippets_by_xpath(snippets: list, xpath: str) -> list:
@@ -1358,7 +1385,9 @@ class Panoply:
         for s in snippets:
             full_xpath = s.get('full_xpath', '')
             if xpath in full_xpath:
-                # snippets.remove(s)
+                # note we do not remove found snippets from the source snippets list, which may result
+                # in duplicates. The calling code will need to ensure it does not append the results of this method
+                # which out checking for dups first
                 filtered_snippets.append(s)
 
         return filtered_snippets
@@ -1648,6 +1677,49 @@ class Panoply:
         logger.debug(f'returning {path}')
 
         return path
+
+    @staticmethod
+    def get_ordered_xpaths() -> tuple:
+        """
+        Returns a list of ordered xpaths for use in ordering snippets and set commands
+
+        Will be enhanced one day with version and model specific information if necessary
+
+        :return: tuple of two lists, xpaths and post_xpaths
+        """
+        xpaths = [
+            '/shared/certificate',
+            '/shared/ssl-tls-service-profile',
+            '/shared/tag',
+            '/shared/profiles',
+            '/shared/reports',
+            '/shared/',  # catch the rest of the shared items here
+            '/tag/entry',
+            '/deviceconfig/system',
+            '/network/profiles',
+            '/config/network/interface',  # add config for panorama template
+            '/network/interface',
+            '/network/virtual-wire',
+            '/network/vlan',
+            '/network/ike',
+            '/network/tunnel',
+            '/import/network/interface',  # for use with panorama plugin import (SD-WAN)
+            '/network/virtual-router',
+            '/network/profiles/zone-protection-profile',
+            'routing-table/ip/static-route/entry/next-hop',  # try to keep next-hop before path-monitor for set cli
+            'routing-table/ip/static-route/entry/path-monitor',  # #70
+            '/dynamic-ip-and-port/interface-address',  # GH #70
+            '/dynamic-ip-and-port/interface',  # GH #70
+            '/dynamic-ip-and-port/ip',  # GH #70
+            '/zone/entry',
+            '/config/zone',  # add config for panorama template
+            '/profiles/custom-url-category',  # should come before profiles/url-filtering
+            '/address/entry'  # should come before rules or address-group
+        ]
+
+        post_xpaths = ['/rulebase']
+
+        return xpaths, post_xpaths
 
 
 class EphemeralPanos(Panoply):
