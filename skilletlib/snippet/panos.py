@@ -151,10 +151,10 @@ class PanosSnippet(TemplateSnippet):
             elif {'xpath', 'file'}.issubset(metadata):
                 return metadata
             err = 'xpath and either file or element attributes are required for set, edit, or override cmds'
-        elif self.cmd in ('show', 'get'):
+        elif self.cmd in ('show', 'get', 'delete'):
             if {'xpath'}.issubset(metadata):
                 return metadata
-            err = 'xpath attribute is required for show or get cmds'
+            err = 'xpath attribute is required for show, get, or delete cmds'
         elif self.cmd == 'move':
             if 'where' in metadata:
                 return metadata
