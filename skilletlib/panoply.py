@@ -1123,7 +1123,9 @@ class Panoply:
 
             changed_element = changed_elements[0]
             # FIXME - do we need to __clean_uuid() here ?
-            xml_string = etree.tostring(changed_element).decode(encoding='UTF-8')
+
+            cleaned_element = self.__clean_uuid(changed_element)
+            xml_string = etree.tostring(cleaned_element).decode(encoding='UTF-8')
 
             random_name = str(int(random.random() * 1000000))
 
@@ -1601,9 +1603,14 @@ class Panoply:
         if changed_element is None:
             return changed_element
 
+        # check if 'uuid' is an attribute on this element
+        if 'uuid' in changed_element.attrib:
+            changed_element.attrib.pop('uuid')
+
+        # this will find all child nodes with a 'uuid' attribute
         child_nodes = changed_element.findall('.//*[@uuid]')
 
-        if child_nodes is None:
+        if child_nodes is None or len(child_nodes) == 0:
             return changed_element
 
         for child in child_nodes:
@@ -1714,7 +1721,7 @@ class Panoply:
             'address/'  # should come before rules or address-group
         ]
 
-        post_xpaths = ['/rulebase']
+        post_xpaths = ['rulebase']
 
         return xpaths, post_xpaths
 
