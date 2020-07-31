@@ -1147,7 +1147,8 @@ class Panoply:
         """
         ignored_xpaths = (
             '/config/mgt-config/users/entry[@name="admin"]',
-            '/config/shared/content-preview'
+            '/config/shared/content-preview',
+            '/config/readonly'
         )
 
         for ignored_xpath in ignored_xpaths:
@@ -1179,27 +1180,16 @@ class Panoply:
 
         for cmd in l_set:
 
-            # do not remove vsys if a vsys import statement is found
             if cmd not in p_set:
 
                 # skip admin user
                 if 'mgt-config users admin phash' in cmd:
                     continue
 
-                match = re.search('vsys (.*)? import', cmd)
-                if match:
-                    # do not replace vsys in import statements...
-                    cmd_cleaned = cmd.replace('devices localhost.localdomain ', '') \
-                        .replace('\n', ' ')
+                # for non-readonly cmds, replace newlines
+                if 'set readonly' not in cmd:
+                    cmd_cleaned = cmd.replace('\n', ' ')
                     diffs.append(cmd_cleaned)
-                    continue
-
-            # no vsys import statement found, go ahead and remove all occurrences
-            if cmd not in p_set and 'set readonly' not in cmd:
-                cmd_cleaned = cmd.replace('devices localhost.localdomain ', '') \
-                    .replace('\n', ' ') \
-                    .replace('vsys vsys1 ', '')
-                diffs.append(cmd_cleaned)
 
         return self.__order_set_commands(diffs)
 
@@ -1375,16 +1365,25 @@ class Panoply:
     @staticmethod
     def __filter_snippets_by_xpath(snippets: list, xpath: str) -> list:
         """
-        Check the each snippet in the list and return those that has a full_xpath matching the xpath param
+        Check the each snippet in the list and return those that has a full_xpath matching the xpath param. This is
+        done by finding the specific leaf node of the xpath by using only the xpath portions after any template, device,
+        or vsys entries. So an xpath pattern like 'network/interface' will match even within templates, across vsys,
+        etc
 
         :param snippets: list of snippets
         :param xpath: xpath to check
         :return: list of only those that contain the xpath in their full_xpath attribute
         """
         filtered_snippets = list()
+
+        split_pattern = re.compile('/devices/.*?/|vsys/.*?/')
+
         for s in snippets:
             full_xpath = s.get('full_xpath', '')
-            if xpath in full_xpath:
+
+            split_xpath = split_pattern.split(full_xpath)
+            leaf_xpath = split_xpath[-1]
+            if leaf_xpath.startswith(xpath):
                 # note we do not remove found snippets from the source snippets list, which may result
                 # in duplicates. The calling code will need to ensure it does not append the results of this method
                 # which out checking for dups first
@@ -1688,33 +1687,31 @@ class Panoply:
         :return: tuple of two lists, xpaths and post_xpaths
         """
         xpaths = [
-            '/shared/certificate',
-            '/shared/ssl-tls-service-profile',
-            '/shared/tag',
-            '/shared/profiles',
-            '/shared/reports',
-            '/shared/',  # catch the rest of the shared items here
-            '/tag/entry',
-            '/deviceconfig/system',
-            '/network/profiles',
-            '/config/network/interface',  # add config for panorama template
-            '/network/interface',
-            '/network/virtual-wire',
-            '/network/vlan',
-            '/network/ike',
-            '/network/tunnel',
-            '/import/network/interface',  # for use with panorama plugin import (SD-WAN)
-            '/network/virtual-router',
-            '/network/profiles/zone-protection-profile',
+            'shared/certificate',
+            'shared/ssl-tls-service-profile',
+            'shared/tag',
+            'shared/profiles',
+            'shared/reports',
+            'shared/',  # catch the rest of the shared items here
+            'tag/',
+            'deviceconfig/system',
+            'network/profiles',
+            'network/interface',
+            'network/virtual-wire',
+            'network/vlan',
+            'network/ike',
+            'network/tunnel',
+            'import/network/interface',  # for use with panorama plugin import (SD-WAN)
+            'network/virtual-router',
+            'network/profiles/zone-protection-profile',
             'routing-table/ip/static-route/entry/next-hop',  # try to keep next-hop before path-monitor for set cli
             'routing-table/ip/static-route/entry/path-monitor',  # #70
-            '/dynamic-ip-and-port/interface-address',  # GH #70
-            '/dynamic-ip-and-port/interface',  # GH #70
-            '/dynamic-ip-and-port/ip',  # GH #70
-            '/zone/entry',
-            '/config/zone',  # add config for panorama template
-            '/profiles/custom-url-category',  # should come before profiles/url-filtering
-            '/address/entry'  # should come before rules or address-group
+            'dynamic-ip-and-port/interface-address',  # GH #70
+            'dynamic-ip-and-port/interface',  # GH #70
+            'dynamic-ip-and-port/ip',  # GH #70
+            'zone/',
+            'profiles/custom-url-category',  # should come before profiles/url-filtering
+            'address/'  # should come before rules or address-group
         ]
 
         post_xpaths = ['/rulebase']
