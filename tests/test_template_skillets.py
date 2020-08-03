@@ -1,7 +1,3 @@
-# This script will load the example configuration found in 'tests/example_config/config.xml'
-# and then execute all the example skillets found in the 'skilletlib/example_skillets' directory.
-
-
 from skilletlib import SkilletLoader
 from skilletlib.utils.testing_utils import setup_dir
 
