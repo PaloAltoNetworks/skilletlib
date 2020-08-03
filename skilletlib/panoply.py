@@ -1050,6 +1050,61 @@ class Panoply:
             logger.error('Could not get configuration from device')
             raise PanoplyException('Could not get configuration from the device')
 
+    def get_saved_configuration(self, configuration_name: str) -> str:
+        """
+        Returns a saved configuration on the device. Use 'list_saved_configuration' to get a list of available options
+
+        :param configuration_name: name of the saved configuration to export
+        :return: configuration as an XML encoded string
+        """
+
+        try:
+
+            if self.connected:
+                self.xapi.export(category='configuration', from_name=configuration_name)
+
+                if self.xapi.status != 'success':
+                    raise PanoplyException('Could not get saved configuration from the device')
+
+                return self.xapi.xml_document
+
+            else:
+                return ''
+
+        except PanXapiError:
+            logger.error('Could not get saved configuration from device')
+            raise PanoplyException('Could not get saved configuration from the device')
+
+    def list_saved_configurations(self) -> list:
+        """
+        Returns a list of saved configuration files on this device
+
+        :return: list of saved configurations
+        """
+
+        saved_configurations = list()
+        try:
+            if not self.connected:
+                return saved_configurations
+
+            self.xapi.ad_hoc(qs='type=op&action=complete&xpath=/operations/load/config/from', modify_qs=True)
+
+            if self.xapi.status != 'success':
+                raise PanoplyException('Could not list saved configurations from the device')
+
+            response_root = self.xapi.element_root
+            config_items = response_root.findall('.//completion')
+            for config in config_items:
+                if 'value' in config.attrib:
+                    saved_configurations.append(config.attrib['value'])
+
+            return saved_configurations
+
+        except PanXapiError as pe:
+            logger.error('Could not list configurations from device')
+            logger.error(pe)
+            raise PanoplyException('Could not list saved configuration from the device')
+
     def generate_skillet(self, from_candidate=False) -> list:
         """
         Generates a skillet from the changes detected on this device.
