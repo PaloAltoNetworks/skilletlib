@@ -442,17 +442,30 @@ class Snippet(ABC):
         parsed_template_str = self._env.parse(template_str)
         return meta.find_undeclared_variables(parsed_template_str)
 
+    def get_output_variables(self) -> list:
+        """
+        Returns a list of all output variables. This is used to determine if a snippet variable should be considered
+        undeclared.
+
+        :return: list of str representing output variable names
+        """
+
+        return [x['name'] for x in self.metadata.get('outputs', dict()) if 'name' in x]
+
     def get_snippet_variables(self) -> list:
         """
-        Returns a list of variables defined in this snippet
+        Returns a list of variables defined in this snippet that are NOT defined as outputs
 
-        :return: list of str representing variable found in the jinja templates
+        :return: list of str representing variables found in the jinja templates
         """
 
         variables = list()
         for i in self.template_metadata:
             if i in self.metadata:
-                variables.extend(self.get_variables_from_template(self.metadata[i]))
+                found_vars = self.get_variables_from_template(self.metadata[i])
+                for f in found_vars:
+                    if f not in variables:
+                        variables.append(f)
 
         return variables
 

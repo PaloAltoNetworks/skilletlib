@@ -382,16 +382,19 @@ class Skillet(ABC):
 
     def get_declared_variables(self) -> List[str]:
         """
-        Return a list of all variables defined in all the snippets
+        Return a list of all variables defined in all the snippets that are not defined as an output
 
         :return: list of variable names
         """
 
-        declared_variables = list()
-        for s in self.snippets:
-            declared_variables.extend(s.get_snippet_variables())
+        # get list of output_vars from all snippets using double list comprehension
+        output_vars = [o for s in self.get_snippets() for o in s.get_output_variables()]
 
-        return declared_variables
+        # get list of all variables defined in all snippets that are NOT in the output_vars
+        dv = [x for s in self.get_snippets() for x in s.get_snippet_variables() if x not in output_vars]
+
+        # convert to set and back to list to remove dups
+        return list(set(dv))
 
     @staticmethod
     def __normalize_skillet_dict(skillet: dict) -> dict:
