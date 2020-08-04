@@ -1344,6 +1344,10 @@ class Panoply:
             # return our findings up the stack
             return not_founds
 
+        # check this element to determine if it's 'blank'
+        if len(el.findall('./')) == 0 and not el.attrib and (not el.text or not el.text.strip()):
+            return not_founds
+
         not_founds.append(xpath)
         return not_founds
 
@@ -1433,13 +1437,16 @@ class Panoply:
         """
         filtered_snippets = list()
 
-        split_pattern = re.compile('/devices/.*?/|vsys/.*?/')
+        split_pattern = re.compile(r'/devices/.*?/|vsys/.*?/')
 
         for s in snippets:
             full_xpath = s.get('full_xpath', '')
 
             split_xpath = split_pattern.split(full_xpath)
-            leaf_xpath = split_xpath[-1]
+            leaf_xpath_initial = split_xpath[-1]
+
+            # handle cases like ./mgt-config/password-complexity - remove the leading './'
+            leaf_xpath = re.sub('^\./', '', leaf_xpath_initial)
             if leaf_xpath.startswith(xpath):
                 # note we do not remove found snippets from the source snippets list, which may result
                 # in duplicates. The calling code will need to ensure it does not append the results of this method
