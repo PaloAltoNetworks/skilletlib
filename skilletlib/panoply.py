@@ -1184,10 +1184,9 @@ class Panoply:
                 continue
 
             changed_element = changed_elements[0]
-            # FIXME - do we need to __clean_uuid() here ?
 
             cleaned_element = self.__clean_uuid(changed_element)
-            xml_string = etree.tostring(cleaned_element).decode(encoding='UTF-8')
+            xml_string = etree.tostring(cleaned_element, pretty_print=True).decode(encoding='UTF-8')
 
             random_name = str(int(random.random() * 1000000))
 
