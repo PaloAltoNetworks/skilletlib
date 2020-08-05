@@ -1215,6 +1215,55 @@ class Panoply:
 
         return False
 
+    @staticmethod
+    def __is_ignored_set_cli(set_cli: str) -> bool:
+        """
+        Determines if the generated set cli can be used to recreate this configuration. Some generated
+        set clis are simply remnants of the XML structure and are not actually valid set cli commands
+
+        :param set_cli: set command to check
+        :return: bool True if this cli should be excluded
+        """
+
+        # ignore any set clis that start with this commands
+        ignored_set_prefix = (
+            'set mgt-config users admin phash',
+            'set shared content-preview',
+            'set read-only'
+        )
+
+        # ignore any set cli that match these commands
+        ignored_set_cli = (
+            'set shared application',
+            'set shared application-group',
+            'set shared service',
+            'set shared service-group'
+        )
+
+        # ignore any set cli that contain these strings
+        ignored_set_cli_parts = (
+            'deviceconfig setting management initcfg',
+            'deviceconfig setting management disable-predefined-reports'
+
+        )
+
+        for prefix in ignored_set_prefix:
+            if set_cli.startswith(prefix):
+                logger.debug(f'Skipping ignore set cli prefix: {set_cli}')
+                return True
+
+        for ignorned_set in ignored_set_cli:
+            if set_cli == ignorned_set:
+                logger.debug(f'Skipping ignore set cli: {set_cli}')
+                return True
+
+        for part in ignored_set_cli_parts:
+            if part in set_cli:
+                logger.debug(f'Skipping ignored set cli with part: {set_cli}')
+                return True
+
+        return False
+
     def generate_set_cli_from_configs(self, previous_config: str, latest_config: str) -> list:
         """
         Takes two configuration files, converts them to set commands, then returns only the commands found
@@ -1239,14 +1288,11 @@ class Panoply:
 
             if cmd not in p_set:
 
-                # skip admin user
-                if 'mgt-config users admin phash' in cmd:
+                if self.__is_ignored_set_cli(cmd):
                     continue
 
-                # for non-readonly cmds, replace newlines
-                if 'set readonly' not in cmd:
-                    cmd_cleaned = cmd.replace('\n', ' ')
-                    diffs.append(cmd_cleaned)
+                cmd_cleaned = cmd.replace('\n', ' ')
+                diffs.append(cmd_cleaned)
 
         return self.__order_set_commands(diffs)
 
