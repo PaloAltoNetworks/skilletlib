@@ -1160,14 +1160,21 @@ class Panoply:
 
         for xpath in not_found_xpaths:
 
-            set_xpath, entry = self.__split_xpath(xpath)
-            # force full xpath for #52
-            set_xpath = re.sub(r'^\./', r'/config/', set_xpath)
-            full_relative_xpath = re.sub(r'^/config/', r'\./', xpath)
+            # xpath comes as a relative full xpath like './mgt-config/password-complexity'
+            # make it /config/mgt-config/password-complexity
+            full_xpath = re.sub(r'^\./', r'/config/', xpath)
+            # force full xpath for #52 - split off last bit like password-complexity
+            set_xpath, entry = self.__split_xpath(full_xpath)
+            # remove any attribute for tag name
             tag = re.sub(r'\[.*\]', '', entry)
 
             # check if this xpath is actually user configurable
             if self.__is_ignored_xpath(set_xpath):
+                continue
+
+            # in some cases we need to ignore xpath + element for example
+            # /config/shared/content-preview
+            if self.__is_ignored_xpath(full_xpath):
                 continue
 
             changed_elements = latest_doc.xpath(xpath)
@@ -1188,7 +1195,7 @@ class Panoply:
             snippet['name'] = f'{tag}-{random_name}'
             snippet['xpath'] = set_xpath
             snippet['element'] = xml_string.strip()
-            snippet['full_xpath'] = full_relative_xpath
+            snippet['full_xpath'] = xpath
             snippets.append(snippet)
 
         return self.__order_snippets(snippets)
