@@ -1066,7 +1066,10 @@ class Panoply:
                 if self.xapi.status != 'success':
                     raise PanoplyException('Could not get saved configuration from the device')
 
-                return self.xapi.xml_document
+                doc_str = self.xapi.xml_document
+
+                doc = etree.fromstring(doc_str)
+                return etree.tostring(doc, pretty_print=True).decode(encoding='UTF-8')
 
             else:
                 return ''
