@@ -785,6 +785,21 @@ class Panoply:
         else:
             return False
 
+    def has_running_jobs(self) -> bool:
+        """
+        Simple check to determine if there are any running jobs on this device
+
+        :return: bool True if there is currently a running job
+        """
+
+        self.execute_cli('show jobs all')
+        jobs = self.xapi.xml_document
+        jobs_element = etree.fromstring(jobs)
+
+        running_jobs_list = jobs_element.xpath(".//jobs/status[text() != 'FIN']")
+
+        return True if running_jobs_list else False
+
     def wait_for_device_ready(self, interval=30, timeout=600) -> bool:
         """
         Loop and wait until device is ready or times out
@@ -803,10 +818,25 @@ class Panoply:
         while True:
             try:
 
-                self.xapi.op(cmd='<show><chassis-ready></chassis-ready></show>')
+                # fix for #60 - show chassis ready is not available on panorama
+                if self.facts.get('model', 'Panorama') == 'Panorama':
+                    cmd = "<show><system><info></info></system></show>"
+                    is_panorama = True
+                else:
+                    cmd = '<show><chassis-ready></chassis-ready></show>'
+                    is_panorama = False
+
+                self.xapi.op(cmd=cmd)
                 resp = self.xapi.xml_result()
 
                 if self.xapi.status == 'success':
+                    # in the case of panorama, we may be up but the auto-commit job may still be running
+                    # continue to wait until there are no more jobs
+                    # FIXME - should probably enhance this to only check for auto-commit job, it's possible there
+                    # can be other jobs running with a busy / heavily used panorama instance
+                    if is_panorama:
+                        if not self.has_running_jobs():
+                            return True
 
                     if resp.strip() == 'yes':
                         return True
