@@ -26,7 +26,11 @@ from pathlib import Path
 from typing import Generator
 from typing import List
 
+import yaml
+from yaml.scanner import ScannerError
+
 from skilletlib.exceptions import SkilletLoaderException
+from skilletlib.exceptions import SkilletValidationException
 from skilletlib.snippet.base import Snippet
 
 logger = logging.getLogger(__name__)
@@ -431,3 +435,27 @@ class Skillet(ABC):
             skillet['labels']['collection'].append('Kitchen Sink')
 
         return skillet
+
+    def dump_yaml(self) -> str:
+        """
+        Convert this Skillet into a YAML formatted string
+
+        :return: YAML formatted string
+        """
+        try:
+
+            # source https://stackoverflow.com/a/45004775
+            yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
+
+            def repr_str(dumper, data):
+                if '\n' in data:
+                    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
+
+                return dumper.org_represent_str(data)
+
+            yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
+
+            return yaml.safe_dump(self.skillet_dict, indent=4)
+
+        except (ScannerError, ValueError) as err:
+            raise SkilletValidationException(f'Could not dump Skillet as YAML: {err}')
