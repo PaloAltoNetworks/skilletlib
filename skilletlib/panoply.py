@@ -1091,12 +1091,12 @@ class Panoply:
         try:
 
             if self.connected:
-                self.xapi.export(category='configuration', from_name=configuration_name)
+                self.xapi.op(f'<show><config><saved>{configuration_name}</saved></config></show>', cmd_xml=False)
 
                 if self.xapi.status != 'success':
                     raise PanoplyException('Could not get saved configuration from the device')
 
-                doc_str = self.xapi.xml_document
+                doc_str = self.xapi.xml_result()
 
                 doc = etree.fromstring(doc_str)
                 return etree.tostring(doc, pretty_print=True).decode(encoding='UTF-8')
