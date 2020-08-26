@@ -14,7 +14,7 @@
 
 # Authors: Adam Baumeister, Nathan Embery
 
-
+import copy
 import html
 import logging
 import os
@@ -444,6 +444,12 @@ class Skillet(ABC):
         """
         try:
 
+            # remove non-essential non-portable items from the dict before dumping
+            safe_skillet_dict = copy.deepcopy(self.skillet_dict)
+
+            safe_skillet_dict.pop('snippet_path')
+            safe_skillet_dict.pop('app_data')
+
             # source https://stackoverflow.com/a/45004775
             yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
 
@@ -455,7 +461,7 @@ class Skillet(ABC):
 
             yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
 
-            return yaml.safe_dump(self.skillet_dict, indent=4)
+            return yaml.safe_dump(safe_skillet_dict, indent=4)
 
         except (ScannerError, ValueError) as err:
             raise SkilletValidationException(f'Could not dump Skillet as YAML: {err}')
