@@ -447,8 +447,8 @@ class Skillet(ABC):
             # remove non-essential non-portable items from the dict before dumping
             safe_skillet_dict = copy.deepcopy(self.skillet_dict)
 
-            safe_skillet_dict.pop('snippet_path')
-            safe_skillet_dict.pop('app_data')
+            safe_skillet_dict.pop('snippet_path', None)
+            safe_skillet_dict.pop('app_data', None)
 
             # source https://stackoverflow.com/a/45004775
             yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
