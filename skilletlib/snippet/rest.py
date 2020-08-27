@@ -19,7 +19,7 @@ class RestSnippet(TemplateSnippet):
     Rest Snippet
     """
     # required metadata items
-    required_metadata = {'name', 'path'}
+    required_metadata = {'name'}
 
     name = ''
     path = ''
@@ -29,6 +29,7 @@ class RestSnippet(TemplateSnippet):
     output_type = 'rest'
     # optional metadata items and their default values
     optional_metadata = {
+        'path': '',
         'operation': 'get',
         'payload': '',
         'headers': {},
@@ -98,6 +99,10 @@ class RestSnippet(TemplateSnippet):
 
             response = self.session.post(url, data=payload, headers=self.metadata['headers'], verify=False)
             return self.__handle_response(response)
+
+        # support 'noop' for #100
+        elif self.operation == 'noop':
+            return 'noop', 'success'
 
         else:
             # FIX for #59 - Ensure we pass headers to get operations properly

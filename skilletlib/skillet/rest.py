@@ -11,9 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class RestSkillet(Skillet):
-    snippet_required_metadata = {'name', 'path'}
+    snippet_required_metadata = {'name'}
 
     snippet_optional_metadata = {
+        'path': '',
         'operation': 'get',
         'payload': '',
         'headers': {},
