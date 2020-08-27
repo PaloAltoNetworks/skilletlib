@@ -610,6 +610,11 @@ class Snippet(ABC):
                 # no matches should return an empty list
                 outputs[output_name] = list()
 
+        elif 'capture_expression' in output_definition:
+            value = str(self.render(output_definition['capture_expression'], self.context))
+
+            outputs[output_name] = value
+
         else:
             output_name = output_definition.get('name', self.name)
             outputs[output_name] = results
@@ -755,6 +760,11 @@ class Snippet(ABC):
 
                 captured_output[var_name] = capture_list
 
+            elif 'capture_expression' in output_definition:
+                value = str(self.render(output_definition['capture_expression'], self.context))
+
+                captured_output[var_name] = value
+
             # filter selected items here
             captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
 
@@ -817,6 +827,13 @@ class Snippet(ABC):
         output = self.__render_output_metadata(output_definition, local_context)
 
         try:
+            if 'capture_expression' in output_definition:
+                var_name = output_definition['name']
+                value = str(self.render(output_definition['capture_expression'], self.context))
+
+                captured_output[var_name] = value
+                return captured_output
+
             for i in ('capture_pattern', 'capture_value', 'capture_object'):
                 if i in output:
                     capture_pattern = output[i]
