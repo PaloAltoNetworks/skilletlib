@@ -1,0 +1,11 @@
+All captured outputs are available for the 'output_template' context.
+
+The Firewall Type is: {{ fwType }}
+
+Status is: {{ status }}
+
+Each Address Found is:
+{%- for address in addrList %}
+{{ address }}
+{% endfor -%}
+

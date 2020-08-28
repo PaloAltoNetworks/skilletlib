@@ -2,13 +2,16 @@ name: debug_rest_skillet_headers
 label: REST GET with custom headers
 
 description: |
-  This skillet demonstrates a simple REST api call with custom headers and JSON output capturing using jsonpath.
+  This skillet demonstrates a simple REST api call with custom headers and JSON output capturing using jsonpath. This
+  Skillet also specifies an 'output_template' label. This informs skilletlib to load, parse, and render the template
+  file specified. The rendered output template is added to the skillet output in as the 'output_template' attribute.
 
 type: rest
 
 labels:
   collection:
     - Example Skillets
+  output_template: output.j2
 
 variables:
   - name: api_key

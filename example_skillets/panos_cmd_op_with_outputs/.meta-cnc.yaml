@@ -3,7 +3,8 @@ label: Move DG Test
 description: moves a dg from one parent to another
 type: panorama
 labels:
-  collection: Unknown
+  collection:
+    - Example Skillets
 variables:
 - name: new_parent_dg
   description: New Variable

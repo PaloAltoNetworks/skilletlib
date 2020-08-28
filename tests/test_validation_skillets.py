@@ -93,7 +93,7 @@ def test_attribute_present():
 
 
 def test_attribute_absent():
-    skillet_path = '../example_skillets/filter_attribute_present'
+    skillet_path = '../example_skillets/filter_attribute_absent'
     load_and_execute_skillet(skillet_path)
 
 

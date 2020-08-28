@@ -1,0 +1,88 @@
+name: add_cdl_and_eal_to_logging_profile
+label: Add Cortex Data Lake with Enhanced App Logging to Log Forwarding Profile
+description: |
+  Example Skillet to find named log forwarding profile in the configuration and update all
+  log types with CDL and enabled EAL logging. This demonstrates inline elements, when conditionals, and other
+  features as well.
+type: panos
+labels:
+  collection: Example Skillets
+variables:
+
+  - name: log_profile_name
+    description: name of logging profile to update
+    default: default
+    type_hint: text
+  - name: log_types
+    description: firewall log types
+    type_hint: hidden
+    default:
+      - traffic
+      - threat
+      - wildfire
+      - url
+      - data
+      - tunnel
+      - auth
+      - decryption
+
+snippets:
+
+- name: device_config_file
+  cmd: parse
+  variable: config
+  outputs:
+    - name: shared_log_profile
+      capture_value: /config/shared/log-settings/profiles/entry[@name='{{ log_profile_name }}']/@name
+    - name: shared_log_profile_entries
+      capture_list:  /config/shared/log-settings/profiles/entry[@name='{{ log_profile_name }}']/match-list/entry/@name
+    - name: vsys_log_profile
+      capture_value: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles/entry[@name='{{ log_profile_name }}']/@name
+    - name: vsys_log_profile_entries
+      capture_list:  /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles/entry[@name='{{ log_profile_name }}']/match-list/entry/@name
+
+- name: update shared profile with CDL log forwarding
+  xpath: /config/shared/log-settings/profiles
+  element: |-
+    <entry name="{{ log_profile_name }}">
+      <match-list>
+      {%- for item in shared_log_profile_entries %}
+        <entry name="{{ item }}">
+          <send-to-panorama>yes</send-to-panorama>
+        </entry>
+      {%- endfor %}
+      {%- for item in log_types %}
+        <entry name="{{ item }}-enhanced-app-logging">
+          <send-to-panorama>yes</send-to-panorama>
+          <log-type>{{ item }}</log-type>
+          <filter>All Logs</filter>
+          <quarantine>no</quarantine>
+        </entry>
+      {%- endfor %}
+      </match-list>
+      <enhanced-application-logging>yes</enhanced-application-logging>
+    </entry>
+  when: shared_log_profile | length
+
+- name: update vsys profile with CDL log forwarding and enable EAL
+  xpath: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/log-settings/profiles
+  element: |-
+    <entry name="{{ log_profile_name }}">
+      <match-list>
+      {%- for item in vsys_log_profile_entries %}
+        <entry name="{{ item }}">
+          <send-to-panorama>yes</send-to-panorama>
+        </entry>
+      {%- endfor %}
+      {%- for item in log_types %}
+        <entry name="{{ item }}-enhanced-app-logging">
+          <send-to-panorama>yes</send-to-panorama>
+          <log-type>{{ item }}</log-type>
+          <filter>All Logs</filter>
+          <quarantine>no</quarantine>
+        </entry>
+      {%- endfor %}
+      </match-list>
+      <enhanced-application-logging>yes</enhanced-application-logging>
+    </entry>
+  when: vsys_log_profile | length
