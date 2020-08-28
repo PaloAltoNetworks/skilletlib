@@ -38,7 +38,7 @@ class PanosSnippet(TemplateSnippet):
     required_metadata = {'name'}
 
     # attribute fields that should be rendered during render_metadata
-    template_metadata = {'xpath', 'element', 'cmd_str'}
+    template_metadata = {'xpath', 'element', 'cmd_str', 'where', 'dst'}
 
     # default output_type for each snippet of this type
     output_type = 'xml'
