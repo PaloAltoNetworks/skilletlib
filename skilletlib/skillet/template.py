@@ -51,7 +51,7 @@ class TemplateSkillet(Skillet):
         :return: dict containing default outputs plus the rendered template contained in the 'template' attribute
         """
 
-        results = super().get_results()
+        results = super()._get_snippet_results()
         cleaned_results = dict()
         cleaned_results['snippets'] = dict()
         snippets = results.get('snippets', {})

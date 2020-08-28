@@ -73,4 +73,4 @@ class WorkflowSkillet(Skillet):
             else:
                 results['snippets'][k] = v
 
-        return results
+        return self._parse_output_template(results)

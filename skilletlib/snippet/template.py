@@ -23,3 +23,20 @@ class TemplateSnippet(Snippet):
 
     def template(self, context) -> str:
         return self.execute(context)[0]
+
+
+class SimpleTemplateSnippet(TemplateSnippet):
+    """
+    SimpleTemplate implements a snippet that requires only the template as a string to use
+    """
+    required_metadata = {'name'}
+
+    def __init__(self, template_str):
+        self.template_str = template_str
+        self.rendered_template = ""
+
+        metadata = {
+            'name': 'SimpleTemplateSnippet',
+        }
+
+        super().__init__(template_str, metadata)

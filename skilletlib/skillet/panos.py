@@ -273,7 +273,9 @@ class PanosSkillet(Skillet):
         :return: dict containing default outputs plus the overall result and changed flag
         """
 
-        results = super().get_results()
+        results = super()._get_snippet_results()
+        results['outputs'] = self.captured_outputs
+
         skillet_result = 'success'
 
         changed = False
@@ -292,4 +294,4 @@ class PanosSkillet(Skillet):
         results['result'] = skillet_result
         results['changed'] = changed
 
-        return results
+        return self._parse_output_template(results)

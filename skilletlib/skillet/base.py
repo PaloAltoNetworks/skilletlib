@@ -32,6 +32,7 @@ from yaml.scanner import ScannerError
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
 from skilletlib.snippet.base import Snippet
+from skilletlib.snippet.template import SimpleTemplateSnippet
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -350,6 +351,18 @@ class Skillet(ABC):
 
         :return: dictionary of results from the Skillet execute or execute_async method
         """
+
+        results = self._get_snippet_results()
+
+        results['outputs'] = self.captured_outputs
+        return self._parse_output_template(results)
+
+    def _get_snippet_results(self) -> dict:
+        """
+        Iterate the snippets in the skillet and collect their combined results into the 'results' dict
+
+        :return: dict with 'snippets' key
+        """
         results = dict()
         results['snippets'] = dict()
 
@@ -359,8 +372,32 @@ class Skillet(ABC):
             if snippet_name in self.snippet_outputs:
                 results['snippets'][snippet_name] = self.snippet_outputs[snippet_name]
 
-        results['outputs'] = self.captured_outputs
-        # results.update(self.captured_outputs)
+        return results
+
+    def _parse_output_template(self, results: dict) -> dict:
+        """
+        Check for the presence of the output_template label. If found, load and parse the template
+        using the results. The parsed output will be placed in the 'output_template' key in the results
+
+        :param results: results of the skillet execution
+        :return: results plus the output_template value if found
+        """
+        try:
+            if 'output_template' in self.labels:
+                output_template = self.load_template(self.labels['output_template'])
+                template_snippet = SimpleTemplateSnippet(output_template)
+                # create context dict for template parsing
+                # add all outputs as 'top-level' attributes
+                context = results.get('outputs', {})
+                # add other keys as top-level attributes as well...
+                for k, v in results.items():
+                    if k != 'outputs':
+                        context[k] = v
+                results['output_template'] = template_snippet.template(context)
+
+        except SkilletLoaderException as sle:
+            print(sle)
+
         return results
 
     def __validate_snippet_metadata(self) -> None:

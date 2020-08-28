@@ -110,4 +110,4 @@ class PanValidationSkillet(PanosSkillet):
 
                 results['pan_validation'][snippet_name] = context[snippet_name]
 
-        return results
+        return self._parse_output_template(results)
