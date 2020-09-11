@@ -33,7 +33,7 @@ class PanValidationSkillet(PanosSkillet):
             if self.initialized and self.allow_snippet_cache:
                 return self.snippets
 
-        snippet_path_str = self.skillet_dict['snippet_path']
+        snippet_path_str = self.skillet_dict.get('snippet_path', '')
         snippet_path = Path(snippet_path_str)
         snippet_list = list()
         for snippet_def in self.snippet_stack:
