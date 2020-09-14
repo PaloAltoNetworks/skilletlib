@@ -54,6 +54,8 @@ class TemplateSkillet(Skillet):
         results = super()._get_snippet_results()
         cleaned_results = dict()
         cleaned_results['snippets'] = dict()
+        # include outputs for #104
+        cleaned_results['outputs'] = self.captured_outputs
         snippets = results.get('snippets', {})
         for k, v in snippets.items():
             if v != '':
