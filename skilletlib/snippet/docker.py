@@ -178,7 +178,7 @@ class DockerSnippet(Snippet):
             if rc == 0:
                 return 'success'
             else:
-                return 'failed'
+                return 'failure'
 
         else:
             return 'success'
