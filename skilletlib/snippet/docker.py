@@ -115,9 +115,9 @@ class DockerSnippet(Snippet):
                 # return_data will be the bytes returned from the command
                 if type(return_data) is bytes:
                     return_str = return_data.decode('UTF-8')
-                    return return_str, 'success'
+                    return return_str, self.__get_container_status()
                 else:
-                    return return_data, 'success'
+                    return return_data, self.__get_container_status()
 
         except ImageNotFound:
             logger.error(traceback.format_exc())
@@ -165,10 +165,23 @@ class DockerSnippet(Snippet):
 
             else:
                 logger.info(container.status)
-                return return_str, 'success'
+                return return_str, self.__get_container_status()
 
         except APIError as ae:
             raise SkilletLoaderException(f'Could not get logs for {self.name}: {ae}')
+
+    def __get_container_status(self):
+
+        container = self.get_container()
+        if container.status != 'running':
+            rc = container.attrs['State']['ExitCode']
+            if rc == 0:
+                return 'success'
+            else:
+                return 'failed'
+
+        else:
+            return 'success'
 
     def cleanup(self) -> None:
         """
