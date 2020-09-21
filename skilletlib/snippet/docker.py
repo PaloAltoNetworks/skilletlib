@@ -92,7 +92,6 @@ class DockerSnippet(Snippet):
         """
         try:
 
-            output = ''
             logger.info(f'Pulling image: {self.image} with tag: {self.tag}')
             self.client.images.pull(self.image, self.tag)
 
@@ -170,7 +169,12 @@ class DockerSnippet(Snippet):
         except APIError as ae:
             raise SkilletLoaderException(f'Could not get logs for {self.name}: {ae}')
 
-    def __get_container_status(self):
+    def __get_container_status(self) -> str:
+        """
+        Check for ExitCode State on the container and return the exit code if found
+
+        :return: success or failure. Return code of 0 == success all else == failure
+        """
 
         container = self.get_container()
         if container.status != 'running':
@@ -186,6 +190,7 @@ class DockerSnippet(Snippet):
     def cleanup(self) -> None:
         """
         Clean up action is the docker container was started with 'async', no-op is async is False
+
         :return: None
         """
         if not self.detach:
