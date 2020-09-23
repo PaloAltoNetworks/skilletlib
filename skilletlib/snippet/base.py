@@ -343,7 +343,10 @@ class Snippet(ABC):
             elif 'capture_expression' in output:
                 expression = self._env.compile_expression(output['capture_expression'])
                 value = expression(self.context)
-                outputs[output['name']] = value
+                if isinstance(value, list) and 'filter_items' in output:
+                    outputs[output['name']] = self.__filter_outputs(output, value, self.context)
+                else:
+                    outputs[output['name']] = value
 
             else:
                 # allow jinja syntax in capture_pattern, capture_value, capture_object etc
@@ -610,8 +613,11 @@ class Snippet(ABC):
             pattern = re.compile(output_definition['capture_list'])
             matches = pattern.findall(results)
             if matches:
-                # capture list should only the full list of matches
-                outputs[output_name] = matches
+                # capture list should return only the full list of matches unless filter_items is present
+                if 'filter_items' in output_definition:
+                    outputs[output_name] = self.__filter_outputs(output_definition, matches, self.context)
+                else:
+                    outputs[output_name] = matches
             else:
                 # no matches should return an empty list
                 outputs[output_name] = list()
@@ -746,7 +752,8 @@ class Snippet(ABC):
                     capture_list = list()
                     for entry in entries:
                         capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
-                    captured_output[var_name] = capture_list
+
+                    captured_output[var_name] = self.__filter_outputs(output, capture_list, self.context)
 
             elif 'capture_list' in output:
                 capture_pattern = output['capture_list']

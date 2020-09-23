@@ -131,6 +131,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['element_value_contains'] = self.__node_value_contains
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
+            self._env.filters['items_present'] = self.__verify_in_list
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -497,6 +498,40 @@ class PanosSnippet(TemplateSnippet):
                 return inner_obj
 
         return obj
+
+    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.'):
+        """
+        Iterate all items from the list. Verify they are present in at least one item
+        from the second list. In the case where list2 is a list of objects / dictionaries
+        the list2_path can be used to determine if the item from list1 is present.
+
+        Consider a list of objects, each with a list of members. Verify all items from list1
+        exist in the members list of at least one object.
+
+        :param list1: list of items to verify exist in list2
+        :param list2: list of items or objects to check
+        :param list2_path: when list2 contains objects, the path to check for each object for the presence list1 item
+        :return: boolean true if all items from list1 are present in list2
+        """
+        for item in list1:
+
+            for second_item in list2:
+                if list2_path == '.':
+                    item2 = second_item
+                else:
+                    item2 = self.__get_value_from_path(second_item, list2_path)
+
+                if isinstance(item2, list):
+                    if item not in item2:
+                        return False
+                elif isinstance(item2, str):
+                    if item != item2:
+                        return False
+                else:
+                    print('unknown type in list2 for verify_in_list')
+                    return False
+
+            return True
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
