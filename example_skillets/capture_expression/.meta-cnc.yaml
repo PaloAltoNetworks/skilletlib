@@ -1,0 +1,90 @@
+#
+# Example Variable Manipulation
+#
+# In order to properly validate a config, it is often necessary to convert the XML structure to an object, which
+# can then be used in jinja expression to perform basic logic and validation. These examples demonstrate how
+# skillets are optimized for this task.
+#
+
+name: example-capture-expression
+label: Example of how to use capture_expression
+
+description: |
+  This example Skillet shows how to parse and validate a config using output capturing. This example takes input
+  from the user and uses 'capture_expression' to create a new variable based on the result of the expression. This is
+  slightly different from 'capture_variable', which is used to return the value of a string render operation. Capture
+  expression can return any object, not just a string.
+
+type: pan_validation
+
+labels:
+  collection:
+    - Example Skillets
+    - Validation
+
+variables:
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    # every skillet tool will implicitly make the 'config' variable available. This is the contents of the currently
+    # running config, or a saved XML config when offline
+    variable: config
+    outputs:
+      # first grab all system entry logs with 'All Logs' configured
+      - name: system_entry_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/filter[text()='All Logs']/../@name
+        # grab all system entry logs that are configured to use snmp and filter to only include items found
+        # to have 'All Logs' as captured above
+      - name: system_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/system/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in system_entry_all_logs
+      # repeat for other log types as well
+      - name: config_entry_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/filter[text()='All Logs']/../@name
+      - name: config_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/config/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in config_entry_all_logs
+      - name: userid_entry_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/filter[text()='All Logs']/../@name
+      - name: userid_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/userid/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in userid_entry_all_logs
+      - name: hipmatch_entry_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/filter[text()='All Logs']/../@name
+      - name: hipmatch_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/hipmatch/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in hipmatch_entry_all_logs
+      - name: globalprotect_entry_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/filter[text()='All Logs']/../@name
+      - name: globalprotect_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/globalprotect/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in globalprotect_entry_all_logs
+      - name: iptag_entry_all_logs
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/filter[text()='All Logs']/../@name
+      - name: iptag_entry_send_snmpv3_all_logs
+        capture_list: /config/shared/log-settings/iptag/match-list/entry/send-snmptrap/member/../../@name
+        filter_items: item in iptag_entry_all_logs
+      - name: snmpv3_trap_profiles
+        capture_list: /config/shared/log-settings/snmptrap/entry/version/v3/../../@name
+        # Now we can use capture_expression to evaluate a jinja expression. In this case, it will return a list
+        # of all snmp enabled log types. We will test this in a validate step later
+      - name: all_log_types_with_snmp
+        capture_expression: |
+          system_entry_send_snmpv3_all_logs
+          + config_entry_send_snmpv3_all_logs
+          + userid_entry_send_snmpv3_all_logs
+          + hipmatch_entry_send_snmpv3_all_logs
+          + globalprotect_entry_send_snmpv3_all_logs
+          + iptag_entry_send_snmpv3_all_logs
+
+  # Now use the all_log_types_with_snmp list that was found earlier and perform a test to ensure it has at least
+  # one entry
+  - name: ensure_snmp_log_forwarding_configured
+    label: Example test to ensure snmp log forwarding is configured
+    # a fail_message or a pass_message may be specified on each validation test step. This can be very useful for
+    # troubleshooting and debugging when test results are not what is expected
+    fail_message: Found no log forwarding profiles using snmp
+    test: all_log_types_with_snmp | length > 0
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
