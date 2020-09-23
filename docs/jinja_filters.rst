@@ -79,6 +79,35 @@ argument.
     documentation_link: https://ironscotch.readthedocs.io/en/docs_dev/viz_guide_panos.html#device-setup-telemetry-telemetry
 
 
+items_present
+~~~~~~~~~~~~~
+
+This filter will iterate over a list and ensure all items from the first list appear
+in the second list. The second list can be a list of objects, in which case an optional
+path argument may be supplied.
+
+Consider the case where you have a list of objects. Each object has it's own list of members.
+You want to ensure that all items from a list appear at least once in one of the objects
+member lists. For example, ensure a list of blocked application appear in at least one
+block rule.
+
+.. code-block:: yaml
+
+    snippets:
+      - name: grab_security_rules
+        cmd: parse
+        variable: config
+        outputs:
+          - name: security_rules
+            capture_list: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/security/rules/entry
+          - name: deny_rules
+            capture_expression: security_rules
+            filter_items: item | element_value('entry.action') == 'deny'
+      - name: all_apps_blocked
+        label: Ensure all blocked apps appear in the rules
+        test: blocked_apps | items_present(deny_rules, 'entry.application.member')
+        documentation_link: https://iron-skillet.readthedocs.io
+
 Additional Filters
 ==================
 

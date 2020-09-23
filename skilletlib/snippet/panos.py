@@ -515,6 +515,8 @@ class PanosSnippet(TemplateSnippet):
         """
         for item in list1:
 
+            found = False
+
             for second_item in list2:
                 if list2_path == '.':
                     item2 = second_item
@@ -522,16 +524,18 @@ class PanosSnippet(TemplateSnippet):
                     item2 = self.__get_value_from_path(second_item, list2_path)
 
                 if isinstance(item2, list):
-                    if item not in item2:
-                        return False
+                    if item in item2:
+                        found = True
+                        break
                 elif isinstance(item2, str):
-                    if item != item2:
-                        return False
-                else:
-                    print('unknown type in list2 for verify_in_list')
-                    return False
+                    if item == item2:
+                        found = True
+                        break
 
-            return True
+            if not found:
+                return False
+
+        return True
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
