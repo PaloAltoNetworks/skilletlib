@@ -141,7 +141,12 @@ class PanosSkillet(Skillet):
                 context['config'] = self.panoply.get_configuration()
 
             else:
-                raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
+                # fix for #110
+                if 'config' not in context:
+                    # allow the config to be set in the context by the user. This ensures calling initialize_context
+                    # twice does not trigger this exception. Only through it when we are not connected and the user
+                    # has not set the config variable
+                    raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
         self.initialized = True
         return context
