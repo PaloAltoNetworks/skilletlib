@@ -92,7 +92,6 @@ class DockerSnippet(Snippet):
         """
         try:
 
-            output = ''
             logger.info(f'Pulling image: {self.image} with tag: {self.tag}')
             self.client.images.pull(self.image, self.tag)
 
@@ -115,9 +114,9 @@ class DockerSnippet(Snippet):
                 # return_data will be the bytes returned from the command
                 if type(return_data) is bytes:
                     return_str = return_data.decode('UTF-8')
-                    return return_str, 'success'
+                    return return_str, self.__get_container_status()
                 else:
-                    return return_data, 'success'
+                    return return_data, self.__get_container_status()
 
         except ImageNotFound:
             logger.error(traceback.format_exc())
@@ -165,14 +164,33 @@ class DockerSnippet(Snippet):
 
             else:
                 logger.info(container.status)
-                return return_str, 'success'
+                return return_str, self.__get_container_status()
 
         except APIError as ae:
             raise SkilletLoaderException(f'Could not get logs for {self.name}: {ae}')
 
+    def __get_container_status(self) -> str:
+        """
+        Check for ExitCode State on the container and return the exit code if found
+
+        :return: success or failure. Return code of 0 == success all else == failure
+        """
+
+        container = self.get_container()
+        if container.status != 'running':
+            rc = container.attrs['State']['ExitCode']
+            if rc == 0:
+                return 'success'
+            else:
+                return 'failure'
+
+        else:
+            return 'success'
+
     def cleanup(self) -> None:
         """
         Clean up action is the docker container was started with 'async', no-op is async is False
+
         :return: None
         """
         if not self.detach:
