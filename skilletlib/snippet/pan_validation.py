@@ -8,10 +8,7 @@ class PanValidationSnippet(PanosSnippet):
     required_metadata = {'name'}
     # optional metadata that may be overridden in the snippet definition / metadata
 
-    optional_metadata = {
-        'fail_message': 'Snippet Validation Failed',
-        'pass_message': 'Snippet Validation Passed'
-    }
+    template_metadata = {'label', 'test', 'fail_message', 'pass_message'}
 
     def handle_output_type_validation(self, results: str):
         output = dict()

@@ -91,23 +91,32 @@ class PanValidationSkillet(PanosSkillet):
             snippet_name = s.name
             cmd = s.cmd
             # handle both validate and validate_xml here
-            if snippet_name in context and 'validate' in cmd:
-                if 'results' in context[snippet_name]:
-                    result = context[snippet_name]['results']
-                    label_template = context[snippet_name].get('label', '')
-                    # attempt to render the label using supplied context
-                    context[snippet_name]['label'] = s.render(label_template, context)
-                    if not result:
-                        fail_message = s.metadata.get('fail_message', 'Snippet Validation results were {{ result }}')
-                        context[snippet_name]['output_message'] = s.render(fail_message, context)
-                    elif result:
-                        pass_message = s.metadata.get('pass_message', 'Snippet Validation results were {{ result }}')
-                        context[snippet_name]['output_message'] = s.render(pass_message, context)
-                    else:
-                        context[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+            if snippet_name in self.captured_outputs \
+                    and 'validate' in cmd \
+                    and isinstance(self.captured_outputs[snippet_name], list):
 
-                    results['snippets'][snippet_name] = result
+                loop_counter = 0
 
-                results['pan_validation'][snippet_name] = context[snippet_name]
+                for output_result in self.captured_outputs[snippet_name]:
+                    if 'results' in output_result[snippet_name]:
+                        result = output_result[snippet_name]['results']
+                        if not result:
+                            output_result[snippet_name]['output_message'] = s.metadata.get('fail_message',
+                                                                                           'Snippet Validation Failed')
+                        elif result:
+                            output_result[snippet_name]['output_message'] = s.metadata.get('pass_message',
+                                                                                           'Snippet Validation Passed')
+
+                        else:
+                            output_result[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+
+                        if snippet_name not in results['pan_validation']:
+                            results['pan_validation'][snippet_name] = output_result[snippet_name]
+                            results['snippets'][snippet_name] = result
+                        else:
+                            results['pan_validation'][f'{snippet_name}_{loop_counter}'] = output_result[snippet_name]
+                            results['snippets'][f'{snippet_name}_{loop_counter}'] = result
+
+                    loop_counter += 1
 
         return self._parse_output_template(results)

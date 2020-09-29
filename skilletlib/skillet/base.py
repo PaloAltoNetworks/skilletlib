@@ -27,6 +27,7 @@ from typing import Generator
 from typing import List
 
 import yaml
+from jinja2 import TemplateError
 from yaml.scanner import ScannerError
 
 from skilletlib.exceptions import SkilletLoaderException
@@ -273,41 +274,56 @@ class Skillet(ABC):
 
             for snippet in self.get_snippets():
                 try:
-                    # render anything that looks like a jinja template in the snippet metadata
-                    # mostly useful for xpaths in the panos case
-                    snippet.render_metadata(context)
-                    # check the 'when' conditional against variables currently held in the context
+                    snippet.context.update(context)
 
-                    if snippet.should_execute(context):
-                        (output, status) = snippet.execute(context)
-                        logger.debug(f'{snippet.name} - status: {status}')
+                    loop_vars = snippet.get_loop_parameter()
+                    index = 0
+                    for item in loop_vars:
+                        context['loop'] = item
+                        context['loop_index'] = index
 
-                        if output:
-                            logger.debug(f'{snippet.name} - output: {output}')
+                        snippet.render_metadata(context)
+                        # check the 'when' conditional against variables currently held in the context
 
-                        running_counter = 0
+                        if snippet.should_execute(context):
+                            (output, status) = snippet.execute(context)
+                            logger.debug(f'{snippet.name} - status: {status}')
 
-                        while status == 'running':
-                            logger.info('Snippet still running...')
-                            time.sleep(5)
-                            (output, status) = snippet.get_output()
-                            running_counter += 1
+                            if output:
+                                logger.debug(f'{snippet.name} - output: {output}')
 
-                            if running_counter > 60:
-                                raise SkilletLoaderException('Snippet took too long to execute!')
+                            running_counter = 0
 
-                        # capture all outputs
-                        snippet_outputs = snippet.get_default_output(output, status)
-                        captured_outputs = snippet.capture_outputs(output, status)
+                            while status == 'running':
+                                logger.info('Snippet still running...')
+                                time.sleep(5)
+                                (output, status) = snippet.get_output()
+                                running_counter += 1
 
-                        if captured_outputs:
-                            logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+                                if running_counter > 60:
+                                    raise SkilletLoaderException('Snippet took too long to execute!')
 
-                        self.snippet_outputs.update(snippet_outputs)
-                        self.captured_outputs.update(captured_outputs)
+                            # capture all outputs
+                            snippet_outputs = snippet.get_default_output(output, status)
+                            captured_outputs = snippet.capture_outputs(output, status)
 
-                        context.update(snippet_outputs)
-                        context.update(captured_outputs)
+                            if snippet.name in self.snippet_outputs:
+                                self.snippet_outputs[snippet.name].append(snippet_outputs)
+                                self.captured_outputs[snippet.name].append(captured_outputs)
+                            else:
+                                # create a list of track progress here
+                                self.snippet_outputs[snippet.name] = [snippet_outputs]
+                                self.captured_outputs[snippet.name] = [captured_outputs]
+
+                            if captured_outputs:
+                                logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+
+                            # simple context addition here, does not count on iteration ?
+                            # context.update(snippet_outputs)
+                            context.update(captured_outputs)
+
+                        index = index + 1
+                        snippet.reset_metadata()
 
                 except SkilletLoaderException as sle:
                     logger.error(f'Caught Exception during execution: {sle}')
@@ -370,7 +386,12 @@ class Skillet(ABC):
             snippet_name = s.get('name', '')
 
             if snippet_name in self.snippet_outputs:
-                results['snippets'][snippet_name] = self.snippet_outputs[snippet_name]
+                loop_counter = 0
+                for loop_results in self.snippet_outputs[snippet_name]:
+                    if snippet_name not in results['snippets']:
+                        results['snippets'][snippet_name] = loop_results[snippet_name]
+                    else:
+                        results['snippets'][f'{snippet_name}_{loop_counter}'] = loop_results[snippet_name]
 
         return results
 
@@ -389,14 +410,18 @@ class Skillet(ABC):
                 # create context dict for template parsing
                 # add all outputs as 'top-level' attributes
                 context = results.get('outputs', {})
+                context['snippet_outputs'] = self.snippet_outputs
+                context['captured_outputs'] = self.captured_outputs
+                context['context'] = self.context
                 # add other keys as top-level attributes as well...
                 for k, v in results.items():
                     if k != 'outputs':
                         context[k] = v
                 results['output_template'] = template_snippet.template(context)
 
-        except SkilletLoaderException as sle:
-            print(sle)
+        except (SkilletLoaderException, TemplateError) as e:
+            print(e)
+            results['output_template'] = f'ERROR: {e}'
 
         return results
 

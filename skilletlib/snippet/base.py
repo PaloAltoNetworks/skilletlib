@@ -21,6 +21,7 @@ import xml.etree.ElementTree as elementTree
 from abc import ABC
 from abc import abstractmethod
 from base64 import urlsafe_b64encode
+from copy import deepcopy
 from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
@@ -62,10 +63,12 @@ class Snippet(ABC):
     # short-cut on each
     output_type = 'xml'
 
-    def __init__(self, metadata):
+    def __init__(self, metadata: dict):
 
         # first validate all the required fields are present in the metadata (snippet definition)
         self.metadata = self.sanitize_metadata(metadata)
+        # always keep a fresh copy of the metadata around for looping
+        self.original_metadata = deepcopy(self.metadata)
         # always have a default name, subclasses will set additional fields on the class
         self.name = self.metadata['name']
         # set up jinja environment and add any custom filters. Snippet sub-classes can override __add_filters
@@ -230,6 +233,32 @@ class Snippet(ABC):
         # this snippet does not match any of the rules above, one way or the other, so filter it out of consideration
         return None
 
+    def get_loop_parameter(self) -> list:
+        """
+        Returns the loop parameter for this snippet. If a loop parameter is not defined in the snippet def, this
+        returns a list with a single blank str. Otherwise, return the value of the loop parameter as a list.
+
+        :return: value of loop_parameter from the context or a list with a single blank str
+        """
+
+        default_list = ['']
+
+        if 'loop' in self.metadata:
+            loop_var_name = self.metadata['loop']
+
+            if loop_var_name not in self.context:
+                return default_list
+
+            loop_var = self.context.get(loop_var_name, list())
+
+            if isinstance(loop_var, list):
+                return loop_var
+
+            else:
+                return [loop_var]
+
+        return default_list
+
     def __has_tag(self, tag_to_check: str):
         if 'tag' in self.metadata and type(self.metadata['tag']) is list:
             for tag in self.metadata['tag']:
@@ -333,12 +362,15 @@ class Snippet(ABC):
             if 'name' not in output:
                 continue
 
+            # allow jinja syntax in capture_pattern, capture_value, capture_object etc
+            output = self.__render_output_metadata(output, self.context)
+
             if not results:
                 outputs[output['name']] = ''
                 continue
 
             if 'capture_variable' in output:
-                outputs[output['name']] = self.render(output['capture_variable'], self.context)
+                outputs[output['name']] = output['capture_variable']
 
             elif 'capture_expression' in output:
                 expression = self._env.compile_expression(output['capture_expression'])
@@ -349,8 +381,6 @@ class Snippet(ABC):
                     outputs[output['name']] = value
 
             else:
-                # allow jinja syntax in capture_pattern, capture_value, capture_object etc
-                output = self.__render_output_metadata(output, self.context)
 
                 if output_type == 'xml':
                     outputs = self.__handle_xml_outputs(output, results)
@@ -379,7 +409,7 @@ class Snippet(ABC):
 
     def __render_output_metadata(self, output: dict, context: dict) -> dict:
         # fix for #78 allow filter_items to be rendered
-        keys = ('capture_value', 'capture_pattern', 'capture_object', 'capture_list', 'filter_items')
+        keys = ('name', 'capture_value', 'capture_pattern', 'capture_object', 'capture_list', 'filter_items')
         for k in keys:
             if k in output:
                 output[k] = self.render(output[k], context)
@@ -411,12 +441,6 @@ class Snippet(ABC):
                 if results:
                     filtered_items.append(item)
 
-            # if len(filtered_items) == 0:
-            #     output = None
-            # elif len(filtered_items) == 1:
-            #     output = filtered_items[0]
-            # else:
-            #     output = filtered_items
             return filtered_items
 
         elif isinstance(output, str) or isinstance(output, dict):
@@ -437,6 +461,7 @@ class Snippet(ABC):
         """
         if context is None:
             context = self.context
+
         t = self._env.from_string(template_str)
         return t.render(context)
 
@@ -543,6 +568,15 @@ class Snippet(ABC):
 
         return self.metadata
 
+    def reset_metadata(self):
+        """
+        Reset the metadata to the original metadata. This is used during looping
+        so we can render items in the metadata on each iteration.
+
+        :return: None
+        """
+        self.metadata = deepcopy(self.original_metadata)
+
     # define functions for custom jinja filters
     @staticmethod
     def __md5_hash(txt: str) -> str:
@@ -556,6 +590,18 @@ class Snippet(ABC):
 
         return md5_crypt.hash(txt)
 
+    @staticmethod
+    def __slugify(txt: str) -> str:
+
+        txt = re.sub(r'\s+', '_', txt)
+        txt = re.sub(r'[^\w+\-]', '', txt)
+        txt = re.sub(r'-', '_', txt)
+        txt = re.sub(r'__', '_', txt)
+        txt = re.sub(r'^_+', '', txt)
+        txt = re.sub(r'_+$', '', txt)
+
+        return txt
+
     def __init_env(self) -> None:
         """
         init the jinja2 environment and add any required filters
@@ -564,6 +610,8 @@ class Snippet(ABC):
         """
         self._env = Environment(loader=BaseLoader, extensions=[AnsibleCoreFiltersExtension])
         self._env.filters["md5_hash"] = self.__md5_hash
+        self._env.filters["slugify"] = self.__slugify
+        self._env.filters["s"] = self.__slugify
         self.add_filters()
 
     def add_filters(self) -> None:
