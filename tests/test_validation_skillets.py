@@ -12,7 +12,7 @@ with open('example_config/config.xml', 'r') as config:
     context['config'] = config.read()
 
 
-def load_and_execute_skillet(skillet_path: str) -> None:
+def load_and_execute_skillet(skillet_path: str) -> dict:
     skillet_loader = SkilletLoader(path=skillet_path)
     skillet = skillet_loader.skillets[0]
     print('=' * 80)
@@ -25,6 +25,20 @@ def load_and_execute_skillet(skillet_path: str) -> None:
             r = str(v.get('results', 'False'))
             print(f'{k:60}{r}')
             assert r == 'True'
+
+    return output
+
+#
+# def test_capture_expression():
+#     skillet_path = '../example_skillets/capture_expression/'
+#     load_and_execute_skillet(skillet_path)
+
+
+def test_output_template():
+    skillet_path = '../example_skillets/output_template/'
+    output = load_and_execute_skillet(skillet_path)
+    assert 'output_template' in output
+    assert 'Success' in output['output_template']
 
 
 def test_capture_value():

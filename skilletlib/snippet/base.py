@@ -370,7 +370,7 @@ class Snippet(ABC):
                 continue
 
             if 'capture_variable' in output:
-                outputs[output['name']] = output['capture_variable']
+                outputs[output['name']] = self.render(output['capture_variable'], self.context)
 
             elif 'capture_expression' in output:
                 expression = self._env.compile_expression(output['capture_expression'])
