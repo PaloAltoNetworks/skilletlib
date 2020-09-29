@@ -28,6 +28,7 @@ from xml.etree.ElementTree import ParseError
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
+from jinja2 import TemplateError
 from jinja2 import meta
 from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
@@ -473,8 +474,13 @@ class Snippet(ABC):
         :return: list of variables declared in the template
         """
 
-        parsed_template_str = self._env.parse(template_str)
-        return meta.find_undeclared_variables(parsed_template_str)
+        try:
+            parsed_template_str = self._env.parse(template_str)
+            return meta.find_undeclared_variables(parsed_template_str)
+
+        except TemplateError as te:
+            logger.error('Could not parse template string in get_variables_from_template')
+            raise SkilletValidationException(f'Error Parsing template {te}')
 
     def get_output_variables(self) -> list:
         """

@@ -10,7 +10,7 @@ class SkilletNotFoundException(SkilletLoaderException):
     pass
 
 
-class SkilletValidationException(PanoplyException):
+class SkilletValidationException(SkilletLoaderException):
     pass
 
 
