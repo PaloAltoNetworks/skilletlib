@@ -235,8 +235,13 @@ class Skillet(ABC):
                         if captured_outputs:
                             logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
 
-                        self.snippet_outputs.update(snippet_outputs)
-                        self.captured_outputs.update(captured_outputs)
+                        if snippet.name in self.snippet_outputs:
+                            self.snippet_outputs[snippet.name].append(snippet_outputs)
+                            self.captured_outputs[snippet.name].append(captured_outputs)
+                        else:
+                            # create a list of track progress here
+                            self.snippet_outputs[snippet.name] = [snippet_outputs]
+                            self.captured_outputs[snippet.name] = [captured_outputs]
 
                         context.update(snippet_outputs)
                         context.update(captured_outputs)
