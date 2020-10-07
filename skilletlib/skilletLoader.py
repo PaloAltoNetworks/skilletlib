@@ -437,7 +437,7 @@ class SkilletLoader:
             if '.terraform' in d.name:
                 continue
 
-            if d.is_dir():
+            if d.is_dir() and not d.is_symlink():
                 skillet_list.extend(self._check_dir(d, list()))
 
         return skillet_list
