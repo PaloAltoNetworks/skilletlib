@@ -834,7 +834,7 @@ class Snippet(ABC):
 
                 # some Skillet types may return us json already, check if results are actually a str like object
                 # before trying to convert
-                if type(results) is not str or type(results) is not bytes or type(results) is not bytearray:
+                if type(results) is not str and type(results) is not bytes and type(results) is not bytearray:
                     json_object = results
                 else:
                     json_object = json.loads(results)
