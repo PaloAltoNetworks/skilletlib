@@ -111,6 +111,10 @@ class Skillet(ABC):
         :param template_path: relative path to the template to load
         :return: str contents
         """
+        if template_path == '' or template_path is None:
+            logger.error('Refusing to load empty template path')
+            return ''
+
         skillet_path = Path(self.path)
         template_file = skillet_path.joinpath(template_path).resolve()
 
