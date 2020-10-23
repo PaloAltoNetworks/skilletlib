@@ -91,12 +91,17 @@ class PanValidationSkillet(PanosSkillet):
             cmd = s.cmd
             # handle both validate and validate_xml here
             if snippet_name in self.captured_outputs \
-                    and 'validate' in cmd \
-                    and isinstance(self.captured_outputs[snippet_name], list):
+                    and 'validate' in cmd:
+
+                # looping is supported for pan_validation
+                if isinstance(self.captured_outputs[snippet_name], list):
+                    result_list = self.captured_outputs[snippet_name]
+                else:
+                    result_list = [{snippet_name: self.captured_outputs[snippet_name]}]
 
                 loop_counter = 0
 
-                for output_result in self.captured_outputs[snippet_name]:
+                for output_result in result_list:
                     if 'results' in output_result[snippet_name]:
                         result = output_result[snippet_name]['results']
                         if not result:

@@ -41,6 +41,13 @@ def test_output_template():
     assert 'Success' in output['output_template']
 
 
+def test_basic_structure():
+    skillet_path = '../example_skillets/capture_value/'
+    output = load_and_execute_skillet(skillet_path)
+    assert 'pan_validation' in output
+    assert 'ensure_hostname_was_found' in output['pan_validation']
+
+
 def test_capture_value():
     skillet_path = '../example_skillets/capture_value/'
     load_and_execute_skillet(skillet_path)
