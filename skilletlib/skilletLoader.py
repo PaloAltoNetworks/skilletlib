@@ -415,6 +415,14 @@ class SkilletLoader:
                 self.skillet_errors.append(err_dict)
                 err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
 
+            except OSError as oe:
+                # catch all OSErrors for #117
+                err_dict = dict()
+                err_dict['path'] = str(d.absolute())
+                err_dict['error'] = str(oe)
+                self.skillet_errors.append(err_dict)
+                err_condition = f'OS Error for dir {d.absolute()} - {oe}'
+
         # Do not descend into sub dirs after a .meta-cnc file has already been found
         if skillet_list:
             return skillet_list
