@@ -102,7 +102,7 @@ class PanValidationSkillet(PanosSkillet):
                 loop_counter = 0
 
                 for output_result in result_list:
-                    if 'results' in output_result[snippet_name]:
+                    if snippet_name in output_result and 'results' in output_result[snippet_name]:
                         result = output_result[snippet_name]['results']
                         if not result:
                             output_result[snippet_name]['output_message'] = s.metadata.get('fail_message',
