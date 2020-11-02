@@ -22,7 +22,6 @@ from .base import Skillet
 
 
 class WorkflowSkillet(Skillet):
-
     initialized = False
 
     snippet_required_metadata = {'name'}
@@ -63,14 +62,28 @@ class WorkflowSkillet(Skillet):
         from all the snippets from all the skillets that were executed. Any top level items added by each skillet
         will be added here as well.
         """
+        # call get_snippet_results to flatten loop lists
+        snippet_results = super()._get_snippet_results()
+
+        # create out results dict for return
         results = dict()
         results['outputs'] = self.captured_outputs
-
         results['snippets'] = dict()
-        for k, v in self.snippet_outputs.items():
-            if k == 'skillets':
-                results.update(v)
-            else:
-                results['snippets'][k] = v
+
+        # iterate through all the snippets from the called skillets
+        for k, v in snippet_results['snippets'].items():
+            # add them to the results dict
+            results['snippets'][k] = v
+            for ik, iv in snippet_results['snippets'][k]['raw'].items():
+                if ik == 'snippets':
+                    continue
+
+                if isinstance(iv, dict):
+                    if ik not in results:
+                        results[ik] = dict()
+                    results[ik].update(iv)
+                else:
+                    # this will overwrite non dict values ?
+                    results[ik] = iv
 
         return self._parse_output_template(results)

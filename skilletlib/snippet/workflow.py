@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 from typing import Union
 
@@ -5,7 +6,6 @@ from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.skillet.base import Skillet
 from skilletlib.skilletLoader import SkilletLoader
 from .base import Snippet
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,18 @@ class WorkflowSnippet(Snippet):
         self.skillet_loader = skillet_loader
         self.skillet = skillet
         super().__init__(metadata)
+
+    def update_context(self, context) -> dict:
+        # always remove filter_snippets from the context at this level so we do not filter out
+        # actual workflow included skillets, but only their snippets
+
+        if '__filter_snippets' in context:
+            context.pop('__filter_snippets')
+
+        if '__filter_snippets' in self.context:
+            self.context.pop('__filter_snippets')
+
+        return super().update_context(context)
 
     def update_snippet_context(self, context) -> dict:
 
@@ -55,20 +67,3 @@ class WorkflowSnippet(Snippet):
                 return dict()
         else:
             return dict()
-
-    def get_default_output(self, results: dict, status: str) -> dict:
-        # The underlying skillet will return us a dict with keys 'skillets' and also any skillet specific keys
-        # such as panos will add a top level 'result' key. template type will add a top level 'template' type
-        # we need to include all those here as well
-        workflow_results = dict()
-        workflow_results['skillets'] = dict()
-        if type(results) is dict:
-            for k, v in results.items():
-                if k == 'snippets':
-                    workflow_results.update(v)
-                elif k == 'outputs':
-                    continue
-                else:
-                    workflow_results['skillets'][k] = v
-
-        return workflow_results

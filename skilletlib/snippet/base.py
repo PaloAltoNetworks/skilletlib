@@ -32,11 +32,10 @@ from jinja2 import TemplateError
 from jinja2 import meta
 from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
+from jinja2_ansible_filters import AnsibleCoreFiltersExtension
 from jsonpath_ng import parse
 from lxml import etree
 from passlib.hash import md5_crypt
-
-from jinja2_ansible_filters import AnsibleCoreFiltersExtension
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
@@ -175,6 +174,10 @@ class Snippet(ABC):
                     if type(fc[filter_def]) is list:
                         for item in fc[filter_def]:
                             is_filtered = self.__consider_filter(filter_def, item)
+                            # we have discovered this snippet should not be filtered, jump out now
+                            if is_filtered is not None:
+                                return is_filtered
+
                     elif type(fc[filter_def]) is str:
                         item = fc[filter_def]
                         is_filtered = self.__consider_filter(filter_def, item)

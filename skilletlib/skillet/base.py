@@ -283,7 +283,8 @@ class Skillet(ABC):
 
             for snippet in self.get_snippets():
                 try:
-                    snippet.context.update(context)
+                    # allow subclasses to override this
+                    snippet.update_context(context)
 
                     loop_vars = snippet.get_loop_parameter()
                     index = 0
