@@ -1,0 +1,45 @@
+name: include_other_skillets
+label: Skillet that includes another skillet
+
+description: |
+  This example Skillet shows how to include snippets from another skillet into this one
+
+type: pan_validation
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+  - name: tag_to_check
+    description: Tag Name to Test
+    default: test123456
+    type_hint: text
+
+snippets:
+  - name: parse_config
+    cmd: parse
+    variable: config
+    outputs:
+      - name: tags_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag
+      - name: tags_list
+        capture_pattern: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag//@name
+
+  - name: test_tag_present
+    label: Ensures the {{ tag_to_check }} tag is present
+    test: |
+      (
+        tags_object | attribute_present('entry', 'name', tag_to_check)
+      )
+    documentation_link: https://skilletlib.readthedocs.io
+
+  - name: Include another skillet
+    include: update_schedule
+
+  - name: Include some other stuff
+    include: network_profiles
+    include_snippets:
+      - name: parse_network_profiles
+      - name: check_network_profiles
+        label: Check Network Profiles Override
+

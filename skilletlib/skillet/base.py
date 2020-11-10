@@ -32,6 +32,8 @@ from yaml.scanner import ScannerError
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
+from skilletlib.exceptions import SnippetNotFoundException
+from skilletlib.exceptions import VariableNotFoundException
 from skilletlib.snippet.base import Snippet
 from skilletlib.snippet.template import SimpleTemplateSnippet
 
@@ -537,3 +539,31 @@ class Skillet(ABC):
 
         except (ScannerError, ValueError) as err:
             raise SkilletValidationException(f'Could not dump Skillet as YAML: {err}')
+
+    def get_snippet_by_name(self, snippet_name: str) -> Snippet:
+        """
+        Utility method to return the snippet with snippet_name
+
+        :param snippet_name: name attribute of the snippet to return
+        :return: Snippet Object
+        """
+
+        for snippet in self.snippets:
+            if snippet.name == snippet_name:
+                return snippet
+
+        raise SnippetNotFoundException
+
+    def get_variable_by_name(self, variable_name: str) -> dict:
+        """
+        Utility method to return the variable with tne variable_name
+
+        :param variable_name: name attribute of the variable to return
+        :return: dictionary of variable options
+        """
+
+        for v in self.variables:
+            if v['name'] == variable_name:
+                return v
+
+        raise VariableNotFoundException

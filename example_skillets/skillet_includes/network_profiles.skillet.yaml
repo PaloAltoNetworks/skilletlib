@@ -1,0 +1,36 @@
+name: network_profiles
+label: Check basic network profiles
+
+description: |
+  This skillet does a basic validation on network profiles
+
+type: pan_validation
+
+labels:
+  collection: Test Skillets
+
+variables:
+
+snippets:
+  - name: parse_network_profiles
+    label: Capturing Profile Values
+    cmd: parse
+    variable: config
+    outputs:
+      - name: network_profiles
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/network/profiles/monitor-profile
+
+  - name: check_network_profiles
+    when: network_profiles is not none
+    label: Ensure Named profile exists
+    test: network_profiles | node_attribute_present('entry', 'name', 'default')
+    severity: high
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+
+  - name: check_network_profiles_negative
+    when: network_profiles is not none
+    label: Ensure Bogus Named profile exists
+    test: network_profiles | node_attribute_present('entry', 'name', 'nowaydude')
+    severity: high
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing
+

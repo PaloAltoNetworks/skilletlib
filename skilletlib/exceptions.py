@@ -10,6 +10,14 @@ class SkilletNotFoundException(SkilletLoaderException):
     pass
 
 
+class SnippetNotFoundException(SkilletLoaderException):
+    pass
+
+
+class VariableNotFoundException(SkilletLoaderException):
+    pass
+
+
 class SkilletValidationException(SkilletLoaderException):
     pass
 

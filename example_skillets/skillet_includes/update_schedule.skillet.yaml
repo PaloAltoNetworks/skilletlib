@@ -1,0 +1,24 @@
+name: update_schedule
+label: Basic Validations for Update Schedule
+
+description: |
+  This skillet does a basic validation on the update schedule xpath
+
+type: pan_validation
+labels:
+  collection: Test Skillets
+
+variables:
+
+snippets:
+  - name: get_update_schedule
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_configured
+    label: Ensure Update Schedules are Configured
+    test: update_schedule_object is not none
+    documentation_link: https://iron-skillet.readthedocs.io
