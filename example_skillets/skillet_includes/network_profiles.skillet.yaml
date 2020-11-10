@@ -10,6 +10,14 @@ labels:
   collection: Test Skillets
 
 variables:
+  - name: tag_to_check
+    description: Tag Name to Test
+    default: test_tag_new_value
+    type_hint: text
+  - name: another_variable
+    description: Variable to be included
+    default: test123456
+    type_hint: text
 
 snippets:
   - name: parse_network_profiles

@@ -49,6 +49,10 @@ def test_skillet_includes():
     assert included_snippet is not None
     assert included_snippet.metadata.get('label', '') == 'Check Network Profiles Override'
 
+    included_variable: dict = skillet.get_variable_by_name('some_update_variable')
+    assert included_variable is not None
+    assert included_variable.get('default', '') == 'test123456'
+
 
 if __name__ == '__main__':
     test_get_skillet_by_name()

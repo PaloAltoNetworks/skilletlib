@@ -9,6 +9,10 @@ labels:
   collection: Test Skillets
 
 variables:
+  - name: some_update_variable
+    description: Random Variable to check
+    default: test123456
+    type_hint: text
 
 snippets:
   - name: get_update_schedule
