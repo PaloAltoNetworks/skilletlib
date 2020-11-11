@@ -691,7 +691,7 @@ class Snippet(ABC):
     def __handle_xml_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Parse the results string as an XML document
-        Example .meta-cnc snippets section:
+        Example skillet.yaml snippets section:
         snippets:
 
           - name: system_info

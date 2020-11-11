@@ -35,6 +35,7 @@ class Git:
     def __init__(self, repo_url, store=os.getcwd()):
         """
         Initialize a new Git repo object
+
         :param repo_url: URL path to repository.
         :param store: Directory to store repository in. Defaults to the current directory.
         """
@@ -52,6 +53,7 @@ class Git:
     def clone(self, name: str) -> str:
         """
         Clone a remote directory into the store.
+
         :param name: Name of repository
         :return: (string): Path to cloned repository
         """
@@ -85,6 +87,9 @@ class Git:
                 try:
                     self.Repo = Repo.clone_from(self.repo_url, path)
 
+                    # ensure all submodules are also updated and available
+                    self.Repo.submodule_update(recursive=False)
+
                 except GitCommandError as gce:
                     raise SkilletLoaderException(f'Could not clone repository {gce}')
 
@@ -110,6 +115,7 @@ class Git:
     def branch(self, branch_name: str) -> None:
         """
         Checkout the specified branch.
+
         :param branch_name: Branch to checkout.
         :return: None
         """
@@ -124,3 +130,34 @@ class Git:
     @staticmethod
     def check_git_exists():
         return shutil.which("git")
+
+    def get_submodule_dirs(self, path=None) -> list:
+        """
+        Return a list of submodule directories if any. This is used to load and resolve skillets into the
+        resolved_skillets list. This allows multiple projects to use the same base skillets without
+        conflicts at the application layer.
+
+        :param path: path to
+        :return:
+        """
+
+        submodule_list = list()
+
+        if path is not None:
+            self.path = path
+
+        try:
+
+            if self.Repo is None:
+                self.Repo = Repo(self.path)
+
+            submodules = self.Repo.submodules
+            for sm in submodules:
+                submodule_list.append(sm.path)
+
+            return submodule_list
+
+        except GitCommandError as gce:
+            logger.info('This repository is not a git repository')
+            logger.info(f'Error was {gce}')
+            return []

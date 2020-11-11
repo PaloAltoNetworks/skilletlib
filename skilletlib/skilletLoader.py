@@ -41,18 +41,26 @@ if not len(logger.handlers):
 class SkilletLoader:
     """
 
-    SkilletLoader is used to find and load Skillets from their metadata files, either from on filesystem path
+    SkilletLoader is used to find and load Skillets from their metadata files, either from the local filesystem
     or from a git repository URL
 
     :param path: local relative path to search for all Skillet meta-data files
     """
+
+    # list loaded and compiled skillet objects
     skillets = List[Skillet]
+
+    # list of loaded and compiled skillets from resolved git repositories
     resolved_skillets = List[Skillet]
 
+    # list of errors encountered while loading all skillets
     skillet_errors = list()
+
+    # tmp_dir where resolved git repositories will be cloned
     tmp_dir = '~./.skilletlib'
 
-    skip_dirs = ['.terraform', '.git', '.venv']
+    # list of directories to skip and not recurse into
+    skip_dirs = ['.terraform', '.git', '.venv', '.idea']
 
     def __init__(self, path=None):
 
@@ -68,7 +76,7 @@ class SkilletLoader:
         if path is not None:
             self.load_all_skillets_from_dir(path)
 
-    def load_skillet_dict_from_path(self, skillet_path: str) -> dict:
+    def load_skillet_dict_from_path(self, skillet_path: (str, Path)) -> dict:
         """
         Loads the skillet metadata file into a skillet_dict dictionary
 
@@ -91,7 +99,7 @@ class SkilletLoader:
         """
         Creates a Skillet object from the given skillet definition
 
-        :param skillet_dict: Dictionary loaded from the .meta-cnc.yaml skillet definition file
+        :param skillet_dict: Dictionary loaded from the skillet.yaml definition file
         :return: Skillet Object
         """
         skillet_type = skillet_dict['type']
@@ -133,9 +141,15 @@ class SkilletLoader:
             return AppSkillet(skillet_dict)
 
         else:
-            raise SkilletLoaderException('Unknown Skillet Type!')
+            raise SkilletLoaderException(f'Unknown Skillet Type: {skillet_type}!')
 
     def _parse_skillet(self, path: (str, Path)) -> dict:
+        """
+        Parse the skillet metadata file from the Path and return a valid skillet definition dictionary
+
+        :param path: relative PosixPath of a file to load and validate
+        :return: skillet definition dictionary
+        """
 
         if type(path) is str:
             path_str = path
@@ -154,10 +168,10 @@ class SkilletLoader:
             meta_cnc_file = path_obj
 
             if not path_obj.exists():
-                raise SkilletNotFoundException(f'Could not find .meta-cnc file as this location: {path}')
+                raise SkilletNotFoundException(f'Could not find skillet.yaml file as this location: {path}')
 
         else:
-            # we were only passed a directory like '.' or something, try to find a .meta-cnc.yaml or .meta-cnc.yml
+            # we were only passed a directory like '.' or something, try to find a skillet.yaml or .meta-cnc.yml
             directory = path_obj
             logger.debug(f'using directory {directory}')
             found_meta = False
@@ -203,7 +217,44 @@ class SkilletLoader:
             raise SkilletLoaderException(
                 'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
 
-    def __resolve_dependencies(self, skillet: dict) -> None:
+    def __resolve_submodule_skillets(self, path: Path) -> None:
+        """
+        Private method to find any submodule directories and load all found skillets
+        into the resolved skillets list. This ensures that applications that call SkilletLoader.skillets
+        will only get a list of skillets in the given repository and not all skillets from submodules as well.
+
+        :param path: PosixPath to the path to check for submodules
+        :return: None
+        """
+
+        git_dir = path.joinpath('.git')
+        if not git_dir.exists():
+            return
+
+        # create out git repo management object
+        g = Git(repo_url=None)
+
+        # get a list of all the submodule directories
+        sm_dirs = g.get_submodule_dirs(path.absolute())
+        for sm in sm_dirs:
+            sm_path = path.joinpath(sm)
+            if not sm_path.exists():
+                continue
+
+            # iterate each one and get a list of all found skillet defintions
+            skillet_definitions = self._check_dir(sm_path, list())
+
+            for skillet_dict in skillet_definitions:
+                if not self.__skillet_has_includes(skillet_dict):
+                    # add found skillets to the resolved skillets list
+                    self.resolved_skillets.append(self.create_skillet(skillet_dict))
+
+            if sm not in self.skip_dirs:
+                # now ensure our subsequent runs for check_dir skip this dir and NOT add these skillets to the
+                # skillets list
+                self.skip_dirs.append(sm)
+
+    def __resolve_git_dependencies(self, skillet: dict) -> None:
         """
         Private method to clone dependent git repository into the local temporary directory.
         All skillets found in these repositories will be created and added to the resolved_skillets list
@@ -229,7 +280,33 @@ class SkilletLoader:
                     # we do not do recursive dependency resolution. Only index skillets with no dependencies
                     self.resolved_skillets.append(self.create_skillet(cs))
 
+    @staticmethod
+    def __skillet_has_includes(skillet_dict: dict) -> bool:
+        """
+        Simple utility method to check if a skillet has a snippet that includes another skillet. This is used
+        as we do not do recursive dependency resolution. Only 1 level of dependencies are allowed, so this is
+        used to determrine which set of skillets to load first. I.E. load only skillets with no dependencies first,
+        then load the others.
+
+        :param skillet_dict: Skillet definition dictionary object
+        :return: boolean True if a snippet with an included skillet is found
+        """
+
+        for snippet in skillet_dict.get('snippets', []):
+            if 'include' in snippet:
+                return True
+
+        return False
+
     def compile_skillet_dict(self, skillet: dict) -> dict:
+        """
+        Compile the skillet dictionary including any included snippets from other skillets. Included snippets and
+        variables will be inserted into the skillet dictionary and any replacements / updates to those snippets /
+        variables will be made before hand.
+
+        :param skillet: skillet definition dictionary
+        :return: full compiled skillet definition dictionary
+        """
         snippets = list()
         variables: list = skillet['variables']
 
@@ -528,7 +605,7 @@ class SkilletLoader:
 
         :param skillet_name: Name of the skillet to return
         :param include_resolved_skillets: boolean of whether to also check the resolved skillet list
-        :return: Skillet
+        :return: Skillet or None
         """
 
         if not self.skillets and not self.resolved_skillets:
@@ -553,13 +630,18 @@ class SkilletLoader:
         Returns a list of Loaded Skillets
 
         :param directory: parent directory in which to start iterating
-        :return: list of skillets
+        :return: list of Skillet objects
         """
         if type(directory) is str:
             d = Path(directory)
 
         else:
             d = directory
+
+        # load skillets from submodules first into the resolved_skillets list
+        # this will also add submodule directories to the 'skip_dirs' list so _check_dir will NOT
+        # recurse into them and load them into the skillets list
+        self.__resolve_submodule_skillets(d)
 
         # reset skillet errors list here
         self.skillet_errors = list()
@@ -588,7 +670,7 @@ class SkilletLoader:
                 continue
 
             # do not yet pull down deps automatically. FIXME - need to signal to skilletlib that this operation is OK
-            # self.__resolve_dependencies(skillet_dict)
+            # self.__resolve_git_dependencies(skillet_dict)
             compiled_skillet = self.compile_skillet_dict(skillet_dict)
             self.skillets.append(self.create_skillet(compiled_skillet))
 
@@ -596,8 +678,8 @@ class SkilletLoader:
 
     def _check_dir(self, directory: Path, skillet_list: list) -> list:
         """
-        Recursive function to look for all files in the current directory with a name matching '.meta-cnc.yaml'
-        otherwise, iterate through all sub-dirs and skip dirs with name that match '.git', '.venv', and '.terraform'
+        Recursive method to look for all files in the current directory with a name matching '*skillet.yaml'
+        or '.meta-cnc.y*' otherwise, iterate through all sub-dirs and skip dirs from the self.skip_dirs list
         will descend into all other dirs and call itself again.
         Returns a list of compiled skillets
 
@@ -637,10 +719,6 @@ class SkilletLoader:
                 self.skillet_errors.append(err_dict)
                 err_condition = f'OS Error for dir {d.absolute()} - {oe}'
 
-        # Do not descend into sub dirs after a .meta-cnc file has already been found
-        # if skillet_list:
-        #     return skillet_list
-
         if err_condition:
             logger.warning(err_condition)
             return skillet_list
@@ -650,9 +728,14 @@ class SkilletLoader:
             if d.is_file():
                 continue
 
+            found_pattern = False
             for pattern in self.skip_dirs:
                 if pattern in d.name:
-                    continue
+                    found_pattern = True
+                    break
+
+            if found_pattern:
+                continue
 
             if d.is_dir() and not d.is_symlink():
                 skillet_list.extend(self._check_dir(d, list()))
@@ -661,6 +744,16 @@ class SkilletLoader:
 
     def load_skillets_from_git(self, repo_url, repo_name, repo_branch,
                                local_dir=None) -> List[Skillet]:
+        """
+        Performs a local clone of the given Git repository URL and returns a list of all found skillets defined
+        therein.
+
+        :param repo_url: Repository URL
+        :param repo_name: name given to the repository
+        :param repo_branch: branch to checkout
+        :param local_dir: local directory where to clone the git repository into
+        :return: List of Skillets
+        """
 
         if local_dir is None:
             local_dir = self.tmp_dir
@@ -693,7 +786,16 @@ class SkilletLoader:
 
     def load_skillet_dicts_from_git(self, repo_url, repo_name, repo_branch,
                                     local_dir=None) -> List[dict]:
+        """
+        Performs a local clone of the given Git repository URL and returns a list of all found skillet definition
+        dictionaries defined therein.
 
+        :param repo_url: Repository URL
+        :param repo_name: name given to the repository
+        :param repo_branch: branch to checkout
+        :param local_dir: local directory where to clone the git repository into
+        :return: List of Skillets
+        """
         if local_dir is None:
             local_dir = self.tmp_dir
 
