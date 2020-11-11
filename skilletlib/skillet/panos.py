@@ -208,7 +208,7 @@ class PanosSkillet(Skillet):
             xpath: /config/devices/entry[@name='localhost.localdomain']/template
             file: ../snippets/template.xml
 
-        :param snippet_def: the loaded snippet definition from the .meta-cnc.yaml file. Each snippet object in the
+        :param snippet_def: the loaded snippet definition from the skillet.yaml file. Each snippet object in the
         'snippets' stanza is a snippet_def and is passed in here
         :param snippet_path: the path on the filesystem where this skillet is located. This is used to resolve
         relative paths for each snippet. This allows snippet file re-use across skillets.

@@ -57,7 +57,7 @@ class Skillet(ABC):
         """
         Initialize the base skillet type
 
-        :param s: loaded dictionary from the .meta-cnc.yaml file
+        :param s: loaded dictionary from the skillet YAML file
         """
 
         self.skillet_dict = self.__normalize_skillet_dict(s)
