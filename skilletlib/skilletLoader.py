@@ -331,9 +331,12 @@ class SkilletLoader:
                     include_meta = include_snippet_object.metadata
                     # the meta attribute in the metadata is a dict that we do not want to completely overwrite
                     if 'meta' in include_snippet:
-                        new_meta = include_snippet_object.metadata.get('meta', {}).copy()
-                        new_meta.update(include_snippet.get('meta', {}))
-                        include_snippet['meta'] = new_meta
+                        include_snippet_object_meta = include_meta.get('meta', {})
+                        if isinstance(include_snippet_object_meta, dict) and \
+                                isinstance(include_snippet.get('meta', {}), dict):
+                            new_meta = include_snippet_object_meta.copy()
+                            new_meta.update(include_snippet.get('meta', {}))
+                            include_snippet['meta'] = new_meta
 
                     include_meta.update(include_snippet)
 
