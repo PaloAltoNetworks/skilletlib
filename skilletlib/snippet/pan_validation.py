@@ -15,6 +15,7 @@ class PanValidationSnippet(PanosSnippet):
         output['results'] = results
         output['label'] = self.metadata.get('label', '')
         output['severity'] = self.metadata.get('severity', 'low')
+        output['meta'] = self.metadata.get('meta', {})
         output['documentation_link'] = self.metadata.get('documentation_link', '')
         output['test'] = self.metadata.get('test', '')
         output['context_message'] = self.metadata.get('context_message', '')

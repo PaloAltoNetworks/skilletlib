@@ -329,7 +329,15 @@ class SkilletLoader:
                     include_snippet_name = include_snippet['name']
                     include_snippet_object = include_skillet.get_snippet_by_name(include_snippet_name)
                     include_meta = include_snippet_object.metadata
+                    # the meta attribute in the metadata is a dict that we do not want to completely overwrite
+                    if 'meta' in include_snippet:
+                        new_meta = include_snippet_object.metadata.get('meta', {}).copy()
+                        new_meta.update(include_snippet.get('meta', {}))
+                        include_snippet['meta'] = new_meta
+
                     include_meta.update(include_snippet)
+
+                    include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
                     snippets.append(include_meta)
 
             if 'include_variables' not in snippet:
