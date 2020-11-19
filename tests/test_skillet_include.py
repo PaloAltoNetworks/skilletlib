@@ -43,7 +43,7 @@ def test_skillet_includes():
     # verify the correct number of snippets. 4 of which are included from other skillets
     assert len(skillet.snippets) == 6
 
-    included_snippet: Snippet = skillet.get_snippet_by_name('check_network_profiles')
+    included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
 
     # verify we can get an included snippet from the skillet object
     assert included_snippet is not None
