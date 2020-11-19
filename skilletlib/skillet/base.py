@@ -552,7 +552,7 @@ class Skillet(ABC):
             if snippet.name == snippet_name:
                 return snippet
 
-        raise SnippetNotFoundException
+        raise SnippetNotFoundException(f'Snippet with name: {snippet_name} not found on Skillet: {self.name}')
 
     def get_variable_by_name(self, variable_name: str) -> dict:
         """

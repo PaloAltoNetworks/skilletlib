@@ -682,8 +682,16 @@ class SkilletLoader:
 
             # do not yet pull down deps automatically. FIXME - need to signal to skilletlib that this operation is OK
             # self.__resolve_git_dependencies(skillet_dict)
-            compiled_skillet = self.compile_skillet_dict(skillet_dict)
-            self.skillets.append(self.create_skillet(compiled_skillet))
+            try:
+
+                compiled_skillet = self.compile_skillet_dict(skillet_dict)
+                self.skillets.append(self.create_skillet(compiled_skillet))
+
+            except SkilletLoaderException as sle:
+                err_dict = dict()
+                err_dict['path'] = skillet_dict.get('name', '')
+                err_dict['error'] = str(sle)
+                self.skillet_errors.append(err_dict)
 
         return self.skillets
 
