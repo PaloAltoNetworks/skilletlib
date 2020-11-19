@@ -263,18 +263,33 @@ class Snippet(ABC):
 
         return default_list
 
-    def __has_tag(self, tag_to_check: str):
-        if 'tag' in self.metadata and type(self.metadata['tag']) is list:
-            for tag in self.metadata['tag']:
-                if tag_to_check == tag:
-                    return True
+    def __has_tag(self, tag_to_check: str) -> bool:
+        """
+        Check if this snippet has a 'tag' or 'tags' attribute and if one of those items
+        match the tag_to_check value
 
-            return False
+        :param tag_to_check: str of tag to check
+        :return: boolean True if a tag or tags list item matches
+        """
+        if 'tag' in self.metadata:
+            if type(self.metadata['tag']) is list:
+                tags_list = self.metadata['tag']
+            else:
+                tags_list = [self.metadata['tag']]
 
-        elif 'tag' in self.metadata and type(self.metadata['tag']) is str:
-            return self.metadata['tag'] == tag_to_check
+        elif 'tags' in self.metadata:
+            if type(self.metadata['tags']) is list:
+                tags_list = self.metadata['tags']
+            else:
+                tags_list = [self.metadata['tags']]
         else:
             return False
+
+        for tag in tags_list:
+            if tag_to_check == tag:
+                return True
+
+        return False
 
     def execute_conditional(self, test: str, context: dict) -> bool:
         """
