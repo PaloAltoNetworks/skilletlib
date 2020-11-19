@@ -7,13 +7,12 @@
 #
 
 name: example-output-template
-label: Example of how to use output-template to add customized output
+label: Example of how to use output_template to add customized output
 
 description: |
-  This example Skillet shows how to parse and validate a config using the 'when' conditionals.
-  This is useful when you want to test a portion on a configuration, but only 'when' a pre-condition test passes. In
-  this example, we will ensure the statistics-service is enabled, but only 'when' the update-schedule element is
-  present and defined.
+  This example Skillet shows how to add an additional 'template' attribute to the output. The value of the 'template'
+  attribute is the result of rendering the configured jinja template using the skillet outputs as the context. Any
+  and all captured values are available for use in the template engine.
 
 type: pan_validation
 labels:
