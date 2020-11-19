@@ -86,6 +86,9 @@ class PanValidationSkillet(PanosSkillet):
         results['snippets'] = dict()
         results['pan_validation'] = dict()
 
+        # addition for #124 - ensure captured_outputs are present in the output as well
+        results['outputs'] = self.captured_outputs
+
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
