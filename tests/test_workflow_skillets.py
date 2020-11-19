@@ -1,4 +1,4 @@
-# This test will use skilletLoader to load a skillet that includes snippets and variables from other skillets
+# This test will use skilletLoader to load a workflow skillet
 
 from skilletlib import SkilletLoader
 from skilletlib.skillet.base import Skillet
@@ -13,53 +13,48 @@ with open('example_config/config.xml', 'r') as config:
     context['config'] = config.read()
 
 
-def test_get_skillet_by_name():
+def test_load_skillet():
     """
-    Test to verify skilletLoader can successfully load all skillets found in the 'skillet_incluedes'
-    directory and return the one with the 'include_other_skillets' name
+    Test to verify skilletLoader can successfully load all skillets found in the 'workflow_example'
+    directory and return the one with the 'example_workflow_with_filtering' name
 
     :return: None
     """
-    skillet_path = '../example_skillets/skillet_includes/'
+    skillet_path = '../example_skillets/workflow_example/'
     skillet_loader = SkilletLoader(path=skillet_path)
-    skillet = skillet_loader.get_skillet_with_name('include_other_skillets')
+    skillet = skillet_loader.get_skillet_with_name('example_workflow_with_filtering')
     assert skillet is not None
 
 
-def test_skillet_includes():
+def test_workflow_skillet():
     """
-    Tests to verify the Skillet object is successfully compiled from all included skillets.
-    The 'include_other_skillets' skillet includes snippets and variables from two other skillets
-    in the same directory
+
+    Load and execute the workflow skillet and ensure all child skillets are executed properly
 
     :return: None
     """
-    skillet_path = '../example_skillets/skillet_includes/'
+    skillet_path = '../example_skillets/workflow_example/'
     skillet_loader = SkilletLoader(path=skillet_path)
-    skillet: Skillet = skillet_loader.get_skillet_with_name('include_other_skillets')
+    skillet: Skillet = skillet_loader.get_skillet_with_name('example_workflow_with_filtering')
     # verify we can find and load the correct skillet
-    assert skillet.name == 'include_other_skillets'
+    assert skillet.name == 'example_workflow_with_filtering'
 
-    # verify the correct number of snippets. 4 of which are included from other skillets
-    assert len(skillet.snippets) == 6
+    out = skillet.execute(context)
+    assert 'pan_validation' in out
 
-    included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
+    assert 'outputs' in out
 
-    # verify we can get an included snippet from the skillet object
-    assert included_snippet is not None
+    assert 'snippets' in out
 
-    # verify the 'label' metadata attribute has been overridden correctly
-    assert included_snippet.metadata.get('label', '') == 'Check Network Profiles Override'
+    # ensure the correct number of tests are included and executed and reported in the output
+    assert len(out['pan_validation']) == 6
 
-    included_variable: dict = skillet.get_variable_by_name('some_update_variable')
+    # ensure all three snippets were found and executed
+    assert len(skillet.snippet_outputs) == 3
 
-    # verify the included variable is present in the compiled skillet
-    assert included_variable is not None
 
-    # verify the default value is correctly set from the included variable
-    assert included_variable.get('default', '') == 'test123456'
 
 
 if __name__ == '__main__':
-    test_get_skillet_by_name()
-    test_skillet_includes()
+    test_load_skillet()
+    test_workflow_skillet()
