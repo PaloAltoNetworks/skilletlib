@@ -672,8 +672,15 @@ class SkilletLoader:
                     found_include = True
 
             if not found_include:
-                self.skillets.append(self.create_skillet(skillet_dict))
-                processed_skillets.append(skillet_dict['name'])
+                try:
+                    self.skillets.append(self.create_skillet(skillet_dict))
+                    processed_skillets.append(skillet_dict['name'])
+
+                except SkilletLoaderException as sle:
+                    err_dict = dict()
+                    err_dict['path'] = skillet_dict.get('name', '')
+                    err_dict['error'] = str(sle)
+                    self.skillet_errors.append(err_dict)
 
         # now resolve deps for those that do inclusions
         for skillet_dict in skillet_definitions:
