@@ -35,6 +35,7 @@ snippets:
 
   - name: Include another skillet
     include: update_schedule
+    # by default, no variables will be included here
 
   - name: Include some other stuff
     include: network_profiles
@@ -42,4 +43,4 @@ snippets:
       - name: parse_network_profiles
       - name: check_network_profiles
         label: Check Network Profiles Override
-
+    include_variables: all

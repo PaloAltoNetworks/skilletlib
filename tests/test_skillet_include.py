@@ -1,6 +1,9 @@
 # This test will use skilletLoader to load a skillet that includes snippets and variables from other skillets
 
+import pytest
+
 from skilletlib import SkilletLoader
+from skilletlib.exceptions import VariableNotFoundException
 from skilletlib.skillet.base import Skillet
 from skilletlib.snippet.base import Snippet
 from skilletlib.utils.testing_utils import setup_dir
@@ -51,13 +54,19 @@ def test_skillet_includes():
     # verify the 'label' metadata attribute has been overridden correctly
     assert included_snippet.metadata.get('label', '') == 'Check Network Profiles Override'
 
-    included_variable: dict = skillet.get_variable_by_name('some_update_variable')
+    included_variable: dict = skillet.get_variable_by_name('another_variable')
 
     # verify the included variable is present in the compiled skillet
     assert included_variable is not None
 
-    # verify the default value is correctly set from the included variable
+    # verify the default value is correctly overridden from the included variable
     assert included_variable.get('default', '') == 'test123456'
+
+    # verify a variable was not included
+    # the include_variables: [] causes no variables to be included so 'some_update_variable' should not be
+    # found!
+    with pytest.raises(VariableNotFoundException):
+        skillet.get_variable_by_name('some_update_variable')
 
 
 if __name__ == '__main__':

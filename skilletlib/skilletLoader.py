@@ -343,41 +343,40 @@ class SkilletLoader:
                     include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
                     snippets.append(include_meta)
 
-            if 'include_variables' not in snippet:
-                # include all variables by default unless an include_variables option is present to specify exactly
-                # which variables to include
-                for v in include_skillet.variables:
-                    found_variable = False
-                    for tv in skillet['variables']:
-                        if tv['name'] == v['name']:
-                            # do not add variable if one with the same name already exists
-                            found_variable = True
+            if 'include_variables' in snippet:
+                if isinstance(snippet['include_variables'], str) and snippet['include_variables'] == 'all':
+                    for v in include_skillet.variables:
+                        found_variable = False
+                        for tv in skillet['variables']:
+                            if tv['name'] == v['name']:
+                                # do not add variable if one with the same name already exists
+                                found_variable = True
 
-                    if not found_variable:
-                        # this variable does not exist in the skillet_dict variables, so add it here
-                        variables.append(v)
+                        if not found_variable:
+                            # this variable does not exist in the skillet_dict variables, so add it here
+                            variables.append(v)
+                elif isinstance(snippet['include_variables'], list):
+                    for v in snippet['include_variables']:
+                        # we need to include only the variables listed here and possibly update them with any
+                        # new / modified attributes
+                        included_variable = include_skillet.get_variable_by_name(v['name'])
+                        # update this variable definition accordingly if necessary
+                        included_variable.update(v)
 
-            else:
-                for v in snippet['include_variables']:
-                    # we need to include only the variables listed here and possibly update them with any
-                    # new / modified attributes
-                    included_variable = include_skillet.get_variable_by_name(v['name'])
-                    # update this variable definition accordingly if necessary
-                    included_variable.update(v)
+                        # now check to see if this skillet has this variable already defined
+                        found_variable = False
+                        for ev in variables:
+                            if ev['name'] == v['name']:
+                                found_variable = True
+                                # it is nonsensical to update the variable definition here from the included skillet
+                                # just use what is defined locally, otherwise the builder should not have defined it
+                                # here!
+                                logger.info('not updating existing variable definition from '
+                                            'the resolved skillet definition')
 
-                    # now check to see if this skillet has this variable already defined
-                    found_variable = False
-                    for ev in variables:
-                        if ev['name'] == v['name']:
-                            found_variable = True
-                            # it is nonsensical to update the variable definition here from the included skillet
-                            # just use what is defined locally, otherwise the builder should not have defined it here!
-                            logger.info('not updating existing variable definition from '
-                                        'the resolved skillet definition')
-
-                    if not found_variable:
-                        # this included variable was not defined locally, so go ahead and append the updated version
-                        variables.append(included_variable)
+                        if not found_variable:
+                            # this included variable was not defined locally, so go ahead and append the updated version
+                            variables.append(included_variable)
 
         skillet['snippets'] = snippets
         skillet['variables'] = variables
@@ -539,23 +538,29 @@ class SkilletLoader:
 
                 if 'include_variables' in snippet:
                     include_variables_def = snippet['include_variables']
-                    if not isinstance(include_variables_def, list):
+                    if isinstance(include_variables_def, str):
+                        if not include_variables_def == 'all':
+                            skillet['snippets'].remove(snippet)
+                            logger.error('Removing invalid snippet definition: include_variables must be all or list')
+                            continue
+
+                    elif isinstance(include_variables_def, list):
+                        for ivd in include_variables_def:
+                            if not isinstance(ivd, dict):
+                                include_variables_def.remove(ivd)
+                                logger.error('Removing invalid include_variables definition: '
+                                             'include_variables item is not a dict')
+                                continue
+
+                            if 'name' not in ivd:
+                                include_variables_def.remove(ivd)
+                                logger.error('Removing invalid include_variables definition: '
+                                             'include_variables item requires a name')
+                                continue
+                    else:
                         skillet['snippets'].remove(snippet)
-                        logger.error('Removing invalid snippet definition: include_variables is not a list')
+                        logger.error('Removing invalid snippet definition: include_variables is not a list or all')
                         continue
-
-                    for ivd in include_variables_def:
-                        if not isinstance(ivd, dict):
-                            include_variables_def.remove(ivd)
-                            logger.error('Removing invalid include_variables definition: '
-                                         'include_variables item is not a dict')
-                            continue
-
-                        if 'name' not in ivd:
-                            include_variables_def.remove(ivd)
-                            logger.error('Removing invalid include_variables definition: '
-                                         'include_variables item requires a name')
-                            continue
 
             else:
 
