@@ -25,9 +25,11 @@ snippets:
       - update_schedule_configured
       - ensure_wildfire_check_1_min
   - name: edl_checks
-    # includes can be mixed and matched
+    # includes can be mixed and matched. include / exclude can be a list or a single item
     include_name: edl_captures
+    # include by regex matches snippet names that match the regular expression. All others will be excluded
     include_by_regex: check_.*
   - name: device_system_checks
+    # include by tag uses the 'tags' or 'tag' attribute and includes all snippets marked with that tag value
     include_by_tag:
       - device_system

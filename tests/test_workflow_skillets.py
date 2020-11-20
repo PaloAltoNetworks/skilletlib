@@ -2,7 +2,6 @@
 
 from skilletlib import SkilletLoader
 from skilletlib.skillet.base import Skillet
-from skilletlib.snippet.base import Snippet
 from skilletlib.utils.testing_utils import setup_dir
 
 setup_dir()
@@ -51,8 +50,6 @@ def test_workflow_skillet():
 
     # ensure all three snippets were found and executed
     assert len(skillet.snippet_outputs) == 3
-
-
 
 
 if __name__ == '__main__':

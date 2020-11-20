@@ -1,5 +1,4 @@
 from skilletlib import Panoply
-from skilletlib import SkilletLoader
 from skilletlib.utils.testing_utils import setup_dir
 
 setup_dir()
@@ -42,7 +41,6 @@ def test_generate_skillet():
 
 
 def test_set_cli_generator():
-
     p = Panoply()
 
     with open('example_config/before_config.xml', 'r') as config:
@@ -66,4 +64,3 @@ def test_set_cli_generator():
 if __name__ == '__main__':
     test_generate_skillet()
     test_set_cli_generator()
-
