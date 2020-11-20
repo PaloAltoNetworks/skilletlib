@@ -20,6 +20,13 @@ Skilletlib is a library for working with Skillets. Skillets are a collection of 
 metadata about how those templates should be rendered and applied. Skillets were created to help manage complex
 shareable configuration sets for PAN-OS devices.
 
+Building Skillets
+-----------------
+
+This documentation is intended document the internals the Skilletlib python library. For more information about building
+and using Configuration and Validation Skillets, refer to the
+`Skillet Builder <https://skilletbuilder.readthedocs.io/en/latest/>`_ documentation.
+
 Disclaimer
 ----------
 
