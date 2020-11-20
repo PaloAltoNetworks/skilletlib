@@ -55,7 +55,11 @@ def test_capture_value():
 
 def test_capture_object():
     skillet_path = '../example_skillets/capture_object/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+
+    # ensure validation skillets also include captured values in the output under the 'outputs' key
+    assert 'outputs' in out
+    assert 'system_object' in out['outputs']
 
 
 def test_capture_list_filter():
