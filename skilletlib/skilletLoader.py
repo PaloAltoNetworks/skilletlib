@@ -95,7 +95,7 @@ class SkilletLoader:
         skillet_dict = self._parse_skillet(skillet_path)
         self.__resolve_submodule_skillets(Path(skillet_path))
         compile_skillet_dict = self.compile_skillet_dict(skillet_dict)
-        return self.create_skillet(skillet_dict)
+        return self.create_skillet(compile_skillet_dict)
 
     def create_skillet(self, skillet_dict: dict) -> Skillet:
         """
