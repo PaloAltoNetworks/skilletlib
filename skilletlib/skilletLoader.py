@@ -227,17 +227,34 @@ class SkilletLoader:
         :return: None
         """
 
-        git_dir = path.joinpath('.git')
-        if not git_dir.exists():
+        git_root = None
+
+        if path.is_file():
+            path = path.parent
+
+        all_parents = [path]
+        all_parents.extend(path.parents)
+
+        for p in all_parents:
+            git_dir = p.joinpath('.git')
+            if git_dir.exists():
+                git_root = p
+                break
+
+        if not git_root:
             return
+
+        is_subdir = True
+        if git_root == path:
+            is_subdir = False
 
         # create out git repo management object
         g = Git(repo_url=None)
 
         # get a list of all the submodule directories
-        sm_dirs = g.get_submodule_dirs(path.absolute())
+        sm_dirs = g.get_submodule_dirs(git_root.absolute())
         for sm in sm_dirs:
-            sm_path = path.joinpath(sm)
+            sm_path = git_root.joinpath(sm)
             if not sm_path.exists():
                 continue
 
@@ -249,7 +266,7 @@ class SkilletLoader:
                     # add found skillets to the resolved skillets list
                     self.resolved_skillets.append(self.create_skillet(skillet_dict))
 
-            if sm not in self.skip_dirs:
+            if is_subdir and sm not in self.skip_dirs:
                 # now ensure our subsequent runs for check_dir skip this dir and NOT add these skillets to the
                 # skillets list
                 self.skip_dirs.append(sm)
