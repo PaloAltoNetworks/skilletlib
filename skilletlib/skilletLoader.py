@@ -93,7 +93,10 @@ class SkilletLoader:
         :return: Skillet object of the correct type
         """
         skillet_dict = self._parse_skillet(skillet_path)
-        self.__resolve_submodule_skillets(Path(skillet_path))
+
+        if self.__skillet_has_includes(skillet_dict):
+            self.__resolve_submodule_skillets(Path(skillet_path))
+
         compile_skillet_dict = self.compile_skillet_dict(skillet_dict)
         return self.create_skillet(compile_skillet_dict)
 
@@ -268,9 +271,10 @@ class SkilletLoader:
                     # add found skillets to the resolved skillets list
                     self.resolved_skillets.append(self.create_skillet(skillet_dict))
 
-            if is_subdir and sm not in self.skip_dirs:
+            if not is_subdir and sm not in self.skip_dirs:
                 # now ensure our subsequent runs for check_dir skip this dir and NOT add these skillets to the
-                # skillets list
+                # skillets list, note only do this if submodules exist at this directory level. Do not do this if
+                # they were found in a parent
                 self.skip_dirs.append(sm)
 
     def __resolve_git_dependencies(self, skillet: dict) -> None:
