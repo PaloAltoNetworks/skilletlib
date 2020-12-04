@@ -617,6 +617,11 @@ class Panoply:
             facts['dns-primary'] = '1.1.1.1'
             facts['dns-secondary'] = '1.0.0.1'
 
+        try:
+            facts['panorama-server'] = results['system']['panorama']['local-panorama']['panorama-server']
+        except KeyError:
+            facts['panorama-server'] = None
+
         return facts
 
     def load_baseline(self) -> bool:
@@ -1065,7 +1070,10 @@ class Panoply:
             cmd = 'show config candidate'
 
         else:
-            cmd = 'show config running'
+            if self.facts.get('panorama-server', None) is not None:
+                cmd = 'show config merged'
+            else:
+                cmd = 'show config running'
 
         try:
 
