@@ -167,8 +167,6 @@ class SkilletLoader:
         else:
             raise SkilletLoaderException('Invalid path type found in _parse_skillet!')
 
-        meta_cnc_file = None
-
         if 'meta-cnc' in path_str or 'skillet.y' in path_str:
             meta_cnc_file = path_obj
 
@@ -179,22 +177,18 @@ class SkilletLoader:
             # we were only passed a directory like '.' or something, try to find a skillet.yaml or .meta-cnc.yml
             directory = path_obj
             logger.debug(f'using directory {directory}')
-            found_meta = False
 
             found_files = list()
             found_files.extend(directory.glob('.meta-cnc.y*'))
             found_files.extend(directory.glob('*skillet.y*'))
 
-            for filename in found_files:
-                meta_cnc_file = directory.joinpath(filename)
-                logger.debug(f'checking now {meta_cnc_file}')
-
-                if meta_cnc_file.exists():
-                    found_meta = True
-                    break
-
-            if not found_meta:
+            if not found_files:
                 raise SkilletNotFoundException('Could not find skillet definition file at this location')
+
+            if len(found_files) > 1:
+                logger.warning('Found more than 1 skillet file at this location! Using first file found!')
+
+            meta_cnc_file = found_files[0]
 
         if meta_cnc_file is None:
             raise SkilletNotFoundException('Could not find skillet definition file at this location')
