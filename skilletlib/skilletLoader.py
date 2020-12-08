@@ -358,6 +358,8 @@ class SkilletLoader:
                     include_meta.update(include_snippet)
 
                     include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
+                    if 'when' in snippet:
+                        include_meta['when'] = snippet['when']
                     snippets.append(include_meta)
 
             if 'include_variables' in snippet:
