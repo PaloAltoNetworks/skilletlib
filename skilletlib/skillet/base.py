@@ -294,6 +294,7 @@ class Skillet(ABC):
                         context['loop'] = item
                         context['loop_index'] = index
 
+                        # fix for #136
                         snippet.render_metadata(context)
                         # check the 'when' conditional against variables currently held in the context
 
