@@ -294,11 +294,12 @@ class Skillet(ABC):
                         context['loop'] = item
                         context['loop_index'] = index
 
-                        # fix for #136
-                        snippet.render_metadata(context)
                         # check the 'when' conditional against variables currently held in the context
-
                         if snippet.should_execute(context):
+
+                            # fix for #136
+                            snippet.render_metadata(context)
+
                             (output, status) = snippet.execute(context)
                             logger.debug(f'{snippet.name} - status: {status}')
 
@@ -345,7 +346,7 @@ class Skillet(ABC):
                     self.snippet_outputs.update(snippet_outputs)
 
                 except Exception as e:
-                    logger.error(f'Exception caught: {e}')
+                    logger.error(f'Exception caught in snippet: {snippet.name}: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
                     self.snippet_outputs.update(snippet_outputs)
 
