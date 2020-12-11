@@ -22,6 +22,7 @@ from typing import Any
 from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
+import jmespath
 
 from xmldiff import main as xmldiff_main
 
@@ -132,6 +133,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
             self._env.filters['items_present'] = self.__verify_in_list
+            self._env.filters['json_query'] = self.__json_query
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -538,6 +540,18 @@ class PanosSnippet(TemplateSnippet):
                 return False
 
         return True
+    
+    def __json_query(self, obj: dict, query: str) -> Any:
+        """
+        JMESPath query, jmespath.org for examples
+
+        :param query: JMESPath query string
+        :param obj: object to be queried
+        """
+        if not isinstance(query, str):
+            raise SkilletLoaderException('json_query requires an argument of type str')
+        path = jmespath.search(query, obj)
+        return path
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
