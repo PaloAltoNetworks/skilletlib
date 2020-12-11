@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="skilletlib",
-    version="0.6.2",
+    version="0.6.3",
     author="Nathan Embery",
     author_email="nembery@paloaltonetworks.com",
     description="Tools for working with PAN-OS Skillets in Python 3",
@@ -30,7 +30,8 @@ setuptools.setup(
         "jsonpath_ng",
         "passlib",
         "GitPython",
-        "jinja2-ansible-filters"
+        "jinja2-ansible-filters",
+        "jmespath"
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
