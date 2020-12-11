@@ -539,15 +539,17 @@ class PanosSnippet(TemplateSnippet):
 
         return True
     
-    #TODO: test list and dict outputs, update type hinting
-    def __json_query(self, obj: dict, query: str):
+    def __json_query(self, obj: dict, query: str) -> Any:
         """
+        JMESPath query, jmespath.org for examples
+
         :param query: JMESPath query string
         :param obj: object to be queried
         """
         if not isinstance(query, str):
             raise SkilletLoaderException('json_query requires an argument of type str')
-        return jmespath.search(query, obj)
+        path = jmespath.search(query, obj)
+        return path
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
