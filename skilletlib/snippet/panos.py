@@ -145,6 +145,8 @@ class PanosSnippet(TemplateSnippet):
         """
         metadata = super().sanitize_metadata(metadata)
 
+        name = metadata.get('name', 'n/a')
+
         err = f'Unknown cmd {self.cmd}'
         if self.cmd in ('set', 'edit', 'override'):
             if {'xpath', 'element'}.issubset(metadata):
@@ -194,7 +196,7 @@ class PanosSnippet(TemplateSnippet):
                 metadata['output_type'] = 'manual'
             return metadata
 
-        raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
+        raise SkilletLoaderException(f'Invalid metadata configuration for snippet {name}: {err}')
 
     def render_metadata(self, context: dict) -> dict:
         """
