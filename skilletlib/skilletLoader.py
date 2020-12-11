@@ -337,7 +337,21 @@ class SkilletLoader:
             if include_skillet is None:
                 raise SkilletLoaderException(f'Could not find included Skillet with name: {snippet["include"]}')
 
-            if 'include_snippets' not in snippet:
+            if 'include_snippets' not in snippet and 'include_variables' not in snippet:
+                # include all snippets by default
+                snippets.extend(include_skillet.snippet_stack)
+                for v in include_skillet.variables:
+                    found_variable = False
+                    for tv in skillet['variables']:
+                        if tv['name'] == v['name']:
+                            # do not add variable if one with the same name already exists
+                            found_variable = True
+
+                    if not found_variable:
+                        # this variable does not exist in the skillet_dict variables, so add it here
+                        variables.append(v)
+
+            elif 'include_snippets' not in snippet:
                 # include all snippets by default
                 snippets.extend(include_skillet.snippet_stack)
 

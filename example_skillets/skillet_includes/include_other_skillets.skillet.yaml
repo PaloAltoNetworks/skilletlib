@@ -35,7 +35,7 @@ snippets:
 
   - name: Include another skillet
     include: update_schedule
-    # by default, no variables will be included here
+    # by default, all variables and all snippets will be included
 
   - name: Include some other stuff
     include: network_profiles

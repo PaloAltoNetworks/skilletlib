@@ -62,11 +62,8 @@ def test_skillet_includes():
     # verify the default value is correctly overridden from the included variable
     assert included_variable.get('default', '') == 'test123456'
 
-    # verify a variable was not included
-    # the include_variables: [] causes no variables to be included so 'some_update_variable' should not be
-    # found!
-    with pytest.raises(VariableNotFoundException):
-        skillet.get_variable_by_name('some_update_variable')
+    second_included_variable: dict = skillet.get_variable_by_name('some_update_variable')
+    assert second_included_variable is not None
 
 
 if __name__ == '__main__':
