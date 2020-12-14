@@ -544,27 +544,29 @@ class SkilletLoader:
 
                 if not isinstance(include_def, str):
                     skillet['snippets'].remove(snippet)
-                    logger.error('Removing invalid snippet definition: include is not a str')
+                    logger.error(f'{skillet["name"]}: '
+                                 'Removing invalid snippet definition: include is not a str')
                     continue
 
                 if 'include_snippets' in snippet:
                     include_snippets_def = snippet['include_snippets']
                     if not isinstance(include_snippets_def, list):
                         skillet['snippets'].remove(snippet)
-                        logger.error('Removing invalid snippet definition: include_snippets is not a list')
+                        logger.error(f'{skillet["name"]}: Removing invalid snippet definition: include_snippets '
+                                     'is not a list')
                         continue
 
                     for isd in include_snippets_def:
                         if not isinstance(isd, dict):
                             include_snippets_def.remove(isd)
-                            logger.error('Removing invalid include_snippets definition: '
+                            logger.error(f'{skillet["name"]}: Removing invalid include_snippets definition: '
                                          'include_snippets item is not a dict')
                             continue
 
                         if 'name' not in isd:
                             include_snippets_def.remove(isd)
-                            logger.error('Removing invalid include_snippets definition: include_snippets item '
-                                         'requires a name attribute')
+                            logger.error(f'{skillet["name"]}: Removing invalid include_snippets definition: '
+                                         'include_snippets item requires a name attribute')
                             continue
 
                 if 'include_variables' in snippet:
@@ -572,37 +574,41 @@ class SkilletLoader:
                     if isinstance(include_variables_def, str):
                         if not include_variables_def == 'all':
                             skillet['snippets'].remove(snippet)
-                            logger.error('Removing invalid snippet definition: include_variables must be all or list')
+                            logger.error(f'{skillet["name"]}: Removing invalid snippet definition: '
+                                         'include_variables must be all or list')
                             continue
 
                     elif isinstance(include_variables_def, list):
                         for ivd in include_variables_def:
                             if not isinstance(ivd, dict):
                                 include_variables_def.remove(ivd)
-                                logger.error('Removing invalid include_variables definition: '
+                                logger.error(f'{skillet["name"]}: Removing invalid include_variables definition: '
                                              'include_variables item is not a dict')
                                 continue
 
                             if 'name' not in ivd:
                                 include_variables_def.remove(ivd)
-                                logger.error('Removing invalid include_variables definition: '
+                                logger.error(f'{skillet["name"]}: Removing invalid include_variables definition: '
                                              'include_variables item requires a name')
                                 continue
                     else:
                         skillet['snippets'].remove(snippet)
-                        logger.error('Removing invalid snippet definition: include_variables is not a list or all')
+                        logger.error(f'{skillet["name"]}: '
+                                     'Removing invalid snippet definition: include_variables is not a list or all')
                         continue
 
             else:
 
                 if 'include_snippets' in snippet:
                     skillet['snippets'].remove(snippet)
-                    logger.error('Removing invalid snippet definition: include_snippets requires an include attribute')
+                    logger.error(f'{skillet["name"]}: '
+                                 f'Removing invalid snippet definition: include_snippets requires an include attribute')
                     continue
 
                 if 'include_variables' in snippet:
                     skillet['snippets'].remove(snippet)
-                    logger.error('Removing invalid snippet definition: include_variables requires an include attribute')
+                    logger.error(f'{skillet["name"]}: '
+                                 'Removing invalid snippet definition: include_variables requires an include attribute')
                     continue
 
         return skillet
@@ -792,7 +798,9 @@ class SkilletLoader:
 
             found_pattern = False
             for pattern in self.skip_dirs:
-                if pattern in d.name:
+                # check if skip_dirs pattern == this directory name or if the pattern is a subdir type
+                # like submodules/panos-config-elements, catch that here as well
+                if pattern in d.name or str(d.absolute()).endswith(pattern):
                     found_pattern = True
                     break
 
