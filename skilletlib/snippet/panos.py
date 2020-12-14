@@ -23,6 +23,7 @@ from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
 import jmespath
+import ipaddress
 
 from xmldiff import main as xmldiff_main
 
@@ -134,6 +135,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
             self._env.filters['items_present'] = self.__verify_in_list
             self._env.filters['json_query'] = self.__json_query
+            self._env.filters['permitted_address'] = self.__permitted_address
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -552,6 +554,19 @@ class PanosSnippet(TemplateSnippet):
             raise SkilletLoaderException('json_query requires an argument of type str')
         path = jmespath.search(query, obj)
         return path
+
+    def __permitted_address(self, obj: dict, permitted: list) -> bool:
+        """
+        Check if a NGFW formatted adderss object is in a ilst of permissible ranges
+
+        :param obj: NGFW formatted address entry as a dict
+        :param permitted: List of permissible address objects in CIDR format
+        """
+        test_network = ipaddress.ip_network(obj['entry']['ip-netmask'])
+        for network in permitted:
+            if test_network.subnet_of(ipaddress.ip_network(network)):
+                return True
+        return False
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
