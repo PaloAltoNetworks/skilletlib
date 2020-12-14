@@ -136,6 +136,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['items_present'] = self.__verify_in_list
             self._env.filters['json_query'] = self.__json_query
             self._env.filters['permitted_address'] = self.__permitted_address
+            self._env.filters['listify'] = self.__listify
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -567,6 +568,22 @@ class PanosSnippet(TemplateSnippet):
             if test_network.subnet_of(ipaddress.ip_network(network)):
                 return True
         return False
+
+    def __listify(self, obj: Any) -> list:
+        """
+        Attempt to convert a string input into a list
+
+        :param obj: raw input text
+        """
+        if isinstance(obj, list):
+            return obj
+        if isinstance(obj, str):
+            if '\n' in obj:
+                return [x.strip() for x in obj.split('\n') if x]
+            elif ',' in obj:
+                return [x.strip() for x in obj.split(',') if x]
+            return [obj.strip()]
+        raise SkilletLoaderException('listify filter requires input of type str.')
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
