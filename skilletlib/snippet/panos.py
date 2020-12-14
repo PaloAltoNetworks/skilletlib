@@ -540,8 +540,9 @@ class PanosSnippet(TemplateSnippet):
                 return False
 
         return True
-    
-    def __json_query(self, obj: dict, query: str) -> Any:
+
+    @staticmethod
+    def __json_query(obj: dict, query: str) -> Any:
         """
         JMESPath query, jmespath.org for examples
 
