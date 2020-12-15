@@ -134,6 +134,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
             self._env.filters['items_present'] = self.__verify_in_list
+            self._env.filters['item_present'] = self.__verify_item_in_list
             self._env.filters['json_query'] = self.__json_query
             self._env.filters['permitted_address'] = self.__permitted_address
             self._env.filters['listify'] = self.__listify
@@ -506,7 +507,7 @@ class PanosSnippet(TemplateSnippet):
 
         return obj
 
-    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.'):
+    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.') -> bool:
         """
         Iterate all items from the list. Verify they are present in at least one item
         from the second list. In the case where list2 is a list of objects / dictionaries
@@ -543,6 +544,21 @@ class PanosSnippet(TemplateSnippet):
                 return False
 
         return True
+
+    def __verify_item_in_list(self, obj: Any, list2: (list, dict)) -> bool:
+        """
+        Similar to __verify_items_in_list, except checks if a string, or list member
+        is present in list2
+
+        :param obj: obj to test if in list2
+        :param list2: list to test if obj is a member of
+        """
+        if isinstance(obj, list):
+            for o in obj:
+                if o in list2:
+                    return True
+            return False
+        return obj in list2
     
     def __json_query(self, obj: dict, query: str) -> Any:
         """
