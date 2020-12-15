@@ -47,6 +47,8 @@ class PanosSnippet(TemplateSnippet):
     # keep the xml results between output capture
     xml_results = ''
 
+    xml_force_list_keys = ['member', 'entry']
+
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
 
