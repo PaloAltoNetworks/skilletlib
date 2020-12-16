@@ -63,6 +63,9 @@ class Snippet(ABC):
     # short-cut on each
     output_type = 'xml'
 
+    # snippet classes can set a list of keys that xmltodict will convert to lists in __handler_xml_outputs
+    xml_force_list_keys = None
+
     def __init__(self, metadata: dict):
 
         # first validate all the required fields are present in the metadata (snippet definition)
@@ -822,11 +825,27 @@ class Snippet(ABC):
                 if len(entries) == 0:
                     captured_output[var_name] = None
                 elif len(entries) == 1:
-                    captured_output[var_name] = xmltodict.parse(elementTree.tostring(entries.pop()))
+                    entry = entries.pop()
+                    tag = entry.tag
+                    parsed_result = xmltodict.parse(elementTree.tostring(entry),
+                                                    force_list=self.xml_force_list_keys)
+
+                    # force_lists always returns a list even though in this case, we really only want a single item
+                    # due to an exact xpath match. However, we might still want force_list to apply further down in the
+                    # the document.
+                    if tag in parsed_result and \
+                            isinstance(parsed_result[tag], list) and \
+                            len(parsed_result[tag]) == 1:
+                        # unwind unnecessary list at the top level here
+                        captured_output[var_name] = {tag: parsed_result[tag][0]}
+                    else:
+                        captured_output[var_name] = parsed_result
+
                 else:
                     capture_list = list()
                     for entry in entries:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
+                        capture_list.append(xmltodict.parse(elementTree.tostring(entry),
+                                                            force_list=self.xml_force_list_keys))
 
                     captured_output[var_name] = self.__filter_outputs(output, capture_list, self.context)
 
@@ -839,7 +858,8 @@ class Snippet(ABC):
                     if isinstance(entry, str):
                         capture_list.append(entry)
                     else:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
+                        capture_list.append(xmltodict.parse(elementTree.tostring(entry),
+                                                            force_list=self.xml_force_list_keys))
 
                 captured_output[var_name] = capture_list
 

@@ -48,6 +48,8 @@ class PanosSnippet(TemplateSnippet):
     # keep the xml results between output capture
     xml_results = ''
 
+    xml_force_list_keys = ['member', 'entry']
+
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
 
@@ -561,7 +563,8 @@ class PanosSnippet(TemplateSnippet):
             return False
         return obj in list2
     
-    def __json_query(self, obj: dict, query: str) -> Any:
+    @staticmethod
+    def __json_query(obj: dict, query: str) -> Any:
         """
         JMESPath query, jmespath.org for examples
 
