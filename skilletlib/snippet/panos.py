@@ -23,6 +23,7 @@ from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
 import jmespath
+import ipaddress
 
 from xmldiff import main as xmldiff_main
 
@@ -135,7 +136,11 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
             self._env.filters['items_present'] = self.__verify_in_list
+            self._env.filters['item_present'] = self.__verify_item_in_list
             self._env.filters['json_query'] = self.__json_query
+            self._env.filters['permitted_address'] = self.__permitted_address
+            self._env.filters['listify'] = self.__listify
+            self._env.filters['difference'] = self.__difference
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -505,7 +510,7 @@ class PanosSnippet(TemplateSnippet):
 
         return obj
 
-    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.'):
+    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.') -> bool:
         """
         Iterate all items from the list. Verify they are present in at least one item
         from the second list. In the case where list2 is a list of objects / dictionaries
@@ -543,6 +548,21 @@ class PanosSnippet(TemplateSnippet):
 
         return True
 
+    def __verify_item_in_list(self, obj: Any, list2: (list, dict)) -> bool:
+        """
+        Similar to __verify_items_in_list, except checks if a string, or list member
+        is present in list2
+
+        :param obj: obj to test if in list2
+        :param list2: list to test if obj is a member of
+        """
+        if isinstance(obj, list):
+            for o in obj:
+                if o in list2:
+                    return True
+            return False
+        return obj in list2
+    
     @staticmethod
     def __json_query(obj: dict, query: str) -> Any:
         """
@@ -555,6 +575,45 @@ class PanosSnippet(TemplateSnippet):
             raise SkilletLoaderException('json_query requires an argument of type str')
         path = jmespath.search(query, obj)
         return path
+
+    def __permitted_address(self, obj: dict, permitted: list) -> bool:
+        """
+        Check if a NGFW formatted adderss object is in a ilst of permissible ranges
+
+        :param obj: NGFW formatted address entry as a dict
+        :param permitted: List of permissible address objects in CIDR format
+        """
+        test_network = ipaddress.ip_network(obj['entry']['ip-netmask'])
+        for network in permitted:
+            if test_network.subnet_of(ipaddress.ip_network(network)):
+                return True
+        return False
+    
+    def __difference(self, list1: list, list2:list) -> list:
+        """
+        Returns a list of items from list1 that do not exist in list2
+        :param list1: list of items expected to be in list2
+        :param list2: list of items list1 will be evaluated against
+        """
+        if not isinstance(list1, list) or not isinstance(list2, list):
+            raise SkilletLoaderException('difference filter takes only type list for both arguments.')
+        return list(set([x for x in list1 if x not in list2]))
+
+    def __listify(self, obj: Any) -> list:
+        """
+        Attempt to convert a string input into a list
+
+        :param obj: raw input text
+        """
+        if isinstance(obj, list):
+            return obj
+        if isinstance(obj, str):
+            if '\n' in obj:
+                return [x.strip() for x in obj.split('\n') if x]
+            elif ',' in obj:
+                return [x.strip() for x in obj.split(',') if x]
+            return [obj.strip()]
+        raise SkilletLoaderException('listify filter requires input of type str.')
 
     def get_default_output(self, results: str, status: str) -> dict:
         """
