@@ -138,7 +138,7 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['json_query'] = self.__json_query
             self._env.filters['permitted_address'] = self.__permitted_address
             self._env.filters['listify'] = self.__listify
-            self._env.filters['missing_items'] = self.__missing_items
+            self._env.filters['difference'] = self.__difference
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -586,14 +586,14 @@ class PanosSnippet(TemplateSnippet):
                 return True
         return False
     
-    def __missing_items(self, list1: list, list2:list) -> list:
+    def __difference(self, list1: list, list2:list) -> list:
         """
         Returns a list of items from list1 that do not exist in list2
         :param list1: list of items expected to be in list2
         :param list2: list of items list1 will be evaluated against
         """
         if not isinstance(list1, list) or not isinstance(list2, list):
-            raise SkilletLoaderException('missing_items filter takes only type list for both arguments.')
+            raise SkilletLoaderException('difference filter takes only type list for both arguments.')
         return list(set([x for x in list1 if x not in list2]))
 
     def __listify(self, obj: Any) -> list:
