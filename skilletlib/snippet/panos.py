@@ -548,7 +548,8 @@ class PanosSnippet(TemplateSnippet):
 
         return True
 
-    def __verify_item_in_list(self, obj: Any, list2: (list, dict)) -> bool:
+    @staticmethod
+    def __verify_item_in_list(obj: Any, list2: (list, dict)) -> bool:
         """
         Similar to __verify_items_in_list, except checks if a string, or list member
         is present in list2
@@ -562,7 +563,7 @@ class PanosSnippet(TemplateSnippet):
                     return True
             return False
         return obj in list2
-    
+
     @staticmethod
     def __json_query(obj: dict, query: str) -> Any:
         """
@@ -576,9 +577,10 @@ class PanosSnippet(TemplateSnippet):
         path = jmespath.search(query, obj)
         return path
 
-    def __permitted_address(self, obj: dict, permitted: list) -> bool:
+    @staticmethod
+    def __permitted_address(obj: dict, permitted: list) -> bool:
         """
-        Check if a NGFW formatted adderss object is in a ilst of permissible ranges
+        Check if a NGFW formatted address object is in a list of permissible ranges
 
         :param obj: NGFW formatted address entry as a dict
         :param permitted: List of permissible address objects in CIDR format
@@ -587,9 +589,11 @@ class PanosSnippet(TemplateSnippet):
         for network in permitted:
             if test_network.subnet_of(ipaddress.ip_network(network)):
                 return True
+
         return False
-    
-    def __difference(self, list1: list, list2:list) -> list:
+
+    @staticmethod
+    def __difference(list1: list, list2: list) -> list:
         """
         Returns a list of items from list1 that do not exist in list2
         :param list1: list of items expected to be in list2
@@ -597,9 +601,11 @@ class PanosSnippet(TemplateSnippet):
         """
         if not isinstance(list1, list) or not isinstance(list2, list):
             raise SkilletLoaderException('difference filter takes only type list for both arguments.')
+
         return list(set([x for x in list1 if x not in list2]))
 
-    def __listify(self, obj: Any) -> list:
+    @staticmethod
+    def __listify(obj: Any) -> list:
         """
         Attempt to convert a string input into a list
 
@@ -607,12 +613,14 @@ class PanosSnippet(TemplateSnippet):
         """
         if isinstance(obj, list):
             return obj
+
         if isinstance(obj, str):
             if '\n' in obj:
                 return [x.strip() for x in obj.split('\n') if x]
             elif ',' in obj:
                 return [x.strip() for x in obj.split(',') if x]
             return [obj.strip()]
+
         raise SkilletLoaderException('listify filter requires input of type str.')
 
     def get_default_output(self, results: str, status: str) -> dict:

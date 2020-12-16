@@ -70,7 +70,7 @@ def test_capture_object():
     assert isinstance(entry_list, list)
     assert len(entry_list) == 1
 
-    assert['gp_profile_entry'] in out['outputs']
+    assert 'gp_profile_entry' in out['outputs']
     gp_profile_entry = out['outputs']['gp_profile_entry']
 
     # test to ensure capture object will not convert 'top-level' entry items into a list and instead
