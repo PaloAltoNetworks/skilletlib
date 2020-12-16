@@ -62,6 +62,21 @@ def test_capture_object():
     assert 'outputs' in out
     assert 'system_object' in out['outputs']
 
+    # this skillet captures the gp app crypto profiles as an object
+    assert 'profiles' in out['outputs']
+    entry_list = out['outputs']['profiles']['global-protect-app-crypto-profiles']['entry']
+
+    # test to ensure skilletlib is properly converting the 'entry' into a single item list
+    assert isinstance(entry_list, list)
+    assert len(entry_list) == 1
+
+    assert['gp_profile_entry'] in out['outputs']
+    gp_profile_entry = out['outputs']['gp_profile_entry']
+
+    # test to ensure capture object will not convert 'top-level' entry items into a list and instead
+    # return the actual object instead
+    assert(isinstance(gp_profile_entry, dict))
+
 
 def test_capture_list_filter():
     skillet_path = '../example_skillets/capture_list_filter/'
@@ -70,7 +85,12 @@ def test_capture_list_filter():
 
 def test_capture_variable():
     skillet_path = '../example_skillets/capture_variable/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+    assert 'interface_object' in out['outputs']
+    interface_object = out['outputs']['interface_object']
+
+    # ensure the capture_object
+    assert isinstance(interface_object, dict)
 
 
 def test_tag_present():

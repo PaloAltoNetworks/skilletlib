@@ -55,5 +55,23 @@ snippets:
     test: system_object | element_value('timezone') == 'US/Eastern'
     documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 
+    # another example parse, this time to grab the global protect crypto profile and convert to an object using
+    # capture_object. This example shows a feature of skilletlib where all entries and members are converted to lists
+    # automatically. In cases where only a single entry exists, the xml is converted to a dict instead of a list with
+    # a single dict. Skilletlib uses xmltodict force_list to overcome this.
+  - name: example parse
+    cmd: parse
+    variable: config
+    outputs:
+      - name: profiles
+        capture_object: /config/devices/entry/network/ike/crypto-profiles/global-protect-app-crypto-profiles
+
+      - name: gp_profile_entry
+        capture_object: /config/devices/entry/network/ike/crypto-profiles/global-protect-app-crypto-profiles/entry[1]
+
+  - name: testing
+    label: Ensure we have at least one entry
+    test: profiles | length
+    documentation_link: https://iron-skillet.readthedocs.io
 
 
