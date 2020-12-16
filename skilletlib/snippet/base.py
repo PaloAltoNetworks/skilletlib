@@ -747,6 +747,26 @@ class Snippet(ABC):
                 # there are unique tags in this list
                 return True
 
+        def convert_entry(el: elementTree.Element):
+            # force_lists always returns a list even though in most cases, we really only want a single item
+            # due to an exact xpath match. However, we might still want force_list to apply further down in the
+            # the document.
+            tag_name = el.tag
+
+            res = xmltodict.parse(elementTree.tostring(el),
+                                  force_list=self.xml_force_list_keys)
+
+            if tag_name not in self.xml_force_list_keys:
+                return res
+
+            if tag_name in res and \
+                    isinstance(res[tag_name], list) and \
+                    len(res[tag_name]) == 1:
+                # unwind unnecessary list at the top level here
+                return {tag_name: res[tag_name][0]}
+
+            return res
+
         try:
             xml_doc = etree.XML(results)
 
@@ -825,28 +845,14 @@ class Snippet(ABC):
                 if len(entries) == 0:
                     captured_output[var_name] = None
                 elif len(entries) == 1:
-                    entry = entries.pop()
-                    tag = entry.tag
-                    parsed_result = xmltodict.parse(elementTree.tostring(entry),
-                                                    force_list=self.xml_force_list_keys)
-
-                    # force_lists always returns a list even though in this case, we really only want a single item
-                    # due to an exact xpath match. However, we might still want force_list to apply further down in the
-                    # the document.
-                    if tag in parsed_result and \
-                            isinstance(parsed_result[tag], list) and \
-                            len(parsed_result[tag]) == 1:
-                        # unwind unnecessary list at the top level here
-                        captured_output[var_name] = {tag: parsed_result[tag][0]}
-                    else:
-                        captured_output[var_name] = parsed_result
+                    captured_output[var_name] = convert_entry(entries.pop())
 
                 else:
                     capture_list = list()
                     for entry in entries:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry),
-                                                            force_list=self.xml_force_list_keys))
+                        capture_list.append(convert_entry(entry))
 
+                    # FIXME - isn't this duplicated below?
                     captured_output[var_name] = self.__filter_outputs(output, capture_list, self.context)
 
             elif 'capture_list' in output:
@@ -858,8 +864,7 @@ class Snippet(ABC):
                     if isinstance(entry, str):
                         capture_list.append(entry)
                     else:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry),
-                                                            force_list=self.xml_force_list_keys))
+                        capture_list.append(convert_entry(entry))
 
                 captured_output[var_name] = capture_list
 
