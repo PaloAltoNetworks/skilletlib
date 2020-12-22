@@ -423,7 +423,8 @@ class Skillet(ABC):
                 template_snippet = SimpleTemplateSnippet(output_template)
                 # create context dict for template parsing
                 # add all outputs as 'top-level' attributes
-                context = results.get('outputs', {})
+                context = dict()
+                context.update(results.get('outputs', {}))
                 context['snippet_outputs'] = self.snippet_outputs
                 context['captured_outputs'] = self.captured_outputs
                 context['context'] = self.context
