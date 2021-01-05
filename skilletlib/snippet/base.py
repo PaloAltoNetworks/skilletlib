@@ -487,6 +487,9 @@ class Snippet(ABC):
         if context is None:
             context = self.context
 
+        if not isinstance(template_str, str):
+            return template_str
+
         t = self._env.from_string(template_str)
         return t.render(context)
 
