@@ -121,7 +121,7 @@ class Skillet(ABC):
         template_file = skillet_path.joinpath(template_path).resolve()
 
         if template_file.exists():
-            with template_file.open() as sf:
+            with template_file.open(encoding='utf-8') as sf:
                 return html.unescape(sf.read())
 
         else:

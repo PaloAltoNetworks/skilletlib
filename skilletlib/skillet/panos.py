@@ -224,7 +224,7 @@ class PanosSkillet(Skillet):
             snippet_file = snippet_path.joinpath(snippet_def['file']).resolve()
 
             if snippet_file.exists():
-                with snippet_file.open() as sf:
+                with snippet_file.open(encoding='utf-8') as sf:
                     snippet_def['element'] = sf.read()
 
             else:

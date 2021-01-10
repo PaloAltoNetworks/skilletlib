@@ -196,7 +196,7 @@ class SkilletLoader:
         snippet_path = str(meta_cnc_file.parent.absolute())
         try:
 
-            with meta_cnc_file.open(mode='r') as sc:
+            with meta_cnc_file.open(mode='r', encoding='utf-8') as sc:
                 raw_service_config = oyaml.safe_load(sc.read())
                 skillet = self.normalize_skillet_dict(raw_service_config)
                 skillet['snippet_path'] = snippet_path
