@@ -94,11 +94,14 @@ class SkilletLoader:
         """
         skillet_dict = self._parse_skillet(skillet_path)
 
-        if self.__skillet_has_includes(skillet_dict):
-            self.__resolve_submodule_skillets(Path(skillet_path))
+        skillet_path_object = Path(skillet_path)
 
-        compile_skillet_dict = self.compile_skillet_dict(skillet_dict)
-        return self.create_skillet(compile_skillet_dict)
+        if self.__skillet_has_includes(skillet_dict):
+            self.__resolve_submodule_skillets(skillet_path_object)
+            self.__resolve_neighbor_skillets(skillet_dict['name'], skillet_path_object)
+
+        compiled_skillet_dict = self.compile_skillet_dict(skillet_dict)
+        return self.create_skillet(compiled_skillet_dict)
 
     def create_skillet(self, skillet_dict: dict) -> Skillet:
         """
@@ -215,6 +218,51 @@ class SkilletLoader:
             logger.error(ex)
             raise SkilletLoaderException(
                 'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+
+    def __resolve_neighbor_skillets(self, skillet_name: str, skillet_path: Path) -> None:
+        """
+        Resolve all skillets in this directory that do not have the same name as skillet_name. This is useful
+        when a user calls load_skillet_from_path and that skillet depends on another one in the same directory
+
+        :param skillet_name: name of skillet to ignore
+        :param skillet_path: directory to glob for all skillet definition files
+        :return: None
+        """
+
+        if skillet_path.is_file():
+            skillet_path = skillet_path.parent
+
+        skillet_definitions = list()
+        skillet_definitions.extend(skillet_path.glob('*.skillet.y*ml'))
+        skillet_definitions.extend(skillet_path.glob('.meta-cnc.y*ml'))
+
+        neighbor_skillets = list()
+
+        for d in skillet_definitions:
+
+            try:
+                skillet = self.load_skillet_dict_from_path(d)
+                if skillet['name'] != skillet_name:
+                    neighbor_skillets.append(skillet)
+
+            except SkilletLoaderException as sle:
+                err_dict = dict()
+                err_dict['path'] = str(d.absolute())
+                err_dict['error'] = str(sle)
+                self.skillet_errors.append(err_dict)
+                logger.warning(f'Loader Error for dir {d.absolute()} - {sle}')
+
+            except OSError as oe:
+                err_dict = dict()
+                err_dict['path'] = str(d.absolute())
+                err_dict['error'] = str(oe)
+                self.skillet_errors.append(err_dict)
+                logger.warning(f'OS Error for dir {d.absolute()} - {oe}')
+
+        for skillet_dict in neighbor_skillets:
+            if not self.__skillet_has_includes(skillet_dict):
+                # add found skillets to the resolved skillets list
+                self.resolved_skillets.append(self.create_skillet(skillet_dict))
 
     def __resolve_submodule_skillets(self, path: Path) -> None:
         """

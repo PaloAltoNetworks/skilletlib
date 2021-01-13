@@ -66,6 +66,23 @@ def test_skillet_includes():
     assert second_included_variable is not None
 
 
+def test_load_skillet_from_path():
+    skillet_path = '../example_skillets/skillet_includes/include_other_skillets.skillet.yaml'
+    skillet_loader = SkilletLoader()
+    skillet = skillet_loader.load_skillet_from_path(skillet_path)
+
+    # verify we can find and load the correct skillet
+    assert skillet.name == 'include_other_skillets'
+
+    # verify the correct number of snippets. 4 of which are included from other skillets
+    assert len(skillet.snippets) == 6
+
+    included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
+
+    # verify we can get an included snippet from the skillet object
+    assert included_snippet is not None
+
+
 if __name__ == '__main__':
     test_get_skillet_by_name()
     test_skillet_includes()

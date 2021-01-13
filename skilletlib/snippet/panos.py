@@ -596,6 +596,7 @@ class PanosSnippet(TemplateSnippet):
     def __difference(list1: list, list2: list) -> list:
         """
         Returns a list of items from list1 that do not exist in list2
+
         :param list1: list of items expected to be in list2
         :param list2: list of items list1 will be evaluated against
         """
