@@ -363,6 +363,32 @@ class SkilletLoader:
 
         return False
 
+    def __propagate_snippet_metadata(self, parent: dict, child: dict) -> dict:
+        """
+        Propagate metadata attributes form a parent snippet to an included / child snippet.
+
+        :param parent: snippet dict
+        :param child: included snippet dict
+        :return: included snippet dict with metadata propagated.
+
+        """
+        if 'when' in parent:
+            child['when'] = parent['when']
+
+        if 'tags' in parent:
+            if 'tags' not in child:
+                child['tags'] = list()
+
+            child['tags'].extend(parent['tags'])
+
+        elif 'tag' in parent:
+            if 'tag' not in child:
+                child['tag'] = list()
+
+            child['tag'].extend(parent['tag'])
+
+        return child
+
     def compile_skillet_dict(self, skillet: dict) -> dict:
         """
         Compile the skillet dictionary including any included snippets from other skillets. Included snippets and
@@ -420,8 +446,9 @@ class SkilletLoader:
                     include_meta.update(include_snippet)
 
                     include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
-                    if 'when' in snippet:
-                        include_meta['when'] = snippet['when']
+
+                    include_meta = self.__propagate_snippet_metadata(snippet, include_meta)
+
                     snippets.append(include_meta)
 
             if 'include_variables' in snippet:
