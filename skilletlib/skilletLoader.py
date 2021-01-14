@@ -363,17 +363,15 @@ class SkilletLoader:
 
         return False
 
-    def __propagate_snippet_metadata(self, parent: dict, child: dict) -> dict:
+    @staticmethod
+    def __propagate_snippet_metadata(parent: dict, child: dict) -> dict:
         """
         Propagate metadata attributes form a parent snippet to an included / child snippet.
 
         :param parent: snippet dict
         :param child: included snippet dict
         :return: included snippet dict with metadata propagated.
-
         """
-        if 'when' in parent:
-            child['when'] = parent['when']
 
         if 'tags' in parent:
             if 'tags' not in child:
@@ -386,6 +384,11 @@ class SkilletLoader:
                 child['tag'] = list()
 
             child['tag'].extend(parent['tag'])
+
+        attributes = ('when', 'label', 'documentation_link', 'description', 'pass_message', 'fail_message')
+        for a in attributes:
+            if a in parent:
+                child[a] = parent[a]
 
         return child
 
@@ -413,7 +416,10 @@ class SkilletLoader:
 
             if 'include_snippets' not in snippet and 'include_variables' not in snippet:
                 # include all snippets by default
-                snippets.extend(include_skillet.snippet_stack)
+                for included_snippet in include_skillet.snippet_stack:
+                    included_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
+                    snippets.append(included_snippet)
+
                 for v in include_skillet.variables:
                     found_variable = False
                     for tv in skillet['variables']:
@@ -427,7 +433,9 @@ class SkilletLoader:
 
             elif 'include_snippets' not in snippet:
                 # include all snippets by default
-                snippets.extend(include_skillet.snippet_stack)
+                for included_snippet in include_skillet.snippet_stack:
+                    included_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
+                    snippets.append(included_snippet)
 
             else:
                 for include_snippet in snippet['include_snippets']:
@@ -443,11 +451,14 @@ class SkilletLoader:
                             new_meta.update(include_snippet.get('meta', {}))
                             include_snippet['meta'] = new_meta
 
+                    # propagate everything form the parent if it's there
+                    include_meta = self.__propagate_snippet_metadata(snippet, include_meta)
+
+                    # update with locally defined options as well, if anyu
                     include_meta.update(include_snippet)
 
+                    # ensure the name is set properly
                     include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
-
-                    include_meta = self.__propagate_snippet_metadata(snippet, include_meta)
 
                     snippets.append(include_meta)
 
