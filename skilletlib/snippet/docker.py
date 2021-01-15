@@ -1,4 +1,5 @@
 import logging
+import re
 import shlex
 import time
 import traceback
@@ -217,7 +218,9 @@ class DockerSnippet(Snippet):
             return str(return_data)
 
     # Fix for GL #77 - escape cmd variables before passing into render_metadata
-    def render_metadata(self, context: dict) -> dict:
+    # removed due to quote adding extra quotes around items with spaces. The recommendation is to add / use
+    # the quote filter in your cmd strings when you know you may get special chars
+    def render_metadata_deprecated(self, context: dict) -> dict:
         """
         render_metadata will ensure all metadata vars that contain jinja2 variables will be rendered properly.
         i.e. cmd: ansible-playbook -e 'somevar={{ some_value }}' will be converted to 'somevar='value_from_context'
@@ -231,9 +234,13 @@ class DockerSnippet(Snippet):
         # only get the variables that are used in the 'cmd'
         affected_vars = self.get_variables_from_template(self.metadata['cmd'])
 
+        all_non_safe = re.compile(r'[^\w|\s]')
+
         # iterate over each var, get it's value from the context, quote it, and set back into the context
         for v in affected_vars:
             if v in context:
-                context[v] = shlex.quote(context[v])
+                # only quote things that have special chars, otherwise leave it alone
+                if all_non_safe.search(context[v]):
+                    context[v] = shlex.quote(context[v])
 
         return super().render_metadata(context)
