@@ -29,7 +29,7 @@ class WorkflowSkillet(Skillet):
     snippet_optional_metadata = {
         'include_by_tag': '',
         'include_by_name': '',
-        'include__by_regex': '',
+        'include_by_regex': '',
         'exclude_by_tag': '',
         'exclude_by_name': '',
         'exclude_by_regex': ''

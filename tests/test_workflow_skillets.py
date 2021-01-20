@@ -52,6 +52,36 @@ def test_workflow_skillet():
     assert len(skillet.snippet_outputs) == 3
 
 
+def test_workflow_transform_skillet():
+    """
+
+    Load and execute the workflow skillet and ensure all child skillets are executed properly
+
+    :return: None
+    """
+    skillet_path = '../example_skillets/workflow_transform/'
+    skillet_loader = SkilletLoader(path=skillet_path)
+    skillet: Skillet = skillet_loader.get_skillet_with_name('workflow_transform')
+    # verify we can find and load the correct skillet
+    assert skillet.name == 'workflow_transform'
+
+    out = skillet.execute(context)
+
+    assert 'pan_validation' in out
+
+    assert 'outputs' in out
+
+    assert 'snippets' in out
+
+    for k, v in out.get('pan_validation', {}).items():
+        r = str(v.get('results', 'False'))
+        print(f'{k:60}{r}')
+        assert r == 'True'
+
+    assert 'zones' in skillet.context
+
+
 if __name__ == '__main__':
     test_load_skillet()
     test_workflow_skillet()
+    test_workflow_transform_skillet()

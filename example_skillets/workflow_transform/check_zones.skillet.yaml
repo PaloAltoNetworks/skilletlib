@@ -1,0 +1,49 @@
+
+name: check_zones
+label: Example of how to use validations to ensure the state of the configuration.
+
+description: |
+  This example Skillet shows how to parse and validate a config using xpath syntax. This example checks the configured
+  zones to ensure we do not have one with the attribute name equal to 'does-not-exist'
+
+type: pan_validation
+
+labels:
+  collection:
+    - Test Skillets
+    - Validation
+
+variables:
+  - name: zone_to_test
+    description: Name of the Zone to test for absence
+    default: does-not-exist
+    type_hint: text
+
+  - name: zones
+    description: list of zones to test
+    default: []
+    type_hint: list
+
+snippets:
+  - name: ensure_zones_is_populated
+    cmd: validate
+    label: Ensure Zones are not an empty list
+    test: zones | length
+    fail_message: Zones is an empty list!
+    documentation_link: httpss://skilletlib.readthedocs.io
+
+  # simple test using a jinja expression to verify the 'zone_to_test' variable is not in the 'zone_names' test
+  - name: ensure_desired_zone_absent_from_list
+    # pan_validation skillet have a default cmd of 'validate'
+    cmd: validate
+    # note here that you can use jinja variable interpolation just about anywhere
+    label: Ensures the {{ zone_to_test }} zone is not configured
+    test: zone_to_test not in zones
+    fail_message: |
+      This fail message contains a variable, which is useful for debugging and testing.
+      captured values were: {{ zones |tojson }}
+    # documentation link helps give the user some context about why this test failed or how to manually remediate
+    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+
+
+

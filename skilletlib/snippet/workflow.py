@@ -2,6 +2,8 @@ import logging
 from typing import Tuple
 from typing import Union
 
+from jinja2 import TemplateError
+
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.skillet.base import Skillet
 from skilletlib.skilletLoader import SkilletLoader
@@ -46,6 +48,9 @@ class WorkflowSnippet(Snippet):
         if filter_snippets:
             context['__filter_snippets'] = filter_snippets
 
+        # transform the context for this snippet
+        context.update(self.transform_context(context))
+
         return context
 
     def execute(self, context: dict) -> Tuple[dict, str]:
@@ -67,3 +72,52 @@ class WorkflowSnippet(Snippet):
                 return dict()
         else:
             return dict()
+
+    def transform_context(self, context: dict) -> dict:
+        """
+        Returns a dict of newly transformed variables. The value of the transform attribute is a list of dicts. Each
+        dict should have the following keys: name, source. The name is the name of the new variable to create in the
+        context. This should correspond to a variable expected in the Skillet. The source is an expression that is
+        evaluated using the context.
+
+        For example, a Skillet may expose the following outputs: ip_address, password. Another Skillet may require
+        the following inputs: TARGET_IP, TARGET_PASSWORD. Using this simple transform, we can set the values of
+        TARGET_IP and TARGET_PASSWORD accordingly. Note the use of the hash filter to process the password variable
+        before setting the TARGET_PASSWORD variable.
+
+        transform:
+            - name: TARGET_IP
+              source: ip_address
+            - name: TARGET_PASSWORD
+              source: password | hash
+
+        :param context: dict containing all context variables
+        :return: dict containing transformed variables
+        """
+
+        transformed_context = dict()
+
+        if 'transform' not in self.metadata:
+            return transformed_context
+
+        if not isinstance(self.metadata['transform'], list):
+            return transformed_context
+
+        for transform_def in self.metadata['transform']:
+            if not {'name', 'source'}.issubset(transform_def):
+                logger.error('Malformed transform definition...')
+                return transformed_context
+
+            name = transform_def.get('name')
+            source_exp = transform_def.get('source')
+
+            try:
+                expression = self._env.compile_expression(source_exp)
+                value = expression(context)
+                transformed_context[name] = value
+
+            except TemplateError as te:
+                logger.error('Could not render expression in workflow snippet transform...')
+                logger.error(te)
+
+        return transformed_context
