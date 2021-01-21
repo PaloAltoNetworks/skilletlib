@@ -1552,6 +1552,9 @@ class Panoply:
 
         for child in c:
 
+            if len(child):
+                return False
+
             if found_tag_name == '':
                 found_tag_name = child.tag
                 continue
