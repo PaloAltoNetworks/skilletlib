@@ -89,6 +89,8 @@ class PanValidationSkillet(PanosSkillet):
         # addition for #124 - ensure captured_outputs are present in the output as well
         results['outputs'] = self.captured_outputs
 
+        default_doc_link = self.labels.get('default_documentation_link', None)
+
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
@@ -116,6 +118,10 @@ class PanValidationSkillet(PanosSkillet):
 
                         else:
                             output_result[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+
+                        # add default_doc link for issue #14
+                        if output_result[snippet_name].get('documentation_link') == '' and default_doc_link:
+                            output_result[snippet_name]['documentation_link'] = default_doc_link
 
                         if snippet_name not in results['pan_validation']:
                             results['pan_validation'][snippet_name] = output_result[snippet_name]

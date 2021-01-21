@@ -19,6 +19,8 @@ labels:
   collection:
     - Example Skillets
     - Validation
+  # note the default_documentation_link label, This will get applied to every test that does not specify a doc link
+  default_documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 
 variables:
   - name: SOME_VARIABLE
@@ -41,5 +43,7 @@ snippets:
     label: Ensures the hostname was found using capture_value
     # simple boolean test using jinja expression logic
     test: hostname == 'skillet_test_hostname'
-    documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
+    # the value of the default_documentation_label will be used here instead. This helps if you have many tests
+    # that all have the same doc links
+    # documentation_link: https://github.com/PaloAltoNetworks/skilletlib/blob/develop/docs/source/examples.rst
 

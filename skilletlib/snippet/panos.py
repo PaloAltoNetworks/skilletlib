@@ -184,12 +184,14 @@ class PanosSnippet(TemplateSnippet):
                 return metadata
             err = 'cmd_str attribute is required for op or cli cmd'
         elif self.cmd == 'validate':
-            if {'test', 'label', 'documentation_link'}.issubset(metadata):
+            if {'test', 'label'}.issubset(metadata):
                 # configure validation outputs manually if necessary
                 # for validation we only need the output_type set to 'validation'
                 metadata['output_type'] = 'validation'
+                # this should probably be an optional metadata attribute instead of hard coded here
+                metadata['documentation_link'] = ''
                 return metadata
-            err = 'test, label, and documentation_link are required attributes for validate cmd'
+            err = 'test and label are required attributes for validate cmd'
         elif self.cmd == 'parse':
             if {'variable', 'outputs'}.issubset(metadata):
                 return metadata

@@ -51,7 +51,12 @@ def test_basic_structure():
 
 def test_capture_value():
     skillet_path = '../example_skillets/capture_value/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+
+    assert 'pan_validation' in out
+
+    # ensure default_documentation_link label is set correctly here for #14
+    assert out['pan_validation']['ensure_hostname_was_found']['documentation_link'] != ''
 
 
 def test_capture_object():
