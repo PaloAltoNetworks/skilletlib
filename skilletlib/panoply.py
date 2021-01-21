@@ -1550,6 +1550,14 @@ class Panoply:
 
     @staticmethod
     def __check_children_are_list(c: list) -> bool:
+        """
+        Check if this list possibly contains identical children. I.E. a list of members or simple entries.
+        If this is the case, then we'll use xmldiff to find diffs in there to keep this logic simple. Otherwise,
+        we'll continue to iterate through the document
+
+        :param c: list of elements
+        :return: True if all elements have the same tag name and have no children
+        """
         # check if children are a list of items by identical tag names
 
         if len(c) <= 1:
@@ -1559,6 +1567,10 @@ class Panoply:
         found_tag_name = ''
 
         for child in c:
+
+            # if any child itself has children, then this is not a list of identical items. Return False here
+            if len(child):
+                return False
 
             if found_tag_name == '':
                 found_tag_name = child.tag
