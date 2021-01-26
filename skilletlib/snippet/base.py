@@ -64,7 +64,7 @@ class Snippet(ABC):
     output_type = 'xml'
 
     # snippet classes can set a list of keys that xmltodict will convert to lists in __handler_xml_outputs
-    xml_force_list_keys = None
+    xml_force_list_keys = []
 
     def __init__(self, metadata: dict):
 
