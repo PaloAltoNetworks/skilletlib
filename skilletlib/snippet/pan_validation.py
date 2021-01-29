@@ -28,7 +28,7 @@ class PanValidationSnippet(PanosSnippet):
         """
         try:
 
-            super().execute(context)
+            return super().execute(context)
 
         except PanXapiError as px:
             logger.error(f'Exception in {self.name}')
