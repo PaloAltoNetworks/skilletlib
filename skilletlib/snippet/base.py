@@ -363,15 +363,20 @@ class Snippet(ABC):
         :return: a dictionary containing all captured variables
         """
 
-        # always capture the default output
-        # captured_outputs = self.get_default_output(results, status)
         captured_outputs = dict()
+
         output_type = self.metadata.get('output_type', self.output_type)
 
         # check if this snippet type wants to handle it's own outputs
         if hasattr(self, f'handle_output_type_{output_type}'):
             func = getattr(self, f'handle_output_type_{output_type}')
             return func(results)
+
+        # added for issue #151 - snippets can return 'failure' after catching an exception in which case
+        # we cannot capture outputs as the output may be an exception message instead of the expected results
+        if status != 'success':
+            logger.error('Not capturing outputs for failed snippet execution...')
+            return captured_outputs
 
         # otherwise, check all the normal types here
         if 'outputs' not in self.metadata:

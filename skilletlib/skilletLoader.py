@@ -197,6 +197,7 @@ class SkilletLoader:
             raise SkilletNotFoundException('Could not find skillet definition file at this location')
 
         snippet_path = str(meta_cnc_file.parent.absolute())
+        # skillet_file = str(meta_cnc_file.absolute())
         try:
 
             with meta_cnc_file.open(mode='r') as sc:

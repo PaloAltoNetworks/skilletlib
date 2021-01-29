@@ -1,4 +1,12 @@
+import logging
+from typing import Tuple
+
+from pan.xapi import PanXapiError
+
 from .panos import PanosSnippet
+from ..exceptions import PanoplyException
+
+logger = logging.getLogger(__name__)
 
 
 class PanValidationSnippet(PanosSnippet):
@@ -10,7 +18,39 @@ class PanValidationSnippet(PanosSnippet):
 
     template_metadata = {'label', 'test', 'fail_message', 'pass_message', 'meta'}
 
-    def handle_output_type_validation(self, results: str):
+    def execute(self, context: dict) -> Tuple[str, str]:
+        """
+        Execute method in pan_validation snippet overrides the execute method in panos to add ensure any
+        exception caught always results in a failed test
+
+        :param context: snippet context used for tests
+        :return: tuple consisting of results, (success | failure)
+        """
+        try:
+
+            super().execute(context)
+
+        except PanXapiError as px:
+            logger.error(f'Exception in {self.name}')
+            logger.error(px)
+            return str(px), 'failure'
+        except PanoplyException as pe:
+            logger.error(f'Exception in {self.name}')
+            logger.error(pe)
+            return str(pe), 'failure'
+
+    def handle_output_type_validation(self, results: str) -> dict:
+        """
+        Handle output type validation results
+
+        :param results: results from the test execution
+        :return: dict containing validation messages
+        """
+        # if results are anything but True, then this is a failure. This can happen when we catch and exception
+        # and return the exception
+        if not bool(results):
+            results = False
+
         output = dict()
         output['results'] = results
         output['label'] = self.metadata.get('label', '')

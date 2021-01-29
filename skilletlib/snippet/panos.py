@@ -15,6 +15,7 @@
 # Authors: Adam Baumeister, Nathan Embery
 
 
+import ipaddress
 import logging
 import xml.etree.ElementTree as elementTree
 from collections import OrderedDict
@@ -22,9 +23,8 @@ from typing import Any
 from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
-import jmespath
-import ipaddress
 
+import jmespath
 from xmldiff import main as xmldiff_main
 
 from skilletlib.exceptions import NodeNotFoundException
@@ -71,7 +71,7 @@ class PanosSnippet(TemplateSnippet):
         super().__init__(self.element, metadata)
         # self.add_filters()
 
-    def execute(self, context: dict) -> Tuple[dict, str]:
+    def execute(self, context: dict) -> Tuple[str, str]:
         if self.cmd == 'validate':
             logger.info(f'  Validating Snippet: {self.name}')
             test = self.metadata['test']
