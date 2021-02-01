@@ -18,6 +18,8 @@ class PanValidationSnippet(PanosSnippet):
 
     template_metadata = {'label', 'test', 'fail_message', 'pass_message', 'meta'}
 
+    conditional_template_metadata = {'test'}
+
     def execute(self, context: dict) -> Tuple[str, str]:
         """
         Execute method in pan_validation snippet overrides the execute method in panos to add ensure any

@@ -58,6 +58,11 @@ class Snippet(ABC):
     # metadata fields that should be considered templates and rendered
     template_metadata = set()
 
+    # conditional metadata fields should also be considered templates but are not strings
+    # these fields should be wrapped in a string before checking for undefined variables
+    # For example, see the pan_validation snippet field 'test'
+    conditional_template_metadata = set()
+
     # set a default output type. this can be overridden for each SnippetType. This is used to determine the default
     # output handler to use for each snippet class. This can be set on a per snippet basis, but this allows a
     # short-cut on each
@@ -534,7 +539,15 @@ class Snippet(ABC):
         variables = list()
         for i in self.template_metadata:
             if i in self.metadata:
-                found_vars = self.get_variables_from_template(self.metadata[i])
+
+                # ensure we check for conditional template metadata as well as normal templated metadata
+                # see pan_validation 'test' attribute as an example
+                if i in self.conditional_template_metadata:
+                    test_str = "{{ " + self.metadata[i] + " }}"
+                else:
+                    test_str = self.metadata[i]
+                found_vars = self.get_variables_from_template(test_str)
+
                 for f in found_vars:
                     if f not in variables:
                         variables.append(f)
