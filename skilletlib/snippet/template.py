@@ -14,6 +14,7 @@ class TemplateSnippet(Snippet):
     output_type = 'text'
 
     template_metadata = {'element'}
+    optional_metadata = {'template_title': None}
 
     def __init__(self, template_str, metadata):
         self.template_str = template_str
@@ -21,7 +22,11 @@ class TemplateSnippet(Snippet):
         super().__init__(metadata)
 
     def execute(self, context: dict) -> Tuple[str, str]:
-        return self.render(self.template_str, context), 'success'
+        try:
+            return self.render(self.template_str, context), 'success'
+
+        except TemplateError as te:
+            return str(te), 'failure'
 
     def template(self, context) -> str:
         try:
