@@ -543,7 +543,7 @@ class Snippet(ABC):
                 # ensure we check for conditional template metadata as well as normal templated metadata
                 # see pan_validation 'test' attribute as an example
                 if i in self.conditional_template_metadata:
-                    test_str = "{{ " + self.metadata[i] + " }}"
+                    test_str = "{{ " + str(self.metadata[i]) + " }}"
                 else:
                     test_str = self.metadata[i]
                 found_vars = self.get_variables_from_template(test_str)
