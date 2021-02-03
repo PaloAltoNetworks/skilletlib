@@ -15,6 +15,7 @@ class PanValidationSnippet(PanosSnippet):
     """
     required_metadata = {'name'}
     # optional metadata that may be overridden in the snippet definition / metadata
+    optional_metadata = {'documentation_link': ''}
 
     template_metadata = {'label', 'test', 'fail_message', 'pass_message', 'meta'}
 

@@ -188,8 +188,6 @@ class PanosSnippet(TemplateSnippet):
                 # configure validation outputs manually if necessary
                 # for validation we only need the output_type set to 'validation'
                 metadata['output_type'] = 'validation'
-                # this should probably be an optional metadata attribute instead of hard coded here
-                metadata['documentation_link'] = ''
                 return metadata
             err = 'test and label are required attributes for validate cmd'
         elif self.cmd == 'parse':
