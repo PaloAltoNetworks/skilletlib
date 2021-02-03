@@ -197,13 +197,16 @@ class SkilletLoader:
             raise SkilletNotFoundException('Could not find skillet definition file at this location')
 
         snippet_path = str(meta_cnc_file.parent.absolute())
-        # skillet_file = str(meta_cnc_file.absolute())
+        skillet_file = str(meta_cnc_file.name)
+
         try:
 
             with meta_cnc_file.open(mode='r') as sc:
                 raw_service_config = oyaml.safe_load(sc.read())
                 skillet = self.normalize_skillet_dict(raw_service_config)
                 skillet['snippet_path'] = snippet_path
+                skillet['skillet_path'] = snippet_path
+                skillet['skillet_filename'] = skillet_file
                 return skillet
 
         except IOError:

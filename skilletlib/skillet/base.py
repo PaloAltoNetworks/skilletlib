@@ -70,6 +70,7 @@ class Skillet(ABC):
         self.variables = self.__initialize_variables(s['variables'])
         # path is needed only when snippets are held in a relative file path
         self.path = self.skillet_dict.get('snippet_path', '')
+        self.filename = self.skillet_dict.get('skillet_filename', '.meta-cnc.yaml')
         self.labels = self.skillet_dict['labels']
         self.collections = self.skillet_dict['labels'].get('collection', list())
         self.context = dict()
