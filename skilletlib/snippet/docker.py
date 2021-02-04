@@ -26,6 +26,7 @@ class DockerSnippet(Snippet):
 
     # optional parameters that may be set in the snippet metadata
     optional_metadata = {
+        'tag': 'latest',
         'volumes': dict(),
         'async': True
     }
@@ -48,7 +49,7 @@ class DockerSnippet(Snippet):
 
         else:
             self.image = image
-            self.tag = 'latest'
+            self.tag = self.metadata.get('tag', 'latest')
 
         self.working_dir = self.metadata.get('working_dir', '/app')
 
