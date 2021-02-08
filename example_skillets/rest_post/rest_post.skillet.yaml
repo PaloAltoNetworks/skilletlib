@@ -1,0 +1,60 @@
+name: openstack_auth
+label: test openstack auth
+
+description: |
+  This skillet demonstrates a simple REST api call auth to openstack. This shows a couple of skillet features, such
+  as inline template elements for the POST operation, custom headers in the request, and getting data from response
+  headers.
+
+type: rest
+
+labels:
+  collection:
+    - Example Skillets
+
+variables:
+  - name: TARGET_IP
+    description: Host
+    default: 10.10.10.10
+    type_hint: ip_address
+  - name: TARGET_USERNAME
+    description: Username
+    default: admin
+    type_hint: text
+  - name: TARGET_PASSWORD
+    description: Password
+    default: 'Sup er Secr et!'
+    type_hint: password
+
+snippets:
+  - name: auth
+    path: http://{{ TARGET_IP }}:5000/v3/auth/tokens
+    operation: post
+    headers:
+      Content-Type: application/json
+    element: |
+      {
+          "auth": {
+              "identity": {
+                  "methods": [
+                      "password"
+                  ],
+                  "password": {
+                      "user": {
+                          "name": "{{ TARGET_USERNAME }}",
+                          "domain": {
+                              "name": "Default"
+                          },
+                          "password": "{{ TARGET_PASSWORD }}"
+                      }
+                  }
+              }
+          }
+      }
+    output_type: json
+    # the response headers are copied into the snippet context after each successful request. This allows you to use
+    # capture_variable to create a variable with the value of some response header. In this case, auth_key will contain
+    # the value of the X-Subject-Token response header
+    outputs:
+      - name: auth_key
+        capture_variable: '{{ response_headers["X-Subject-Token"] }}'

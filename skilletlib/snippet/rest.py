@@ -110,10 +110,14 @@ class RestSnippet(TemplateSnippet):
             return self.__handle_response(response)
 
     def __handle_response(self, response: Response) -> Tuple[str, str]:
-        if response.status_code != 200:
+        if not response.ok:
             logger.error(f'Failed to execute REST snippet {self.name}: {response.status_code}')
             return response.text, 'failure'
         else:
+
+            # capture response headers into self.context for use by capture_variable for #156
+            self.context['response_headers'] = dict(response.headers)
+
             if 'json' in response.headers.get('content-type', ''):
                 r = response.json()
             else:
