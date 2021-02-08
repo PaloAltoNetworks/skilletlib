@@ -526,7 +526,12 @@ class Skillet(ABC):
             safe_skillet_dict = copy.deepcopy(self.skillet_dict)
 
             safe_skillet_dict.pop('snippet_path', None)
+            safe_skillet_dict.pop('skillet_path', None)
+            safe_skillet_dict.pop('skillet_filename', None)
             safe_skillet_dict.pop('app_data', None)
+
+            for snippet in safe_skillet_dict.get('snippets'):
+                snippet.pop('skillet_path', None)
 
             # source https://stackoverflow.com/a/45004775
             yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
