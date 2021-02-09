@@ -21,13 +21,10 @@ from skilletlib.snippet.pan_validation import PanValidationSnippet
 from .panos import PanosSkillet
 
 
-# from .base import Skillet
-
-
 class PanValidationSkillet(PanosSkillet):
     snippet_list = list()
 
-    snippet_optional_metadata =  {'documentation_link': ''}
+    snippet_optional_metadata = {'documentation_link': ''}
 
     def get_snippets(self) -> List[PanValidationSnippet]:
 
