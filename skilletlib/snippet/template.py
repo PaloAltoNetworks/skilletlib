@@ -14,7 +14,11 @@ class TemplateSnippet(Snippet):
     output_type = 'text'
 
     template_metadata = {'element'}
-    optional_metadata = {'template_title': None}
+    optional_metadata = {
+        'file': '',
+        'element': '',
+        'template_title': ''
+    }
 
     def __init__(self, template_str, metadata):
         self.template_str = template_str

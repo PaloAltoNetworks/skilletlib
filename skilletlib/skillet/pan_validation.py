@@ -27,6 +27,8 @@ from .panos import PanosSkillet
 class PanValidationSkillet(PanosSkillet):
     snippet_list = list()
 
+    snippet_optional_metadata =  {'documentation_link': ''}
+
     def get_snippets(self) -> List[PanValidationSnippet]:
 
         if hasattr(self, 'snippets'):

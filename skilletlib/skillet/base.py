@@ -532,6 +532,9 @@ class Skillet(ABC):
 
             for snippet in safe_skillet_dict.get('snippets'):
                 snippet.pop('skillet_path', None)
+                for k, v in self.snippet_optional_metadata.items():
+                    if snippet[k] == v:
+                        snippet.pop(k, None)
 
             # source https://stackoverflow.com/a/45004775
             yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str

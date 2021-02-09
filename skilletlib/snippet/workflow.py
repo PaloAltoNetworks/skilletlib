@@ -17,7 +17,14 @@ class WorkflowSnippet(Snippet):
     WorkflowSnippet wraps the steps in a workflow skillet
     """
     required_metadata = {'name'}
-    optional_metadata = {}
+    optional_metadata = {
+        'include_by_tag': '',
+        'include_by_name': '',
+        'include_by_regex': '',
+        'exclude_by_tag': '',
+        'exclude_by_name': '',
+        'exclude_by_regex': ''
+    }
     output_type = 'text'
 
     def __init__(self, metadata, skillet: Skillet, skillet_loader: SkilletLoader):

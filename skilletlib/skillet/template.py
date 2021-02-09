@@ -12,7 +12,8 @@ class TemplateSkillet(Skillet):
 
     snippet_optional_metadata = {
         'file': '',
-        'element': ''
+        'element': '',
+        'template_title': ''
     }
 
     def get_snippets(self) -> List[TemplateSnippet]:
