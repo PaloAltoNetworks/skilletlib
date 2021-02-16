@@ -889,6 +889,22 @@ class Snippet(ABC):
 
                 captured_output[var_name] = capture_list
 
+            elif 'capture_xml' in output:
+                capture_pattern = output['capture_xml']
+                entries = xml_doc.xpath(capture_pattern)
+                if len(entries) == 0:
+                    captured_output[var_name] = None
+                elif len(entries) == 1:
+                    captured_output[var_name] = etree.tostring(entries.pop(), encoding='unicode')
+                else:
+                    outer_tag = etree.fromstring('<xml/>')
+                    for e in entries:
+                        outer_tag.append(e)
+                    found_entries_str = etree.tostring(outer_tag, encoding='unicode')
+                    captured_output[var_name] = found_entries_str
+
+                # short circuit return here as it makes no sense to do the filtering on a plain string object
+                return captured_output
             # filter selected items here
             captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
 
