@@ -24,7 +24,6 @@ from typing import Tuple
 from uuid import uuid4
 from xml.etree.ElementTree import ParseError
 
-import jmespath
 from xmldiff import main as xmldiff_main
 
 from skilletlib.exceptions import NodeNotFoundException
@@ -137,7 +136,6 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
             self._env.filters['items_present'] = self.__verify_in_list
             self._env.filters['item_present'] = self.__verify_item_in_list
-            self._env.filters['json_query'] = self.__json_query
             self._env.filters['permitted_address'] = self.__permitted_address
             self._env.filters['listify'] = self.__listify
             self._env.filters['difference'] = self.__difference
@@ -563,19 +561,6 @@ class PanosSnippet(TemplateSnippet):
                     return True
             return False
         return obj in list2
-
-    @staticmethod
-    def __json_query(obj: dict, query: str) -> Any:
-        """
-        JMESPath query, jmespath.org for examples
-
-        :param query: JMESPath query string
-        :param obj: object to be queried
-        """
-        if not isinstance(query, str):
-            raise SkilletLoaderException('json_query requires an argument of type str')
-        path = jmespath.search(query, obj)
-        return path
 
     @staticmethod
     def __permitted_address(obj: dict, permitted: list) -> bool:

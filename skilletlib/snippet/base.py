@@ -22,9 +22,11 @@ from abc import ABC
 from abc import abstractmethod
 from base64 import urlsafe_b64encode
 from copy import deepcopy
+from typing import Any
 from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
+import jmespath
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
@@ -642,6 +644,19 @@ class Snippet(ABC):
         return md5_crypt.hash(txt)
 
     @staticmethod
+    def __json_query(obj: dict, query: str) -> Any:
+        """
+        JMESPath query, jmespath.org for examples
+
+        :param query: JMESPath query string
+        :param obj: object to be queried
+        """
+        if not isinstance(query, str):
+            raise SkilletLoaderException('json_query requires an argument of type str')
+        path = jmespath.search(query, obj)
+        return path
+
+    @staticmethod
     def __slugify(txt: str) -> str:
 
         txt = re.sub(r'\s+', '_', txt)
@@ -663,6 +678,7 @@ class Snippet(ABC):
         self._env.filters["md5_hash"] = self.__md5_hash
         self._env.filters["slugify"] = self.__slugify
         self._env.filters["s"] = self.__slugify
+        self._env.filters['json_query'] = self.__json_query
         self.add_filters()
 
     def add_filters(self) -> None:
