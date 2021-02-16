@@ -31,7 +31,7 @@ variables:
 
 
 snippets:
-  - name: profile_objects
+  - name: qos_parse
     cmd: parse
     variable: config
     outputs:
@@ -41,6 +41,18 @@ snippets:
       - name: qos_rules_xml
         capture_xml: |
           /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/rulebase/qos/rules
+      - name: qos_profile_egress_max
+        capture_xml: |
+          /config/devices/entry[@name='localhost.localdomain']/network/qos/profile/entry
+          [
+            .//class-bandwidth/egress-max > 0
+          ]
+      - name: qos_profile_no_egress_max
+        capture_xml: |
+          /config/devices/entry[@name='localhost.localdomain']/network/qos/profile/entry
+          [
+            .//class-bandwidth/egress-max = 0
+          ]
 
   - name: parse_profile_objects
     cmd: parse

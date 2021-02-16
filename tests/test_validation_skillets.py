@@ -98,6 +98,22 @@ def test_capture_variable():
     assert isinstance(interface_object, dict)
 
 
+def test_capture_xml():
+    skillet_path = '../example_skillets/capture_xml/'
+    out = load_and_execute_skillet(skillet_path)
+    assert 'qos_profile_egress_max' in out['outputs']
+    assert 'qos_profile_no_egress_max' in out['outputs']
+
+    # this xpath should return results as str for both of these queries
+    assert out['outputs']['qos_profile_egress_max'] is not None
+    assert out['outputs']['qos_profile_no_egress_max'] is not None
+
+    assert 'entry name="qos_1"' in out['outputs']['qos_profile_egress_max']
+
+    # crafted xpath query should result in this NOT being present in the resulting output string
+    assert 'entry name="qos_1"' not in out['outputs']['qos_profile_no_egress_max']
+
+
 def test_tag_present():
     skillet_path = '../example_skillets/tag_present/'
     load_and_execute_skillet(skillet_path)
