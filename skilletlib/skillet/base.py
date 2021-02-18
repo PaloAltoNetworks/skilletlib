@@ -27,10 +27,13 @@ from typing import Generator
 from typing import List
 
 import yaml
+from jinja2 import TemplateError
 from yaml.scanner import ScannerError
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
+from skilletlib.exceptions import SnippetNotFoundException
+from skilletlib.exceptions import VariableNotFoundException
 from skilletlib.snippet.base import Snippet
 from skilletlib.snippet.template import SimpleTemplateSnippet
 
@@ -54,7 +57,7 @@ class Skillet(ABC):
         """
         Initialize the base skillet type
 
-        :param s: loaded dictionary from the .meta-cnc.yaml file
+        :param s: loaded dictionary from the skillet YAML file
         """
 
         self.skillet_dict = self.__normalize_skillet_dict(s)
@@ -67,6 +70,7 @@ class Skillet(ABC):
         self.variables = self.__initialize_variables(s['variables'])
         # path is needed only when snippets are held in a relative file path
         self.path = self.skillet_dict.get('snippet_path', '')
+        self.filename = self.skillet_dict.get('skillet_filename', '.meta-cnc.yaml')
         self.labels = self.skillet_dict['labels']
         self.collections = self.skillet_dict['labels'].get('collection', list())
         self.context = dict()
@@ -238,8 +242,13 @@ class Skillet(ABC):
                         if captured_outputs:
                             logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
 
-                        self.snippet_outputs.update(snippet_outputs)
-                        self.captured_outputs.update(captured_outputs)
+                        if snippet.name in self.snippet_outputs:
+                            self.snippet_outputs[snippet.name].append(snippet_outputs)
+                            self.captured_outputs[snippet.name].append(captured_outputs)
+                        else:
+                            # create a list of track progress here
+                            self.snippet_outputs[snippet.name] = [snippet_outputs]
+                            self.captured_outputs[snippet.name] = [captured_outputs]
 
                         context.update(snippet_outputs)
                         context.update(captured_outputs)
@@ -277,41 +286,59 @@ class Skillet(ABC):
 
             for snippet in self.get_snippets():
                 try:
-                    # render anything that looks like a jinja template in the snippet metadata
-                    # mostly useful for xpaths in the panos case
-                    snippet.render_metadata(context)
-                    # check the 'when' conditional against variables currently held in the context
+                    # allow subclasses to override this
+                    snippet.update_context(context)
 
-                    if snippet.should_execute(context):
-                        (output, status) = snippet.execute(context)
-                        logger.debug(f'{snippet.name} - status: {status}')
+                    loop_vars = snippet.get_loop_parameter()
+                    index = 0
+                    for item in loop_vars:
+                        context['loop'] = item
+                        context['loop_index'] = index
 
-                        if output:
-                            logger.debug(f'{snippet.name} - output: {output}')
+                        # check the 'when' conditional against variables currently held in the context
+                        if snippet.should_execute(context):
 
-                        running_counter = 0
+                            # fix for #136
+                            snippet.render_metadata(context)
 
-                        while status == 'running':
-                            logger.info('Snippet still running...')
-                            time.sleep(5)
-                            (output, status) = snippet.get_output()
-                            running_counter += 1
+                            (output, status) = snippet.execute(context)
+                            logger.debug(f'{snippet.name} - status: {status}')
 
-                            if running_counter > 60:
-                                raise SkilletLoaderException('Snippet took too long to execute!')
+                            if output:
+                                logger.debug(f'{snippet.name} - output: {output}')
 
-                        # capture all outputs
-                        snippet_outputs = snippet.get_default_output(output, status)
-                        captured_outputs = snippet.capture_outputs(output, status)
+                            running_counter = 0
 
-                        if captured_outputs:
-                            logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+                            while status == 'running':
+                                logger.info('Snippet still running...')
+                                time.sleep(5)
+                                (output, status) = snippet.get_output()
+                                running_counter += 1
 
-                        self.snippet_outputs.update(snippet_outputs)
-                        self.captured_outputs.update(captured_outputs)
+                                if running_counter > 60:
+                                    raise SkilletLoaderException('Snippet took too long to execute!')
 
-                        context.update(snippet_outputs)
-                        context.update(captured_outputs)
+                            # capture all outputs
+                            snippet_outputs = snippet.get_default_output(output, status)
+                            captured_outputs = snippet.capture_outputs(output, status)
+
+                            if snippet.name in self.snippet_outputs:
+                                self.snippet_outputs[snippet.name].append(snippet_outputs)
+                            else:
+                                # create a list of track progress here
+                                self.snippet_outputs[snippet.name] = [snippet_outputs]
+
+                            if captured_outputs:
+                                logger.debug(f'{snippet.name} - captured_outputs: {captured_outputs}')
+                                # fixme - how does this interact with looping?
+                                self.captured_outputs.update(captured_outputs)
+
+                            # simple context addition here, does not count on iteration ?
+                            # context.update(snippet_outputs)
+                            context.update(captured_outputs)
+
+                        index = index + 1
+                        snippet.reset_metadata()
 
                 except SkilletLoaderException as sle:
                     logger.error(f'Caught Exception during execution: {sle}')
@@ -320,7 +347,7 @@ class Skillet(ABC):
                     self.snippet_outputs.update(snippet_outputs)
 
                 except Exception as e:
-                    logger.error(f'Exception caught: {e}')
+                    logger.error(f'Exception caught in snippet: {snippet.name}: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
                     self.snippet_outputs.update(snippet_outputs)
 
@@ -374,7 +401,12 @@ class Skillet(ABC):
             snippet_name = s.get('name', '')
 
             if snippet_name in self.snippet_outputs:
-                results['snippets'][snippet_name] = self.snippet_outputs[snippet_name]
+                loop_counter = 0
+                for loop_results in self.snippet_outputs[snippet_name]:
+                    if snippet_name not in results['snippets']:
+                        results['snippets'][snippet_name] = loop_results[snippet_name]
+                    else:
+                        results['snippets'][f'{snippet_name}_{loop_counter}'] = loop_results[snippet_name]
 
         return results
 
@@ -392,15 +424,20 @@ class Skillet(ABC):
                 template_snippet = SimpleTemplateSnippet(output_template)
                 # create context dict for template parsing
                 # add all outputs as 'top-level' attributes
-                context = results.get('outputs', {})
+                context = dict()
+                context.update(results.get('outputs', {}))
+                context['snippet_outputs'] = self.snippet_outputs
+                context['captured_outputs'] = self.captured_outputs
+                context['context'] = self.context
                 # add other keys as top-level attributes as well...
                 for k, v in results.items():
                     if k != 'outputs':
                         context[k] = v
                 results['output_template'] = template_snippet.template(context)
 
-        except SkilletLoaderException as sle:
-            print(sle)
+        except (SkilletLoaderException, TemplateError) as e:
+            print(e)
+            results['output_template'] = f'ERROR: {e}'
 
         return results
 
@@ -489,7 +526,15 @@ class Skillet(ABC):
             safe_skillet_dict = copy.deepcopy(self.skillet_dict)
 
             safe_skillet_dict.pop('snippet_path', None)
+            safe_skillet_dict.pop('skillet_path', None)
+            safe_skillet_dict.pop('skillet_filename', None)
             safe_skillet_dict.pop('app_data', None)
+
+            for snippet in safe_skillet_dict.get('snippets'):
+                snippet.pop('skillet_path', None)
+                for k, v in self.snippet_optional_metadata.items():
+                    if snippet[k] == v:
+                        snippet.pop(k, None)
 
             # source https://stackoverflow.com/a/45004775
             yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
@@ -506,3 +551,31 @@ class Skillet(ABC):
 
         except (ScannerError, ValueError) as err:
             raise SkilletValidationException(f'Could not dump Skillet as YAML: {err}')
+
+    def get_snippet_by_name(self, snippet_name: str) -> Snippet:
+        """
+        Utility method to return the snippet with snippet_name
+
+        :param snippet_name: name attribute of the snippet to return
+        :return: Snippet Object
+        """
+
+        for snippet in self.snippets:
+            if snippet.name == snippet_name:
+                return snippet
+
+        raise SnippetNotFoundException(f'Snippet with name: {snippet_name} not found on Skillet: {self.name}')
+
+    def get_variable_by_name(self, variable_name: str) -> dict:
+        """
+        Utility method to return the variable with tne variable_name
+
+        :param variable_name: name attribute of the variable to return
+        :return: dictionary of variable options
+        """
+
+        for v in self.variables:
+            if v['name'] == variable_name:
+                return v
+
+        raise VariableNotFoundException

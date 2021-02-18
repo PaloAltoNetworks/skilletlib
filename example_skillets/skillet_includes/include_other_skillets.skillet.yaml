@@ -1,0 +1,60 @@
+name: include_other_skillets
+label: Skillet that includes another skillet
+
+description: |
+  This example Skillet shows how to include snippets from another skillet into this one
+
+type: pan_validation
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+  - name: tag_to_check
+    description: Tag Name to Test
+    default: test123456
+    type_hint: text
+
+snippets:
+  - name: parse_config
+    cmd: parse
+    variable: config
+    outputs:
+      - name: tags_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag
+      - name: tags_list
+        capture_pattern: /config/devices/entry[@name='localhost.localdomain']/vsys/entry[@name='vsys1']/tag//@name
+
+  - name: test_tag_present
+    label: Ensures the {{ tag_to_check }} tag is present
+    test: |
+      (
+        tags_object | attribute_present('entry', 'name', tag_to_check)
+      )
+    documentation_link: https://skilletlib.readthedocs.io
+
+  # Using the include, include_snippets, and include_variables attributes you can combine multiple skillets into a
+  # single skillet.
+  - name: Include another skillet
+    include: update_schedule
+    # by default, all variables and all snippets will be included if include_snippets and include_variables are not
+    # present
+
+  - name: Include some other stuff
+    include: network_profiles
+    # if you use include_snippets, then ONLY the snippets found with the 'name' attribute will be used. Any other
+    # specified attributes here will override the values from the included variable
+    include_snippets:
+      - name: parse_network_profiles
+      - name: check_network_profiles
+        label: Check Network Profiles Override
+    # include_variables can be a list of dicts or a str with value 'all' to indicate you want to include them all
+    include_variables: all
+
+  - name: Include Another Skillet
+    include: check_zones
+    # include_variables can be a list of dicts. A variable in the included skillet with the matching name will be
+    # included and any attributes specified here will override the values from the included variable
+    include_variables:
+      - name: zone_to_test
+        default: untrust

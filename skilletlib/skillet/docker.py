@@ -25,6 +25,7 @@ class DockerSkillet(Skillet):
 
     # optional parameters that may be set in the snippet metadata
     snippet_optional_metadata = {
+        'tag': 'latest',
         'volumes': dict(),
         'async': True
     }

@@ -1,0 +1,16 @@
+Success
+
+This is a jinja rendered file that has access
+to all the captured outputs from this skillet.
+
+You can use this to build customized outputs for
+any skillet.
+
+Just add the 'output_template' label with a relative path to a
+jinja template.
+
+You can use call captured outputs, skillet context variables and snippet outputs.
+
+Here is a simple example:
+
+{{ context.update_schedule_object | tojson }}

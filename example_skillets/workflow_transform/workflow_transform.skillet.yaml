@@ -1,0 +1,30 @@
+name: workflow_transform
+kabel: Workflow Example with Transforms
+
+description: |
+  Workflows are a simple way to tie together different skillets. Transforms are used to map the outputs from one skillet
+  into the input of another.
+
+type: workflow
+
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+
+
+snippets:
+    # in the workflow skillet case, each 'snippet' is the name of a skillet to execute in turn. You may optionally also
+    # include a transform attribute, which will map the output from one skillet to the input of another
+    # in this case, gather_info will capture a list of zone names using the variable name zone_names
+  - name: gather_info
+
+    # check_zones however, requires a list of zone names to be in a variable named zones. Rather than ask the skillet
+    # author to coordinate on variable naming, you can supply a simple transform here
+  - name: check_zones
+    transform:
+      - name: zones
+        source: zone_names
+      - name: another_set_of_zones
+        source: something_else

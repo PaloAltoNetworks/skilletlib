@@ -21,20 +21,23 @@ import xml.etree.ElementTree as elementTree
 from abc import ABC
 from abc import abstractmethod
 from base64 import urlsafe_b64encode
+from copy import deepcopy
+from typing import Any
 from typing import Tuple
 from xml.etree.ElementTree import ParseError
 
+import jmespath
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
+from jinja2 import TemplateError
 from jinja2 import meta
 from jinja2.exceptions import TemplateAssertionError
 from jinja2.exceptions import UndefinedError
+from jinja2_ansible_filters import AnsibleCoreFiltersExtension
 from jsonpath_ng import parse
 from lxml import etree
 from passlib.hash import md5_crypt
-
-from jinja2_ansible_filters import AnsibleCoreFiltersExtension
 
 from skilletlib.exceptions import SkilletLoaderException
 from skilletlib.exceptions import SkilletValidationException
@@ -57,15 +60,25 @@ class Snippet(ABC):
     # metadata fields that should be considered templates and rendered
     template_metadata = set()
 
+    # conditional metadata fields should also be considered templates but are not strings
+    # these fields should be wrapped in a string before checking for undefined variables
+    # For example, see the pan_validation snippet field 'test'
+    conditional_template_metadata = set()
+
     # set a default output type. this can be overridden for each SnippetType. This is used to determine the default
     # output handler to use for each snippet class. This can be set on a per snippet basis, but this allows a
     # short-cut on each
     output_type = 'xml'
 
-    def __init__(self, metadata):
+    # snippet classes can set a list of keys that xmltodict will convert to lists in __handler_xml_outputs
+    xml_force_list_keys = []
+
+    def __init__(self, metadata: dict):
 
         # first validate all the required fields are present in the metadata (snippet definition)
         self.metadata = self.sanitize_metadata(metadata)
+        # always keep a fresh copy of the metadata around for looping
+        self.original_metadata = deepcopy(self.metadata)
         # always have a default name, subclasses will set additional fields on the class
         self.name = self.metadata['name']
         # set up jinja environment and add any custom filters. Snippet sub-classes can override __add_filters
@@ -171,6 +184,10 @@ class Snippet(ABC):
                     if type(fc[filter_def]) is list:
                         for item in fc[filter_def]:
                             is_filtered = self.__consider_filter(filter_def, item)
+                            # we have discovered this snippet should not be filtered, jump out now
+                            if is_filtered is not None:
+                                return is_filtered
+
                     elif type(fc[filter_def]) is str:
                         item = fc[filter_def]
                         is_filtered = self.__consider_filter(filter_def, item)
@@ -230,18 +247,59 @@ class Snippet(ABC):
         # this snippet does not match any of the rules above, one way or the other, so filter it out of consideration
         return None
 
-    def __has_tag(self, tag_to_check: str):
-        if 'tag' in self.metadata and type(self.metadata['tag']) is list:
-            for tag in self.metadata['tag']:
-                if tag_to_check == tag:
-                    return True
+    def get_loop_parameter(self) -> list:
+        """
+        Returns the loop parameter for this snippet. If a loop parameter is not defined in the snippet def, this
+        returns a list with a single blank str. Otherwise, return the value of the loop parameter as a list.
 
-            return False
+        :return: value of loop_parameter from the context or a list with a single blank str
+        """
 
-        elif 'tag' in self.metadata and type(self.metadata['tag']) is str:
-            return self.metadata['tag'] == tag_to_check
+        default_list = ['']
+
+        if 'loop' in self.metadata:
+            loop_var_name = self.metadata['loop']
+
+            if loop_var_name not in self.context:
+                return default_list
+
+            loop_var = self.context.get(loop_var_name, list())
+
+            if isinstance(loop_var, list):
+                return loop_var
+
+            else:
+                return [loop_var]
+
+        return default_list
+
+    def __has_tag(self, tag_to_check: str) -> bool:
+        """
+        Check if this snippet has a 'tag' or 'tags' attribute and if one of those items
+        match the tag_to_check value
+
+        :param tag_to_check: str of tag to check
+        :return: boolean True if a tag or tags list item matches
+        """
+        if 'tag' in self.metadata:
+            if type(self.metadata['tag']) is list:
+                tags_list = self.metadata['tag']
+            else:
+                tags_list = [self.metadata['tag']]
+
+        elif 'tags' in self.metadata:
+            if type(self.metadata['tags']) is list:
+                tags_list = self.metadata['tags']
+            else:
+                tags_list = [self.metadata['tags']]
         else:
             return False
+
+        for tag in tags_list:
+            if tag_to_check == tag:
+                return True
+
+        return False
 
     def execute_conditional(self, test: str, context: dict) -> bool:
         """
@@ -312,15 +370,20 @@ class Snippet(ABC):
         :return: a dictionary containing all captured variables
         """
 
-        # always capture the default output
-        # captured_outputs = self.get_default_output(results, status)
         captured_outputs = dict()
+
         output_type = self.metadata.get('output_type', self.output_type)
 
         # check if this snippet type wants to handle it's own outputs
         if hasattr(self, f'handle_output_type_{output_type}'):
             func = getattr(self, f'handle_output_type_{output_type}')
             return func(results)
+
+        # added for issue #151 - snippets can return 'failure' after catching an exception in which case
+        # we cannot capture outputs as the output may be an exception message instead of the expected results
+        if status != 'success':
+            logger.error('Not capturing outputs for failed snippet execution...')
+            return captured_outputs
 
         # otherwise, check all the normal types here
         if 'outputs' not in self.metadata:
@@ -332,6 +395,9 @@ class Snippet(ABC):
 
             if 'name' not in output:
                 continue
+
+            # allow jinja syntax in capture_pattern, capture_value, capture_object etc
+            output = self.__render_output_metadata(output, self.context)
 
             if not results:
                 outputs[output['name']] = ''
@@ -346,11 +412,12 @@ class Snippet(ABC):
             elif 'capture_expression' in output:
                 expression = self._env.compile_expression(output['capture_expression'])
                 value = expression(self.context)
-                outputs[output['name']] = value
+                if isinstance(value, list) and 'filter_items' in output:
+                    outputs[output['name']] = self.__filter_outputs(output, value, self.context)
+                else:
+                    outputs[output['name']] = value
 
             else:
-                # allow jinja syntax in capture_pattern, capture_value, capture_object etc
-                output = self.__render_output_metadata(output, self.context)
 
                 if output_type == 'xml':
                     outputs = self.__handle_xml_outputs(output, results)
@@ -379,7 +446,7 @@ class Snippet(ABC):
 
     def __render_output_metadata(self, output: dict, context: dict) -> dict:
         # fix for #78 allow filter_items to be rendered
-        keys = ('capture_value', 'capture_pattern', 'capture_object', 'capture_list', 'filter_items')
+        keys = ('name', 'capture_value', 'capture_pattern', 'capture_object', 'capture_list', 'filter_items')
         for k in keys:
             if k in output:
                 output[k] = self.render(output[k], context)
@@ -411,12 +478,6 @@ class Snippet(ABC):
                 if results:
                     filtered_items.append(item)
 
-            # if len(filtered_items) == 0:
-            #     output = None
-            # elif len(filtered_items) == 1:
-            #     output = filtered_items[0]
-            # else:
-            #     output = filtered_items
             return filtered_items
 
         elif isinstance(output, str) or isinstance(output, dict):
@@ -437,6 +498,10 @@ class Snippet(ABC):
         """
         if context is None:
             context = self.context
+
+        if not isinstance(template_str, str):
+            return template_str
+
         t = self._env.from_string(template_str)
         return t.render(context)
 
@@ -448,8 +513,13 @@ class Snippet(ABC):
         :return: list of variables declared in the template
         """
 
-        parsed_template_str = self._env.parse(template_str)
-        return meta.find_undeclared_variables(parsed_template_str)
+        try:
+            parsed_template_str = self._env.parse(template_str)
+            return meta.find_undeclared_variables(parsed_template_str)
+
+        except TemplateError as te:
+            logger.error('Could not parse template string in get_variables_from_template')
+            raise SkilletValidationException(f'Error Parsing template {te}')
 
     def get_output_variables(self) -> list:
         """
@@ -471,7 +541,15 @@ class Snippet(ABC):
         variables = list()
         for i in self.template_metadata:
             if i in self.metadata:
-                found_vars = self.get_variables_from_template(self.metadata[i])
+
+                # ensure we check for conditional template metadata as well as normal templated metadata
+                # see pan_validation 'test' attribute as an example
+                if i in self.conditional_template_metadata:
+                    test_str = "{{ " + str(self.metadata[i]) + " }}"
+                else:
+                    test_str = self.metadata[i]
+                found_vars = self.get_variables_from_template(test_str)
+
                 for f in found_vars:
                     if f not in variables:
                         variables.append(f)
@@ -543,6 +621,15 @@ class Snippet(ABC):
 
         return self.metadata
 
+    def reset_metadata(self):
+        """
+        Reset the metadata to the original metadata. This is used during looping
+        so we can render items in the metadata on each iteration.
+
+        :return: None
+        """
+        self.metadata = deepcopy(self.original_metadata)
+
     # define functions for custom jinja filters
     @staticmethod
     def __md5_hash(txt: str) -> str:
@@ -556,6 +643,31 @@ class Snippet(ABC):
 
         return md5_crypt.hash(txt)
 
+    @staticmethod
+    def __json_query(obj: dict, query: str) -> Any:
+        """
+        JMESPath query, jmespath.org for examples
+
+        :param query: JMESPath query string
+        :param obj: object to be queried
+        """
+        if not isinstance(query, str):
+            raise SkilletLoaderException('json_query requires an argument of type str')
+        path = jmespath.search(query, obj)
+        return path
+
+    @staticmethod
+    def __slugify(txt: str) -> str:
+
+        txt = re.sub(r'\s+', '_', txt)
+        txt = re.sub(r'[^\w+\-]', '', txt)
+        txt = re.sub(r'-', '_', txt)
+        txt = re.sub(r'__', '_', txt)
+        txt = re.sub(r'^_+', '', txt)
+        txt = re.sub(r'_+$', '', txt)
+
+        return txt
+
     def __init_env(self) -> None:
         """
         init the jinja2 environment and add any required filters
@@ -564,6 +676,9 @@ class Snippet(ABC):
         """
         self._env = Environment(loader=BaseLoader, extensions=[AnsibleCoreFiltersExtension])
         self._env.filters["md5_hash"] = self.__md5_hash
+        self._env.filters["slugify"] = self.__slugify
+        self._env.filters["s"] = self.__slugify
+        self._env.filters['json_query'] = self.__json_query
         self.add_filters()
 
     def add_filters(self) -> None:
@@ -613,8 +728,11 @@ class Snippet(ABC):
             pattern = re.compile(output_definition['capture_list'])
             matches = pattern.findall(results)
             if matches:
-                # capture list should only the full list of matches
-                outputs[output_name] = matches
+                # capture list should return only the full list of matches unless filter_items is present
+                if 'filter_items' in output_definition:
+                    outputs[output_name] = self.__filter_outputs(output_definition, matches, self.context)
+                else:
+                    outputs[output_name] = matches
             else:
                 # no matches should return an empty list
                 outputs[output_name] = list()
@@ -628,7 +746,7 @@ class Snippet(ABC):
     def __handle_xml_outputs(self, output_definition: dict, results: str) -> dict:
         """
         Parse the results string as an XML document
-        Example .meta-cnc snippets section:
+        Example skillet.yaml snippets section:
         snippets:
 
           - name: system_info
@@ -665,6 +783,26 @@ class Snippet(ABC):
             else:
                 # there are unique tags in this list
                 return True
+
+        def convert_entry(el: elementTree.Element):
+            # force_lists always returns a list even though in most cases, we really only want a single item
+            # due to an exact xpath match. However, we might still want force_list to apply further down in the
+            # the document.
+            tag_name = el.tag
+
+            res = xmltodict.parse(elementTree.tostring(el),
+                                  force_list=self.xml_force_list_keys)
+
+            if tag_name not in self.xml_force_list_keys:
+                return res
+
+            if tag_name in res and \
+                    isinstance(res[tag_name], list) and \
+                    len(res[tag_name]) == 1:
+                # unwind unnecessary list at the top level here
+                return {tag_name: res[tag_name][0]}
+
+            return res
 
         try:
             xml_doc = etree.XML(results)
@@ -744,12 +882,15 @@ class Snippet(ABC):
                 if len(entries) == 0:
                     captured_output[var_name] = None
                 elif len(entries) == 1:
-                    captured_output[var_name] = xmltodict.parse(elementTree.tostring(entries.pop()))
+                    captured_output[var_name] = convert_entry(entries.pop())
+
                 else:
                     capture_list = list()
                     for entry in entries:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
-                    captured_output[var_name] = capture_list
+                        capture_list.append(convert_entry(entry))
+
+                    # FIXME - isn't this duplicated below?
+                    captured_output[var_name] = self.__filter_outputs(output, capture_list, self.context)
 
             elif 'capture_list' in output:
                 capture_pattern = output['capture_list']
@@ -760,10 +901,26 @@ class Snippet(ABC):
                     if isinstance(entry, str):
                         capture_list.append(entry)
                     else:
-                        capture_list.append(xmltodict.parse(elementTree.tostring(entry)))
+                        capture_list.append(convert_entry(entry))
 
                 captured_output[var_name] = capture_list
 
+            elif 'capture_xml' in output:
+                capture_pattern = output['capture_xml']
+                entries = xml_doc.xpath(capture_pattern)
+                if len(entries) == 0:
+                    captured_output[var_name] = None
+                elif len(entries) == 1:
+                    captured_output[var_name] = etree.tostring(entries.pop(), encoding='unicode')
+                else:
+                    outer_tag = etree.fromstring('<xml/>')
+                    for e in entries:
+                        outer_tag.append(e)
+                    found_entries_str = etree.tostring(outer_tag, encoding='unicode')
+                    captured_output[var_name] = found_entries_str
+
+                # short circuit return here as it makes no sense to do the filtering on a plain string object
+                return captured_output
             # filter selected items here
             captured_output[var_name] = self.__filter_outputs(output, captured_output[var_name], local_context)
 

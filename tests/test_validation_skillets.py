@@ -12,7 +12,7 @@ with open('example_config/config.xml', 'r') as config:
     context['config'] = config.read()
 
 
-def load_and_execute_skillet(skillet_path: str) -> None:
+def load_and_execute_skillet(skillet_path: str) -> dict:
     skillet_loader = SkilletLoader(path=skillet_path)
     skillet = skillet_loader.skillets[0]
     print('=' * 80)
@@ -26,15 +26,61 @@ def load_and_execute_skillet(skillet_path: str) -> None:
             print(f'{k:60}{r}')
             assert r == 'True'
 
+    return output
+
+
+#
+# def test_capture_expression():
+#     skillet_path = '../example_skillets/capture_expression/'
+#     load_and_execute_skillet(skillet_path)
+
+
+def test_output_template():
+    skillet_path = '../example_skillets/output_template/'
+    output = load_and_execute_skillet(skillet_path)
+    assert 'output_template' in output
+    assert 'Success' in output['output_template']
+
+
+def test_basic_structure():
+    skillet_path = '../example_skillets/capture_value/'
+    output = load_and_execute_skillet(skillet_path)
+    assert 'pan_validation' in output
+    assert 'ensure_hostname_was_found' in output['pan_validation']
+
 
 def test_capture_value():
     skillet_path = '../example_skillets/capture_value/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+
+    assert 'pan_validation' in out
+
+    # ensure default_documentation_link label is set correctly here for #14
+    assert out['pan_validation']['ensure_hostname_was_found']['documentation_link'] != ''
 
 
 def test_capture_object():
     skillet_path = '../example_skillets/capture_object/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+
+    # ensure validation skillets also include captured values in the output under the 'outputs' key
+    assert 'outputs' in out
+    assert 'system_object' in out['outputs']
+
+    # this skillet captures the gp app crypto profiles as an object
+    assert 'profiles' in out['outputs']
+    entry_list = out['outputs']['profiles']['global-protect-app-crypto-profiles']['entry']
+
+    # test to ensure skilletlib is properly converting the 'entry' into a single item list
+    assert isinstance(entry_list, list)
+    assert len(entry_list) == 1
+
+    assert 'gp_profile_entry' in out['outputs']
+    gp_profile_entry = out['outputs']['gp_profile_entry']
+
+    # test to ensure capture object will not convert 'top-level' entry items into a list and instead
+    # return the actual object instead
+    assert(isinstance(gp_profile_entry, dict))
 
 
 def test_capture_list_filter():
@@ -44,7 +90,28 @@ def test_capture_list_filter():
 
 def test_capture_variable():
     skillet_path = '../example_skillets/capture_variable/'
-    load_and_execute_skillet(skillet_path)
+    out = load_and_execute_skillet(skillet_path)
+    assert 'interface_object' in out['outputs']
+    interface_object = out['outputs']['interface_object']
+
+    # ensure the capture_object
+    assert isinstance(interface_object, dict)
+
+
+def test_capture_xml():
+    skillet_path = '../example_skillets/capture_xml/'
+    out = load_and_execute_skillet(skillet_path)
+    assert 'qos_profile_egress_max' in out['outputs']
+    assert 'qos_profile_no_egress_max' in out['outputs']
+
+    # this xpath should return results as str for both of these queries
+    assert out['outputs']['qos_profile_egress_max'] is not None
+    assert out['outputs']['qos_profile_no_egress_max'] is not None
+
+    assert 'entry name="qos_1"' in out['outputs']['qos_profile_egress_max']
+
+    # crafted xpath query should result in this NOT being present in the resulting output string
+    assert 'entry name="qos_1"' not in out['outputs']['qos_profile_no_egress_max']
 
 
 def test_tag_present():

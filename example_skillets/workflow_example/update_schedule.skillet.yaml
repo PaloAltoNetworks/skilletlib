@@ -1,0 +1,34 @@
+name: update_schedule
+label: Basic Validations for Update Schedule
+
+description: |
+  This skillet does a basic validation on the update schedule xpath
+
+type: pan_validation
+labels:
+  collection: Test Skillets
+
+variables:
+  - name: some_update_variable
+    description: Random Variable to check
+    default: test123456
+    type_hint: text
+
+snippets:
+  - name: get_update_schedule
+    cmd: parse
+    variable: config
+    outputs:
+      - name: update_schedule_object
+        capture_object: /config/devices/entry[@name='localhost.localdomain']/deviceconfig/system/update-schedule
+
+  - name: update_schedule_configured
+    label: Ensure Update Schedules are Configured
+    test: update_schedule_object is not none
+    documentation_link: https://iron-skillet.readthedocs.io
+
+  - name: ensure_wildfire_check_1_min
+    when: update_schedule_object is not none
+    label: Ensure Wildfire Checks every 1 minute
+    test: update_schedule_object | has_config('update-schedule.wildfire.recurring.every-min')
+    documentation_link: https://docs.paloaltonetworks.com/pan-os/8-0/pan-os-new-features/content-inspection-features/telemetry-and-threat-intelligence-sharing

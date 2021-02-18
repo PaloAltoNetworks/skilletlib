@@ -15,6 +15,7 @@
 # Authors: Adam Baumeister, Nathan Embery
 
 
+import ipaddress
 import logging
 import xml.etree.ElementTree as elementTree
 from collections import OrderedDict
@@ -46,6 +47,8 @@ class PanosSnippet(TemplateSnippet):
     # keep the xml results between output capture
     xml_results = ''
 
+    xml_force_list_keys = ['member', 'entry']
+
     def __init__(self, metadata: dict, panoply: Panoply):
         self.panoply = panoply
 
@@ -67,7 +70,7 @@ class PanosSnippet(TemplateSnippet):
         super().__init__(self.element, metadata)
         # self.add_filters()
 
-    def execute(self, context: dict) -> Tuple[dict, str]:
+    def execute(self, context: dict) -> Tuple[str, str]:
         if self.cmd == 'validate':
             logger.info(f'  Validating Snippet: {self.name}')
             test = self.metadata['test']
@@ -131,6 +134,11 @@ class PanosSnippet(TemplateSnippet):
             self._env.filters['element_value_contains'] = self.__node_value_contains
             self._env.filters['attribute_present'] = self.__node_attribute_present
             self._env.filters['attribute_absent'] = self.__node_attribute_absent
+            self._env.filters['items_present'] = self.__verify_in_list
+            self._env.filters['item_present'] = self.__verify_item_in_list
+            self._env.filters['permitted_address'] = self.__permitted_address
+            self._env.filters['listify'] = self.__listify
+            self._env.filters['difference'] = self.__difference
 
         else:
             logger.info('NO FILTERS TO APPEND TO')
@@ -143,6 +151,8 @@ class PanosSnippet(TemplateSnippet):
         :return: dict
         """
         metadata = super().sanitize_metadata(metadata)
+
+        name = metadata.get('name', 'n/a')
 
         err = f'Unknown cmd {self.cmd}'
         if self.cmd in ('set', 'edit', 'override'):
@@ -172,12 +182,12 @@ class PanosSnippet(TemplateSnippet):
                 return metadata
             err = 'cmd_str attribute is required for op or cli cmd'
         elif self.cmd == 'validate':
-            if {'test', 'label', 'documentation_link'}.issubset(metadata):
+            if {'test', 'label'}.issubset(metadata):
                 # configure validation outputs manually if necessary
                 # for validation we only need the output_type set to 'validation'
                 metadata['output_type'] = 'validation'
                 return metadata
-            err = 'test, label, and documentation_link are required attributes for validate cmd'
+            err = 'test and label are required attributes for validate cmd'
         elif self.cmd == 'parse':
             if {'variable', 'outputs'}.issubset(metadata):
                 return metadata
@@ -193,7 +203,7 @@ class PanosSnippet(TemplateSnippet):
                 metadata['output_type'] = 'manual'
             return metadata
 
-        raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
+        raise SkilletLoaderException(f'Invalid metadata configuration for snippet {name}: {err}')
 
     def render_metadata(self, context: dict) -> dict:
         """
@@ -497,6 +507,107 @@ class PanosSnippet(TemplateSnippet):
                 return inner_obj
 
         return obj
+
+    def __verify_in_list(self, list1: list, list2: (list, dict), list2_path='.') -> bool:
+        """
+        Iterate all items from the list. Verify they are present in at least one item
+        from the second list. In the case where list2 is a list of objects / dictionaries
+        the list2_path can be used to determine if the item from list1 is present.
+
+        Consider a list of objects, each with a list of members. Verify all items from list1
+        exist in the members list of at least one object.
+
+        :param list1: list of items to verify exist in list2
+        :param list2: list of items or objects to check
+        :param list2_path: when list2 contains objects, the path to check for each object for the presence list1 item
+        :return: boolean true if all items from list1 are present in list2
+        """
+        for item in list1:
+
+            found = False
+
+            for second_item in list2:
+                if list2_path == '.':
+                    item2 = second_item
+                else:
+                    item2 = self.__get_value_from_path(second_item, list2_path)
+
+                if isinstance(item2, list):
+                    if item in item2:
+                        found = True
+                        break
+                elif isinstance(item2, str):
+                    if item == item2:
+                        found = True
+                        break
+
+            if not found:
+                return False
+
+        return True
+
+    @staticmethod
+    def __verify_item_in_list(obj: Any, list2: (list, dict)) -> bool:
+        """
+        Similar to __verify_items_in_list, except checks if a string, or list member
+        is present in list2
+
+        :param obj: obj to test if in list2
+        :param list2: list to test if obj is a member of
+        """
+        if isinstance(obj, list):
+            for o in obj:
+                if o in list2:
+                    return True
+            return False
+        return obj in list2
+
+    @staticmethod
+    def __permitted_address(obj: dict, permitted: list) -> bool:
+        """
+        Check if a NGFW formatted address object is in a list of permissible ranges
+
+        :param obj: NGFW formatted address entry as a dict
+        :param permitted: List of permissible address objects in CIDR format
+        """
+        test_network = ipaddress.ip_network(obj['entry']['ip-netmask'])
+        for network in permitted:
+            if test_network.subnet_of(ipaddress.ip_network(network)):
+                return True
+
+        return False
+
+    @staticmethod
+    def __difference(list1: list, list2: list) -> list:
+        """
+        Returns a list of items from list1 that do not exist in list2
+
+        :param list1: list of items expected to be in list2
+        :param list2: list of items list1 will be evaluated against
+        """
+        if not isinstance(list1, list) or not isinstance(list2, list):
+            raise SkilletLoaderException('difference filter takes only type list for both arguments.')
+
+        return list(set([x for x in list1 if x not in list2]))
+
+    @staticmethod
+    def __listify(obj: Any) -> list:
+        """
+        Attempt to convert a string input into a list
+
+        :param obj: raw input text
+        """
+        if isinstance(obj, list):
+            return obj
+
+        if isinstance(obj, str):
+            if '\n' in obj:
+                return [x.strip() for x in obj.split('\n') if x]
+            elif ',' in obj:
+                return [x.strip() for x in obj.split(',') if x]
+            return [obj.strip()]
+
+        raise SkilletLoaderException('listify filter requires input of type str.')
 
     def get_default_output(self, results: str, status: str) -> dict:
         """

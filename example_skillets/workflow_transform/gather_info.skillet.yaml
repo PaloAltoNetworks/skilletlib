@@ -1,0 +1,27 @@
+
+name: gather_info
+label: Example of how to use xpath queries to capture specific items of interest.
+
+description: |
+  This example Skillet shows how to parse and validate a config using xpath syntax. This example grabs some information
+  from the device configuration and returns it as captured outputs.
+
+type: panos
+
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+
+snippets:
+  - name: parse config variable and capture outputs
+    cmd: parse
+    variable: config
+    outputs:
+      # create a variable named 'zone_names' which will be a list of the attribute 'names' from each zone
+      # note the use of '//' to select all zones
+      # the '@name' will return only the value of the attribute 'name' from each 'entry'
+      - name: zone_names
+        capture_pattern: /config/devices/entry/vsys/entry/zone//entry/@name
+

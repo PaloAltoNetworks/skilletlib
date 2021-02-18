@@ -50,7 +50,7 @@ class RestSkillet(Skillet):
 
     def get_results(self) -> dict:
         """
-        Gets the results from the REST skillet execution. This skillet does not add any additional attirubutes to the
+        Gets the results from the REST skillet execution. This skillet does not add any additional attributes to the
         normal output.
 
         The following snippet will generate the following output:

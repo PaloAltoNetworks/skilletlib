@@ -1,0 +1,35 @@
+name: example_workflow_with_filtering
+label: Workflow Example with Snippet Filtering
+
+description: |
+  This example shows how to build a workflow type skillet. This will chain together multiple different skillets, of
+  potentially different types, into a single execution. You may also filter snippets for inclusion / exclusion
+  using the filter_snippets attribute.
+
+type: workflow
+
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+
+
+snippets:
+  # in the workflow skillet case, each 'snippet' is the name of a skillet to execute in turn
+  - name: update_schedule
+    # you may optional filter snippet in or out using the include_by_name, include_by_tag, and include_by_regex
+    # options. The inverse exclude_by options are also supported. The value of each may be a list or a single item
+    include_by_name:
+      - get_update_schedule
+      - update_schedule_configured
+      - ensure_wildfire_check_1_min
+  - name: edl_checks
+    # includes can be mixed and matched. include / exclude can be a list or a single item
+    include_name: edl_captures
+    # include by regex matches snippet names that match the regular expression. All others will be excluded
+    include_by_regex: check_.*
+  - name: device_system_checks
+    # include by tag uses the 'tags' or 'tag' attribute and includes all snippets marked with that tag value
+    include_by_tag:
+      - device_system

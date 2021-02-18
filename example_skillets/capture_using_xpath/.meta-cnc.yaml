@@ -61,7 +61,7 @@ snippets:
     cmd: validate
     # note here that you can use jinja variable interpolation just about anywhere
     label: Ensures the {{ zone_to_test }} zone is not configured
-    test: zone_test_test not in zone_names
+    test: zone_to_test not in zone_names
     fail_message: |
       This fail message contains a variable, which is useful for debugging and testing.
       captured values were: {{ zone_names |tojson() }} and {{ interface_with_ip |default('none')|tojson() }}

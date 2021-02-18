@@ -141,7 +141,12 @@ class PanosSkillet(Skillet):
                 context['config'] = self.panoply.get_configuration()
 
             else:
-                raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
+                # fix for #110
+                if 'config' not in context:
+                    # allow the config to be set in the context by the user. This ensures calling initialize_context
+                    # twice does not trigger this exception. Only through it when we are not connected and the user
+                    # has not set the config variable
+                    raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
         self.initialized = True
         return context
@@ -203,7 +208,7 @@ class PanosSkillet(Skillet):
             xpath: /config/devices/entry[@name='localhost.localdomain']/template
             file: ../snippets/template.xml
 
-        :param snippet_def: the loaded snippet definition from the .meta-cnc.yaml file. Each snippet object in the
+        :param snippet_def: the loaded snippet definition from the skillet.yaml file. Each snippet object in the
         'snippets' stanza is a snippet_def and is passed in here
         :param snippet_path: the path on the filesystem where this skillet is located. This is used to resolve
         relative paths for each snippet. This allows snippet file re-use across skillets.

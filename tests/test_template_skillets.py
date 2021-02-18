@@ -7,8 +7,9 @@ context = dict()
 
 
 def load_and_execute_skillet(skillet_path: str) -> dict:
-    skillet_loader = SkilletLoader(path=skillet_path)
-    skillet = skillet_loader.skillets[0]
+    skillet_loader = SkilletLoader()
+    skillet = skillet_loader.load_skillet_from_path(skillet_path)
+
     print('=' * 80)
     print(f'Executing {skillet.label}\n'.center(80))
 

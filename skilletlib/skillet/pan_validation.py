@@ -21,11 +21,10 @@ from skilletlib.snippet.pan_validation import PanValidationSnippet
 from .panos import PanosSkillet
 
 
-# from .base import Skillet
-
-
 class PanValidationSkillet(PanosSkillet):
     snippet_list = list()
+
+    snippet_optional_metadata = {'documentation_link': ''}
 
     def get_snippets(self) -> List[PanValidationSnippet]:
 
@@ -89,29 +88,47 @@ class PanValidationSkillet(PanosSkillet):
         # addition for #124 - ensure captured_outputs are present in the output as well
         results['outputs'] = self.captured_outputs
 
-        context = self.context
+        default_doc_link = self.labels.get('default_documentation_link', None)
 
         for s in self.get_snippets():
             snippet_name = s.name
             cmd = s.cmd
             # handle both validate and validate_xml here
-            if snippet_name in context and 'validate' in cmd:
-                if 'results' in context[snippet_name]:
-                    result = context[snippet_name]['results']
-                    label_template = context[snippet_name].get('label', '')
-                    # attempt to render the label using supplied context
-                    context[snippet_name]['label'] = s.render(label_template, context)
-                    if not result:
-                        fail_message = s.metadata.get('fail_message', 'Snippet Validation results were {{ result }}')
-                        context[snippet_name]['output_message'] = s.render(fail_message, context)
-                    elif result:
-                        pass_message = s.metadata.get('pass_message', 'Snippet Validation results were {{ result }}')
-                        context[snippet_name]['output_message'] = s.render(pass_message, context)
-                    else:
-                        context[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+            if snippet_name in self.captured_outputs \
+                    and 'validate' in cmd:
 
-                    results['snippets'][snippet_name] = result
+                # looping is supported for pan_validation
+                if isinstance(self.captured_outputs[snippet_name], list):
+                    result_list = self.captured_outputs[snippet_name]
+                else:
+                    result_list = [{snippet_name: self.captured_outputs[snippet_name]}]
 
-                results['pan_validation'][snippet_name] = context[snippet_name]
+                loop_counter = 0
+
+                for output_result in result_list:
+                    if snippet_name in output_result and 'results' in output_result[snippet_name]:
+                        result = output_result[snippet_name]['results']
+                        if not result:
+                            output_result[snippet_name]['output_message'] = s.metadata.get('fail_message',
+                                                                                           'Snippet Validation Failed')
+                        elif result:
+                            output_result[snippet_name]['output_message'] = s.metadata.get('pass_message',
+                                                                                           'Snippet Validation Passed')
+
+                        else:
+                            output_result[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
+
+                        # add default_doc link for issue #14
+                        if output_result[snippet_name].get('documentation_link') == '' and default_doc_link:
+                            output_result[snippet_name]['documentation_link'] = default_doc_link
+
+                        if snippet_name not in results['pan_validation']:
+                            results['pan_validation'][snippet_name] = output_result[snippet_name]
+                            results['snippets'][snippet_name] = result
+                        else:
+                            results['pan_validation'][f'{snippet_name}_{loop_counter}'] = output_result[snippet_name]
+                            results['snippets'][f'{snippet_name}_{loop_counter}'] = result
+
+                    loop_counter += 1
 
         return self._parse_output_template(results)
