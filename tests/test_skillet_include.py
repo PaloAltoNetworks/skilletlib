@@ -3,7 +3,6 @@
 import pytest
 
 from skilletlib import SkilletLoader
-from skilletlib.exceptions import VariableNotFoundException
 from skilletlib.skillet.base import Skillet
 from skilletlib.snippet.base import Snippet
 from skilletlib.utils.testing_utils import setup_dir
@@ -67,6 +66,13 @@ def test_skillet_includes():
 
     another_included_variable: dict = skillet.get_variable_by_name('zone_to_test')
     assert another_included_variable["default"] == "untrust"
+
+    # Ensure using includes / overrides leaves our original skillet definition intact
+    # added for issue #163
+    child_skillet: Skillet = skillet_loader.get_skillet_with_name('network_profiles')
+    child_snippet: Snippet = child_skillet.get_snippet_by_name('check_network_profiles')
+
+    assert child_snippet.metadata.get('label', '') == 'Ensure Named profile exists'
 
 
 def test_load_skillet_from_path():
