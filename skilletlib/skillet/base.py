@@ -257,12 +257,18 @@ class Skillet(ABC):
                     logger.error(f'Caught Exception during execution: {sle}')
                     snippet_outputs = snippet.get_default_output(str(sle), 'error')
                     logger.error(snippet_outputs)
-                    self.snippet_outputs.update(snippet_outputs)
+                    if snippet.name in self.snippet_outputs:
+                        self.snippet_outputs[snippet.name].append(snippet_outputs)
+                    else:
+                        self.snippet_outputs[snippet.name] = [snippet_outputs]
 
                 except Exception as e:
                     logger.error(f'Exception caught: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
-                    self.snippet_outputs.update(snippet_outputs)
+                    if snippet.name in self.snippet_outputs:
+                        self.snippet_outputs[snippet.name].append(snippet_outputs)
+                    else:
+                        self.snippet_outputs[snippet.name] = [snippet_outputs]
 
         finally:
             self.cleanup()
@@ -344,12 +350,18 @@ class Skillet(ABC):
                     logger.error(f'Caught Exception during execution: {sle}')
                     snippet_outputs = snippet.get_default_output(str(sle), 'error')
                     logger.error(snippet_outputs)
-                    self.snippet_outputs.update(snippet_outputs)
+                    if snippet.name in self.snippet_outputs:
+                        self.snippet_outputs[snippet.name].append(snippet_outputs)
+                    else:
+                        self.snippet_outputs[snippet.name] = [snippet_outputs]
 
                 except Exception as e:
                     logger.error(f'Exception caught in snippet: {snippet.name}: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
-                    self.snippet_outputs.update(snippet_outputs)
+                    if snippet.name in self.snippet_outputs:
+                        self.snippet_outputs[snippet.name].append(snippet_outputs)
+                    else:
+                        self.snippet_outputs[snippet.name] = [snippet_outputs]
 
         finally:
             self.cleanup()
