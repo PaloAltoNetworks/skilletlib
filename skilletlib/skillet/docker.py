@@ -38,9 +38,11 @@ class DockerSkillet(Skillet):
         if 'app_data' in s and isinstance(s['app_data'], dict):
             self.volumes = s['app_data'].get('volumes', list())
             self.working_dir = s['app_data'].get('working_dir', '/app')
+            self.user = s['app_data'].get('user', 0)
         else:
             self.volumes = list()
             self.working_dir = None
+            self.user = 0
 
         super().__init__(s)
 
@@ -51,7 +53,11 @@ class DockerSkillet(Skillet):
 
         snippet_list = list()
 
-        for snippet_def in self.snippet_stack:
+        for user_snippet_def in self.snippet_stack:
+
+            # use a copy to keep this data local
+            snippet_def = user_snippet_def.copy()
+
             # self.path is set automatically in skillet/base.py
             # set skillet_path here for each skillet to have access to current path
             # this is needed for host directory mapping for volume mounts
@@ -75,6 +81,9 @@ class DockerSkillet(Skillet):
 
             else:
                 snippet_def['working_dir'] = '/app'
+
+            # set the user on the snippet definition
+            snippet_def['user'] = self.user
 
             snippet = DockerSnippet(snippet_def)
             snippet_list.append(snippet)
