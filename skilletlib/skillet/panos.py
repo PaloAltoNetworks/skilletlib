@@ -292,6 +292,7 @@ class PanosSkillet(Skillet):
 
                 if v.get('results', 'failure') != 'success':
                     skillet_result = 'failure'
+                    self.success = False
                 else:
                     if v.get('changed', False):
                         changed = True

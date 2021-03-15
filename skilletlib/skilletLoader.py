@@ -85,6 +85,16 @@ class SkilletLoader:
         """
         return self._parse_skillet(skillet_path)
 
+    def load_skillet(self, skillet_path: str) -> Skillet:
+        """
+        Returns a Skillet object from the given path
+
+        :param skillet_path: full path to the skillet YAML file
+        :return: Skillet object
+        """
+
+        return self.load_skillet_from_path(skillet_path)
+
     def load_skillet_from_path(self, skillet_path: (str, Path)) -> Skillet:
         """
         Returns a Skillet object from the given path.

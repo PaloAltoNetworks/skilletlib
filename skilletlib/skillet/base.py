@@ -60,6 +60,8 @@ class Skillet(ABC):
         :param s: loaded dictionary from the skillet YAML file
         """
 
+        self.success = True
+
         self.skillet_dict = self.__normalize_skillet_dict(s)
         self.name = self.skillet_dict['name']
         self.label = self.skillet_dict['label']
@@ -207,6 +209,7 @@ class Skillet(ABC):
         :return: generator[str]
         """
         try:
+            self.success = True
             context = self.initialize_context(initial_context)
             logger.debug(f'Executing Async Skillet: {self.name}')
 
@@ -220,6 +223,9 @@ class Skillet(ABC):
                     if snippet.should_execute(context):
                         (output, status) = snippet.execute(context)
                         logger.debug(f'{snippet.name} - status: {status}')
+
+                        if status != 'success':
+                            self.success = False
 
                         if output:
                             logger.debug(f'{snippet.name} - output: {output}')
@@ -254,6 +260,7 @@ class Skillet(ABC):
                         context.update(captured_outputs)
 
                 except SkilletLoaderException as sle:
+                    self.success = False
                     logger.error(f'Caught Exception during execution: {sle}')
                     snippet_outputs = snippet.get_default_output(str(sle), 'error')
                     logger.error(snippet_outputs)
@@ -263,6 +270,7 @@ class Skillet(ABC):
                         self.snippet_outputs[snippet.name] = [snippet_outputs]
 
                 except Exception as e:
+                    self.success = False
                     logger.error(f'Exception caught: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
                     if snippet.name in self.snippet_outputs:
@@ -287,6 +295,8 @@ class Skillet(ABC):
         :return: a dict containing the updated context containing the output of each of the snippets
         """
         try:
+            # reset success on execution
+            self.success = True
             context = self.initialize_context(initial_context)
             logger.debug(f'Executing Skillet: {self.name}')
 
@@ -309,6 +319,9 @@ class Skillet(ABC):
 
                             (output, status) = snippet.execute(context)
                             logger.debug(f'{snippet.name} - status: {status}')
+
+                            if status != 'success':
+                                self.success = False
 
                             if output:
                                 logger.debug(f'{snippet.name} - output: {output}')
@@ -347,6 +360,7 @@ class Skillet(ABC):
                         snippet.reset_metadata()
 
                 except SkilletLoaderException as sle:
+                    self.success = False
                     logger.error(f'Caught Exception during execution: {sle}')
                     snippet_outputs = snippet.get_default_output(str(sle), 'error')
                     logger.error(snippet_outputs)
@@ -356,6 +370,7 @@ class Skillet(ABC):
                         self.snippet_outputs[snippet.name] = [snippet_outputs]
 
                 except Exception as e:
+                    self.success = False
                     logger.error(f'Exception caught in snippet: {snippet.name}: {e}')
                     snippet_outputs = snippet.get_default_output(str(e), 'error')
                     if snippet.name in self.snippet_outputs:
