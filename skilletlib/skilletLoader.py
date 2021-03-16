@@ -319,7 +319,7 @@ class SkilletLoader:
             if not sm_path.exists():
                 continue
 
-            # iterate each one and get a list of all found skillet defintions
+            # iterate each one and get a list of all found skillet definitions
             skillet_definitions = self._check_dir(sm_path, list())
 
             for skillet_dict in skillet_definitions:

@@ -315,6 +315,7 @@ class Panoply:
         """
 
         try:
+            p = self.xapi.xml_document
             self.xapi.op(cmd=cmd_str, cmd_xml=cmd_xml)
             if parse_result:
                 return self.xapi.xml_result()
@@ -326,12 +327,15 @@ class Panoply:
                 # some op commands do not properly wrap data in CDATA tags, so let's try to
                 # replace some chars manually and re-parse...
                 x = self.xapi.xml_document
-                cx = x.replace('&', '&amp;')
+
+                # show config audit version will return an embedded xml document which breaks everything
+                # just remove the invalid embedded xml tags if present
+                cx = x.replace('&', '&amp;').replace('<?xml version="1.0"?>', '').replace('</xml>', '')
 
                 try:
                     # make sure our little 'fix' didn't completely ruin the xml structure and return what we got
                     s = ElementTree.fromstring(cx)
-                    return ElementTree.tostring(s)
+                    return ElementTree.tostring(s).decode(encoding='UTF-8')
 
                 except Exception as e:
                     logger.error(e)

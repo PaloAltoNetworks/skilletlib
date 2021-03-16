@@ -982,6 +982,10 @@ class Snippet(ABC):
         local_context = self.context.copy()
         output = self.__render_output_metadata(output_definition, local_context)
 
+        if len(output) == 1:
+            # we only have a name defined! Set a default here
+            output['capture_pattern'] = '.'
+
         try:
             for i in ('capture_pattern', 'capture_value', 'capture_object'):
                 if i in output:
