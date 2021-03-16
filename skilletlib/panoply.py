@@ -315,7 +315,6 @@ class Panoply:
         """
 
         try:
-            p = self.xapi.xml_document
             self.xapi.op(cmd=cmd_str, cmd_xml=cmd_xml)
             if parse_result:
                 return self.xapi.xml_result()
