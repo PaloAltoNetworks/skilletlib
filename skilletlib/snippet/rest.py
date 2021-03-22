@@ -76,6 +76,9 @@ class RestSnippet(TemplateSnippet):
         if 'path' in metadata:
             metadata['path'] = str(metadata['path']).strip().replace('\n', '')
 
+        # ensure headers are stripped properly for #160
+        metadata['headers'] = {k: v.strip() for k, v in metadata.get('headers', {}).items()}
+
         return metadata
 
     def execute(self, raw_context: dict) -> Tuple[str, str]:

@@ -20,6 +20,10 @@ Skilletlib is a library for working with Skillets. Skillets are a collection of 
 metadata about how those templates should be rendered and applied. Skillets were created to help manage complex
 shareable configuration sets for PAN-OS devices.
 
+Skillets can also be thought of as wrappers around atomic automation units. A collection of PAN-OS
+XML configuration snippets can be grouped together as a unit to be shared and applied together. Skilletlib
+provides a convenient mechanism to examine and apply these automation units.
+
 Building Skillets
 -----------------
 

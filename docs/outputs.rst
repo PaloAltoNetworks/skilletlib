@@ -7,10 +7,13 @@ Executing Skillets
 
 .. code-block:: python
 
-    from skilletlib.skilletLoader import SkilletLoader
+    from skilletlib import SkilletLoader
     sl = SkilletLoader()
-    skillet = sl.load_skillet_from_path('.')
-    out = skillet.execute(dict())
+    skillet = sl.load_skillet('./ssl_decrypt_settings.skillet.yaml')
+    context = dict()
+    context['internal_zone'] = 'inside'
+    context['external_zone'] = 'outside'
+    out = skillet.execute(context)
     print(out)
 
 

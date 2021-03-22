@@ -13,7 +13,7 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # Authors: Nathan Embery
-
+import copy
 import logging
 import os
 import sys
@@ -84,6 +84,16 @@ class SkilletLoader:
         :return: skillet dictionary
         """
         return self._parse_skillet(skillet_path)
+
+    def load_skillet(self, skillet_path: str) -> Skillet:
+        """
+        Returns a Skillet object from the given path
+
+        :param skillet_path: full path to the skillet YAML file
+        :return: Skillet object
+        """
+
+        return self.load_skillet_from_path(skillet_path)
 
     def load_skillet_from_path(self, skillet_path: (str, Path)) -> Skillet:
         """
@@ -309,7 +319,7 @@ class SkilletLoader:
             if not sm_path.exists():
                 continue
 
-            # iterate each one and get a list of all found skillet defintions
+            # iterate each one and get a list of all found skillet definitions
             skillet_definitions = self._check_dir(sm_path, list())
 
             for skillet_dict in skillet_definitions:
@@ -374,27 +384,30 @@ class SkilletLoader:
 
         :param parent: snippet dict
         :param child: included snippet dict
-        :return: included snippet dict with metadata propagated.
+        :return: copy of included snippet dict with metadata propagated.
         """
 
-        if 'tags' in parent:
-            if 'tags' not in child:
-                child['tags'] = list()
+        # fix for #163 - ensure we use deepcopy to avoid modifying the origin snippet definition
+        child_copy = copy.deepcopy(child)
 
-            child['tags'].extend(parent['tags'])
+        if 'tags' in parent:
+            if 'tags' not in child_copy:
+                child_copy['tags'] = list()
+
+            child_copy['tags'].extend(parent['tags'])
 
         elif 'tag' in parent:
-            if 'tag' not in child:
-                child['tag'] = list()
+            if 'tag' not in child_copy:
+                child_copy['tag'] = list()
 
-            child['tag'].extend(parent['tag'])
+            child_copy['tag'].extend(parent['tag'])
 
         attributes = ('when', 'label', 'documentation_link', 'description', 'pass_message', 'fail_message')
         for a in attributes:
             if a in parent:
-                child[a] = parent[a]
+                child_copy[a] = parent[a]
 
-        return child
+        return child_copy
 
     def compile_skillet_dict(self, skillet: dict) -> dict:
         """
@@ -414,17 +427,17 @@ class SkilletLoader:
                 snippets.append(snippet)
                 continue
 
-            include_skillet: Skillet = self.get_skillet_with_name(snippet['include'], include_resolved_skillets=True)
-            if include_skillet is None:
+            included_skillet: Skillet = self.get_skillet_with_name(snippet['include'], include_resolved_skillets=True)
+            if included_skillet is None:
                 raise SkilletLoaderException(f'Could not find included Skillet with name: {snippet["include"]}')
 
             if 'include_snippets' not in snippet and 'include_variables' not in snippet:
                 # include all snippets by default
-                for included_snippet in include_skillet.snippet_stack:
-                    included_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
-                    snippets.append(included_snippet)
+                for included_snippet in included_skillet.snippet_stack:
+                    propagated_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
+                    snippets.append(propagated_snippet)
 
-                for v in include_skillet.variables:
+                for v in included_skillet.variables:
                     found_variable = False
                     for tv in skillet['variables']:
                         if tv['name'] == v['name']:
@@ -437,14 +450,14 @@ class SkilletLoader:
 
             elif 'include_snippets' not in snippet:
                 # include all snippets by default
-                for included_snippet in include_skillet.snippet_stack:
+                for included_snippet in included_skillet.snippet_stack:
                     included_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
                     snippets.append(included_snippet)
 
             else:
                 for include_snippet in snippet['include_snippets']:
                     include_snippet_name = include_snippet['name']
-                    include_snippet_object = include_skillet.get_snippet_by_name(include_snippet_name)
+                    include_snippet_object = included_skillet.get_snippet_by_name(include_snippet_name)
                     include_meta = include_snippet_object.metadata
                     # the meta attribute in the metadata is a dict that we do not want to completely overwrite
                     if 'meta' in include_snippet:
@@ -462,13 +475,13 @@ class SkilletLoader:
                     include_meta.update(include_snippet)
 
                     # ensure the name is set properly
-                    include_meta['name'] = f'{include_skillet.name}.{include_snippet_name}'
+                    include_meta['name'] = f'{included_skillet.name}.{include_snippet_name}'
 
                     snippets.append(include_meta)
 
             if 'include_variables' in snippet:
                 if isinstance(snippet['include_variables'], str) and snippet['include_variables'] == 'all':
-                    for v in include_skillet.variables:
+                    for v in included_skillet.variables:
                         found_variable = False
                         for tv in skillet['variables']:
                             if tv['name'] == v['name']:
@@ -482,7 +495,10 @@ class SkilletLoader:
                     for v in snippet['include_variables']:
                         # we need to include only the variables listed here and possibly update them with any
                         # new / modified attributes
-                        included_variable = include_skillet.get_variable_by_name(v['name'])
+                        included_variable_orig = included_skillet.get_variable_by_name(v['name'])
+
+                        # #163 - always uses deepcopy when using includes / overrides
+                        included_variable = copy.deepcopy(included_variable_orig)
                         # update this variable definition accordingly if necessary
                         included_variable.update(v)
 
