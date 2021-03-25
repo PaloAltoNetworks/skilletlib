@@ -2,7 +2,7 @@ urllib3==1.25.9
 oyaml==0.9
 pan-python==0.16.0
 pathlib==1.0.1
-PyYAML==5.3.1
+PyYAML==5.4
 requests==2.23.0
 xmldiff==2.4
 xmltodict==0.12.0
