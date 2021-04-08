@@ -434,7 +434,11 @@ class SkilletLoader:
             if 'include_snippets' not in snippet and 'include_variables' not in snippet:
                 # include all snippets by default
                 for included_snippet in included_skillet.snippet_stack:
+                    include_snippet_name = included_snippet['name']
                     propagated_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
+
+                    # ensure the name is set properly
+                    propagated_snippet['name'] = f'{included_skillet.name}.{include_snippet_name}'
                     snippets.append(propagated_snippet)
 
                 for v in included_skillet.variables:
@@ -451,8 +455,10 @@ class SkilletLoader:
             elif 'include_snippets' not in snippet:
                 # include all snippets by default
                 for included_snippet in included_skillet.snippet_stack:
-                    included_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
-                    snippets.append(included_snippet)
+                    include_snippet_name = included_snippet['name']
+                    included_meta = self.__propagate_snippet_metadata(snippet, included_snippet)
+                    included_meta['name'] = f'{included_skillet.name}.{include_snippet_name}'
+                    snippets.append(included_meta)
 
             else:
                 for include_snippet in snippet['include_snippets']:
