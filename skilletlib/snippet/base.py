@@ -666,7 +666,7 @@ class Snippet(ABC):
                 """Remove protocols from URL's, such as https://"""
                 if re.search("^[a-zA-Z]{0,5}://", s):
                     return s[s.index('//') + 2:]
-                return s 
+                return s
 
             @jmespath_functions.signature({'types': ['string']}, {'types': ['string']})
             def _func_regex_matches(self, s, r):
