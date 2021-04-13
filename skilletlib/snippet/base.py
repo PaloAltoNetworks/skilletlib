@@ -29,6 +29,7 @@ from uuid import uuid4
 from xml.etree.ElementTree import ParseError
 
 import jmespath
+from jmespath import functions as jmespath_functions
 import xmltodict
 from jinja2 import BaseLoader
 from jinja2 import Environment
@@ -656,9 +657,27 @@ class Snippet(ABC):
         :param query: JMESPath query string
         :param obj: object to be queried
         """
+
+        class CustomFunctions(jmespath_functions.Functions):
+            """Custom jmespath functions"""
+
+            @jmespath_functions.signature({'types': ['string']})
+            def _func_remove_proto(self, s):
+                """Remove protocols from URL's, such as https://"""
+                if re.search("^[a-zA-Z]{0,5}://", s):
+                    return s[s.index('//') + 2:]
+                return s 
+
+            @jmespath_functions.signature({'types': ['string']}, {'types': ['string']})
+            def _func_regex_matches(self, s, r):
+                """Remove protocols from URL's, such as https://"""
+                return bool(re.search(r, s))
+
+        options = jmespath.Options(custom_functions=CustomFunctions())
+
         if not isinstance(query, str):
             raise SkilletLoaderException('json_query requires an argument of type str')
-        path = jmespath.search(query, obj)
+        path = jmespath.search(query, obj, options=options)
         return path
 
     @staticmethod
