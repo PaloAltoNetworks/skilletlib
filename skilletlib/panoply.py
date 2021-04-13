@@ -622,7 +622,7 @@ class Panoply:
 
         try:
             facts['panorama-server'] = results['system']['panorama']['local-panorama']['panorama-server']
-        except KeyError:
+        except (KeyError, TypeError):
             facts['panorama-server'] = None
 
         return facts
