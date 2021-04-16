@@ -129,6 +129,9 @@ class PanosSnippet(TemplateSnippet):
 
         name = metadata.get('name', 'n/a')
 
+        if 'xpath' in metadata:
+            metadata['xpath'] = str(metadata['xpath']).strip().replace('\n', '')
+
         err = f'Unknown cmd {self.cmd}'
         if self.cmd in ('set', 'edit', 'override'):
             if {'xpath', 'element'}.issubset(metadata):
