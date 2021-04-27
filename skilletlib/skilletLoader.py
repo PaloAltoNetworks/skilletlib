@@ -60,7 +60,7 @@ class SkilletLoader:
     tmp_dir = '~./.skilletlib'
 
     # list of directories to skip and not recurse into
-    skip_dirs = ['.terraform', '.git', '.venv', '.idea']
+    skip_dirs = ['.terraform', '.git', '.venv', '.idea', '.tox', '.eggs', 'build', 'dist']
 
     def __init__(self, path=None):
 
