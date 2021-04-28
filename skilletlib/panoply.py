@@ -1210,7 +1210,8 @@ class Panoply:
         sorted_versions = sorted(list(map(int, versions)))
 
         try:
-            # get the actual desired version id
+            # get the actual desired version id, note the highest numbered config id is actually the running
+            # config, so we want to allow the user to specify -1 as the 'previous' config, not the current config...
             desired_version = sorted_versions[int(inverted_version) - 1]
             # return the configuration
             return self.get_configuration_version(str(desired_version))
@@ -1233,7 +1234,7 @@ class Panoply:
             response_root = self.xapi.element_root
             config_items = response_root.findall('.//completion')
             for config in config_items:
-                if 'value' in config.attrib:
+                if 'value' in config.attrib and config.attrib['value'] != '':
                     versions.append(config.attrib['value'])
 
             return versions
