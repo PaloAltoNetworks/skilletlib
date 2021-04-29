@@ -108,15 +108,6 @@ class PanValidationSkillet(PanosSkillet):
                 for output_result in result_list:
                     if snippet_name in output_result and 'results' in output_result[snippet_name]:
                         result = output_result[snippet_name]['results']
-                        if not result:
-                            output_result[snippet_name]['output_message'] = s.metadata.get('fail_message',
-                                                                                           'Snippet Validation Failed')
-                        elif result:
-                            output_result[snippet_name]['output_message'] = s.metadata.get('pass_message',
-                                                                                           'Snippet Validation Passed')
-
-                        else:
-                            output_result[snippet_name]['output_message'] = 'Unknown results from Snippet Validation'
 
                         # add default_doc link for issue #14
                         if output_result[snippet_name].get('documentation_link') == '' and default_doc_link:

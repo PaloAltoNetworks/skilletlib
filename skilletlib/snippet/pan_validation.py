@@ -17,7 +17,7 @@ class PanValidationSnippet(PanosSnippet):
     # optional metadata that may be overridden in the snippet definition / metadata
     optional_metadata = {'documentation_link': ''}
 
-    template_metadata = {'label', 'test', 'fail_message', 'pass_message', 'meta'}
+    template_metadata = {'label', 'test', 'meta'}
 
     conditional_template_metadata = {'test'}
 
@@ -61,6 +61,14 @@ class PanValidationSnippet(PanosSnippet):
         output['meta'] = self.metadata.get('meta', {})
         output['documentation_link'] = self.metadata.get('documentation_link', '')
         output['test'] = self.metadata.get('test', '')
+
+        # only render pass / fail message relevant to the results per #172
+        if results:
+            output['output_message'] = self.render(self.metadata.get('pass_message', 'Snippet Validation Passed'),
+                                                   self.context)
+        else:
+            output['output_message'] = self.render(self.metadata.get('fail_message', 'Snippet Validation Failed'),
+                                                   self.context)
 
         o = dict()
         o[self.name] = output
