@@ -1207,7 +1207,7 @@ class Panoply:
         versions = self.get_configuration_versions()
 
         # convert this list of str into list of int and sort it
-        sorted_versions = sorted(list(map(int, versions)))
+        sorted_versions = sorted(list(map(int, [x["version"] for x in versions])))
 
         try:
             # get the actual desired version id, note the highest numbered config id is actually the running
@@ -1235,7 +1235,11 @@ class Panoply:
             config_items = response_root.findall('.//completion')
             for config in config_items:
                 if 'value' in config.attrib and config.attrib['value'] != '':
-                    versions.append(config.attrib['value'])
+                    v = {
+                        'version': config.attrib["value"],
+                        'date': config.attrib["help-string"]
+                    }
+                    versions.append(v)
 
             return versions
 
