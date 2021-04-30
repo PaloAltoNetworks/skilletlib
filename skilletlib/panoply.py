@@ -1605,15 +1605,21 @@ class Panoply:
 
         fake_snippets = list()
 
+        # little bit of a hack here
+        # our set commands can contain slashes like `set mgmt-config ip-address 10.10.10.1/24` and we ultimately
+        # need to convert this to xpath format for ordering purposes `set/mgt-confg/ip-address/10.10.10.1/24`
+        # so, let's do a simple replacement of any valid forward slashes before hand
+        slash_marker = '****'
+
         for set_cmd in set_commands:
             snippet = dict()
-            snippet['full_xpath'] = set_cmd.replace(' ', '/')
+            snippet['full_xpath'] = set_cmd.replace('/', slash_marker).replace(' ', '/')
             fake_snippets.append(snippet)
 
         ordered_fake_snippets = self.__order_snippets(fake_snippets)
 
         for fake_snippet in ordered_fake_snippets:
-            new_set_command = fake_snippet['full_xpath'].replace('/', ' ')
+            new_set_command = fake_snippet['full_xpath'].replace('/', ' ').replace(slash_marker, '/')
             ordered_set_commands.append(new_set_command)
 
         return ordered_set_commands
@@ -1621,7 +1627,7 @@ class Panoply:
     @staticmethod
     def __filter_snippets_by_xpath(snippets: list, xpath: str) -> list:
         """
-        Check the each snippet in the list and return those that has a full_xpath matching the xpath param. This is
+        Check each snippet in the list and return those that have a full_xpath matching the xpath param. This is
         done by finding the specific leaf node of the xpath by using only the xpath portions after any template, device,
         or vsys entries. So an xpath pattern like 'network/interface' will match even within templates, across vsys,
         etc
