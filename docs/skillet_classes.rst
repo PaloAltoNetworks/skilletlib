@@ -30,6 +30,13 @@ Template Skillet
    :members:
 
 
+Terraform Skillet
+-----------------
+
+.. autoclass:: skilletlib.skillet.terraform.TerraformSkillet
+   :members:
+
+
 Base Skillet
 -------------
 
