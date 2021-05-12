@@ -7,6 +7,7 @@ Welcome to Skilletlib's documentation!
 
    examples
    skillet_classes
+   snippet_classes
    skilletloader
    panoply
    outputs
