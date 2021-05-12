@@ -1,10 +1,9 @@
 # Skilletlib
-Base Classes and Utilities for working with Skillets. Skilletlib encapsulates all the logic necessary to 
+Base Classes and Utilities for working with Skillets in Python 3.7+. Skilletlib encapsulates all the logic necessary to 
 execute a skillet in your app or tooling. 
 
 See [here](https://live.paloaltonetworks.com/t5/Skillet-District/ct-p/Skillets) for information about Skillets and
-what skillets may be available. A list of example skillets may be found 
-[here as well](https://github.com/PaloAltoNetworks/skillets).
+what skillets may be available. 
 
 
 ## About Skillets
@@ -13,12 +12,21 @@ Skillets are designed to be sharable units of configuration or validation data. 
 'Compliance as Code' or 'Infrastructure as Code' type environments. All the 'knowledge' of doing a thing is encapsulated
 in the skillet. Skillets strive to be tooling agnostic. A subject matter expert should not have to define best 
 practices in multiple domain specific languages. Ideally, this should be expressed once, and executed in a variety of
-tools. Skilletlib makes it easy to allow Skillets to be executed in your tooling, or tooling of choice. 
+tools. Skilletlib makes it easy to allow Skillets to be executed in your tooling of choice. 
 
 Skillets are meant to be stored and shared via source control repositories along with the rest of your infrastructure.
 This allows complex NGFW configurations and use case specific compliance checks to be executed as part of your 
 deployment pipeline.  
 
+## Resources
+
+* [Information on building Skillets and working with the PAN-OS XML API](https://SkilletBuilder.readthedocs.io)
+
+* [Example Skillets](https://github.com/PaloAltoNetworks/skilletlib/tree/master/example_skillets)
+
+* [PAN-OS XML Quickstart](https://strata.pan.dev/docs/apis/xmlapi_qs)
+
+* [PAN-OS Exploring the API](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-panorama-api/get-started-with-the-pan-os-xml-api/explore-the-api.html)
 
 ## Installation
 
@@ -31,7 +39,7 @@ pip install skilletlib
 ```
 
 
-## Basic Example
+## Example Loading a Skillet
 
 ```python
 
@@ -80,7 +88,40 @@ for s in skillets:
 
 ```
 
+## using Skilletlib to find recent changes in Set CLI Format
 
+```python
+
+import os
+
+# The Panos class is a wrapper around the XML API that provides some convience methods
+from skilletlib import Panos
+
+auth = {
+    'hostname': os.environ.get('ip_address', ''),
+    'api_username': os.environ.get('username', ''),
+    'api_password': os.environ.get('password', ''),
+    'debug': os.environ.get('debug', True),
+}
+device = Panos(**auth)
+
+# you can pass negative integers to the 'get_configuration' method to retrive the most to least recent
+# running configurations. This is very useful to finding the Set CLI or XML equivelent of GUI configuration 
+# changes
+previous_config = device.get_configuration(config_source='-1')
+latest_config = device.get_configuration(config_source='running')
+
+# The 'generate_set_cli_from_configs' method returns the difference between two config files. In this case,
+# we'll use the running config and the most recent running config audit backup. This will give us all the 
+# changes made via the most recent commit in Set CLI format
+cmds = device.generate_set_cli_from_configs(previous_config, latest_config)
+
+for cmd in cmds:
+    print(cmd)
+
+
+
+```
 
 ## Other projects that use Skilletlib
 
@@ -88,17 +129,19 @@ Here are a couple of examples of other projects that use skilletlib
 
 * [Panhandler](https://github.com/PaloAltoNetworks/panhandler/)
     Panhandler is a tool to manage collections of Skillets and their respective git repositories
+* [SLI](https://gitlab.com/panw-gse/as/sli)
+    SLI is a CLI interface to Skilletlib. This tool allows rapid testing and prototyping of Skillets
 * [SkilletLoader](https://github.com/nembery/skilletLoader/)
     SkilletLoader is a tool to load and test skillets in a CI/CD pipeline via Docker
 * [Ansible Skillets](https://github.com/PaloAltoNetworks/panw-gse.skillets)
     Ansible roles and libraries for loading PAN-OS and related skillets via Ansible playbooks
 * [Demisto XSOAR Integration](https://github.com/nembery/content/tree/skilletlib/Packs/skilletlib)
     Experimental in development Demisto XSOAR integration
-    
+  
     
     
 ## Other utilities in Skilletlib
 
-Skilletlib includes all the necessary libraries and code to work directly with PAN-OS and Panorama devices. A call
-called 'Panoply' is included which includes many often needed methods when working with ephemeral PAN-OS devices, such
-as in a CI/CD pipeline. 
+Skilletlib also includes a collection of tools and methods called 
+'[Panoply](https://www.merriam-webster.com/dictionary/panoply)' which eases working with emphemeral PAN-OS and 
+Panorama devices, such as in a CI/CD Pipeline or development environment. 
