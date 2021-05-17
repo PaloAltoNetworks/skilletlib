@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="skilletlib",
-    version="1.0.6",
+    version="1.0.7",
     author="Nathan Embery",
     author_email="nembery@paloaltonetworks.com",
     description="Tools for working with PAN-OS Skillets in Python 3",

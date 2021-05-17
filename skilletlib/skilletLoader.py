@@ -60,7 +60,7 @@ class SkilletLoader:
     tmp_dir = '~./.skilletlib'
 
     # list of directories to skip and not recurse into
-    skip_dirs = ['.terraform', '.git', '.venv', '.idea', '.tox', '.eggs', 'build', 'dist']
+    skip_dirs = ['.terraform', '.git', '.venv', '.idea', '.tox', '.eggs']
 
     def __init__(self, path=None):
 
@@ -914,7 +914,7 @@ class SkilletLoader:
             for pattern in self.skip_dirs:
                 # check if skip_dirs pattern == this directory name or if the pattern is a subdir type
                 # like submodules/panos-config-elements, catch that here as well
-                if pattern in d.name or str(d.absolute()).endswith(pattern):
+                if pattern == d.name or str(d.absolute()).endswith(pattern):
                     found_pattern = True
                     break
 
