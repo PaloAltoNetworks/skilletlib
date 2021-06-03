@@ -13,6 +13,8 @@ def test_generate_skillet():
     :return: None
     """
     expected_ordering = ['/config/devices/entry[@name="localhost.localdomain"]/vsys/entry[@name="vsys1"]/tag',
+                         '/config/devices/entry[@name="localhost.localdomain"]/vsys/entry[@name="vsys1"]/'
+                         'log-settings/profiles',
                          '/config/devices/entry[@name="localhost.localdomain"]/vsys/entry[@name="vsys1"]',
                          '/config/devices/entry[@name="localhost.localdomain"]/vsys/entry[@name="vsys1"]/'
                          'rulebase/security/rules',
@@ -51,11 +53,16 @@ def test_set_cli_generator():
 
     set_cmds = p.generate_set_cli_from_configs(previous_config, latest_config)
 
-    # ensure 'tag' is before others in the examples - test proper ordering
-    assert 'tag my_tag' in set_cmds[0]
+    # ensure 'shared log-settings' is before others in the examples - test proper ordering
+    # this also tests the special case of log-settings profiles, which need conversion into the shared space
+    # for set cli
+    assert 'shared log-settings profiles objects-log-forwarding' in set_cmds[0]
+
+    # test ordering 'tag' should be right after shared items
+    assert 'tag my_tag' in set_cmds[5]
 
     # ensure we found the edl and it comes after the 2 tag set commands
-    assert 'external-list my_edl' in set_cmds[3]
+    assert 'external-list my_edl' in set_cmds[7]
 
     # ensure security rules come last
     assert 'rulebase security rules my_edl-block_outbound' in set_cmds[-1]

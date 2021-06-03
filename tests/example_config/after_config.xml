@@ -1295,6 +1295,19 @@ he proper application determined. Once determined, the session will shift to the
                   </entry>
                 </match-list>
               </entry>
+              <entry name="objects-log-forwarding">
+                  <match-list>
+                      <entry name="objects-log-forwarding-profile-list">
+                          <send-syslog>
+                              <member>mgmt-interface</member>
+                          </send-syslog>
+                          <log-type>traffic</log-type>
+                          <filter>All Logs</filter>
+                          <send-to-panorama>no</send-to-panorama>
+                          <quarantine>no</quarantine>
+                      </entry>
+                  </match-list>
+              </entry>
             </profiles>
           </log-settings>
           <profiles>

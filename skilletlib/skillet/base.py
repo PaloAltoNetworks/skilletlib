@@ -341,7 +341,8 @@ class Skillet(ABC):
                             snippet_outputs = snippet.get_default_output(output, status)
                             captured_outputs = snippet.capture_outputs(output, status)
 
-                            if snippet.name in self.snippet_outputs:
+                            # only track snippet output across loops if we actually have loops configured
+                            if snippet.name in self.snippet_outputs and len(loop_vars) > 1:
                                 self.snippet_outputs[snippet.name].append(snippet_outputs)
                             else:
                                 # create a list of track progress here

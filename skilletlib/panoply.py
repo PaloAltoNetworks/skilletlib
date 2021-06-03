@@ -1638,7 +1638,10 @@ class Panoply:
         for set_cmd in set_commands:
             snippet = dict()
             snippet["full_xpath"] = (
-                set_cmd.replace("devices localhost.localdomain vsys vsys1 ", "")
+                set_cmd.replace(
+                    "devices localhost.localdomain vsys vsys1 log-settings profiles", "shared log-settings profiles"
+                )
+                .replace("devices localhost.localdomain vsys vsys1 ", "")
                 .replace("devices localhost.localdomain ", "")
                 .replace("set ", "")
                 .replace("/", slash_marker)
