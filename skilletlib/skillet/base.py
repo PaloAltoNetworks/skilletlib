@@ -563,18 +563,21 @@ class Skillet(ABC):
                     if snippet[k] == v:
                         snippet.pop(k, None)
 
-            # source https://stackoverflow.com/a/45004775
-            yaml.SafeDumper.org_represent_str = yaml.SafeDumper.represent_str
+            # Custom YAML dumper to inject appropriate white-space
+            class SkilletYamlDumper(yaml.SafeDumper):
+                def write_line_break(self, data=None):
+                    super().write_line_break(data)
+                    if len(self.indents) < 3:
+                        super().write_line_break()
 
-            def repr_str(dumper, data):
-                if '\n' in data:
-                    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
+            # Add a str presenter for multi-line text
+            def str_presenter(dumper, data):
+                if len(data.splitlines()) > 1:
+                    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+                return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+            SkilletYamlDumper.add_representer(str, str_presenter)
 
-                return dumper.org_represent_str(data)
-
-            yaml.add_representer(str, repr_str, Dumper=yaml.SafeDumper)
-
-            return yaml.safe_dump(safe_skillet_dict, indent=4)
+            return yaml.dump(safe_skillet_dict, indent=4, Dumper=SkilletYamlDumper)
 
         except (ScannerError, ValueError) as err:
             raise SkilletValidationException(f'Could not dump Skillet as YAML: {err}')
