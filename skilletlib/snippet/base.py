@@ -976,7 +976,7 @@ class Snippet(ABC):
             if index == 0:
                 indented_str += line + "\n"
 
-            expanded_line = line.expandtabs(4)
+            expanded_line = line.expandtabs(2)
             if not expanded_line.startswith(prepend):
                 indented_str += f"{prepend}{expanded_line}\n"
             else:
