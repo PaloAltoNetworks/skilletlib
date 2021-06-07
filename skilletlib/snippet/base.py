@@ -959,6 +959,31 @@ class Snippet(ABC):
 
         return False
 
+    @staticmethod
+    def _minimal_indent(input_str: str, minimal_indent=4) -> str:
+        """
+        Ensures we have a minimal amount of tab ident for each line in the input_string
+
+        :param input_str: string to check for indents
+        :param minimal_indent: number of spaces required at the beginning of each file
+        :return: indented string
+        """
+
+        indented_str = ""
+        prepend = " " * int(minimal_indent)
+
+        for index, line in enumerate(input_str.split('\n')):
+            if index == 0:
+                indented_str += line + "\n"
+
+            expanded_line = line.expandtabs(4)
+            if not expanded_line.startswith(prepend):
+                indented_str += f"{prepend}{expanded_line}\n"
+            else:
+                indented_str += expanded_line + "\n"
+
+        return indented_str
+
     def __init_env(self) -> None:
         """
         init the jinja2 environment and add any required filters
@@ -977,6 +1002,7 @@ class Snippet(ABC):
         self._env.filters['node_attribute_present'] = self._node_attribute_present
         self._env.filters['node_attribute_absent'] = self._node_attribute_absent
         self._env.filters['append_uuid'] = self._append_uuid
+        self._env.filters['minimal_indent'] = self._minimal_indent
 
         # for zube ticket #21
         self._env.filters['tag_present'] = self._node_present
