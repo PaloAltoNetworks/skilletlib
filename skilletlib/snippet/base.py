@@ -975,6 +975,7 @@ class Snippet(ABC):
         for index, line in enumerate(input_str.split('\n')):
             if index == 0:
                 indented_str += line + "\n"
+                continue
 
             expanded_line = line.expandtabs(2)
             if not expanded_line.startswith(prepend):
