@@ -37,10 +37,10 @@ class DockerSnippet(Snippet):
 
     # keep track of the last time we queried the logs
     last_logs_time = None
+    client: DockerClient = None
 
     def __init__(self, metadata):
         super().__init__(metadata)
-        self.client = DockerClient()
 
         # configure from metadata
         image = self.metadata.get('image', 'python')
@@ -92,6 +92,14 @@ class DockerSnippet(Snippet):
         steps. Raises SkilletLoaderException on error
         :return:  Tuple(dict, str) output and string representing 'success' or 'failure'
         """
+
+        try:
+            self.client = DockerClient()
+
+        except DockerException:
+            logger.error(traceback.format_exc())
+            raise SkilletLoaderException(f'Could not contact Docker API in {self.name}')
+
         try:
 
             logger.info(f'Pulling image: {self.image} with tag: {self.tag}')
