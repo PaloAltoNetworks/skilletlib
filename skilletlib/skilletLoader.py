@@ -60,7 +60,7 @@ class SkilletLoader:
     tmp_dir = '~./.skilletlib'
 
     # list of directories to skip and not recurse into
-    skip_dirs = ['.terraform', '.git', '.venv', '.idea', '.tox', '.eggs']
+    skip_dirs = ['.terraform', '.git', '.venv', 'venv', '.idea', '.tox', '.eggs']
 
     def __init__(self, path=None):
 
@@ -497,31 +497,57 @@ class SkilletLoader:
                         if not found_variable:
                             # this variable does not exist in the skillet_dict variables, so add it here
                             variables.append(v)
+
                 elif isinstance(snippet['include_variables'], list):
-                    for v in snippet['include_variables']:
-                        # we need to include only the variables listed here and possibly update them with any
-                        # new / modified attributes
-                        included_variable_orig = included_skillet.get_variable_by_name(v['name'])
 
-                        # #163 - always uses deepcopy when using includes / overrides
-                        included_variable = copy.deepcopy(included_variable_orig)
-                        # update this variable definition accordingly if necessary
-                        included_variable.update(v)
+                    # handle case where we have a single dict item with name == 'all' to override all snippet attributes
+                    if len(snippet['include_variables']) == 1:
 
-                        # now check to see if this skillet has this variable already defined
-                        found_variable = False
-                        for ev in variables:
-                            if ev['name'] == v['name']:
-                                found_variable = True
-                                # it is nonsensical to update the variable definition here from the included skillet
-                                # just use what is defined locally, otherwise the builder should not have defined it
-                                # here!
-                                logger.info('not updating existing variable definition from '
-                                            'the resolved skillet definition')
+                        if snippet['include_variables'][0]['name'] == 'all':
+                            override_snippet = snippet['include_variables'][0]
 
-                        if not found_variable:
-                            # this included variable was not defined locally, so go ahead and append the updated version
-                            variables.append(included_variable)
+                            for v in included_skillet.variables:
+                                found_variable = False
+
+                                for tv in skillet['variables']:
+                                    if tv['name'] == v['name']:
+                                        # do not add variable if one with the same name already exists
+                                        found_variable = True
+
+                                if not found_variable:
+                                    original_name = v['name']
+                                    # #163 - always uses deepcopy when using includes / overrides
+                                    overwritten_variable = copy.deepcopy(v)
+                                    # update this variable definition accordingly if necessary
+                                    overwritten_variable.update(override_snippet)
+                                    overwritten_variable["name"] = original_name
+                                    # this variable does not exist in the skillet_dict variables, so add it here
+                                    variables.append(overwritten_variable)
+                    else:
+                        for v in snippet['include_variables']:
+                            # we need to include only the variables listed here and possibly update them with any
+                            # new / modified attributes
+                            included_variable_orig = included_skillet.get_variable_by_name(v['name'])
+
+                            # #163 - always uses deepcopy when using includes / overrides
+                            included_variable = copy.deepcopy(included_variable_orig)
+                            # update this variable definition accordingly if necessary
+                            included_variable.update(v)
+
+                            # now check to see if this skillet has this variable already defined
+                            found_variable = False
+                            for ev in variables:
+                                if ev['name'] == v['name']:
+                                    found_variable = True
+                                    # it is nonsensical to update the variable definition here from the included skillet
+                                    # just use what is defined locally, otherwise the builder should not have defined it
+                                    # here!
+                                    logger.info('not updating existing variable definition from '
+                                                'the resolved skillet definition')
+
+                            if not found_variable:
+                                # this included variable was not defined locally, so go ahead and append the updated version
+                                variables.append(included_variable)
 
         skillet['snippets'] = snippets
         skillet['variables'] = variables
