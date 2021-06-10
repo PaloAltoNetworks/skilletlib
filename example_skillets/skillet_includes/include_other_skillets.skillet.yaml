@@ -58,3 +58,13 @@ snippets:
     include_variables:
       - name: zone_to_test
         default: untrust
+
+  - name: Final Include
+    include: qos_class
+    # You may sometimes which to include all variables, but override certain attributes of all of them. This example
+    # will include all variables, and add / override the toggle_hint attribute for each of them
+    include_variables:
+      - name: all
+        toggle_hint:
+          source: zone_to_test
+          value: untrust

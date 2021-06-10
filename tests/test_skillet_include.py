@@ -43,7 +43,7 @@ def test_skillet_includes():
     assert skillet.name == 'include_other_skillets'
 
     # verify the correct number of snippets.
-    assert len(skillet.snippets) == 9
+    assert len(skillet.snippets) == 13
 
     included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
 
@@ -67,6 +67,9 @@ def test_skillet_includes():
     another_included_variable: dict = skillet.get_variable_by_name('zone_to_test')
     assert another_included_variable["default"] == "untrust"
 
+    override_from_all_variable: dict = skillet.get_variable_by_name('qos_class')
+    assert override_from_all_variable["toggle_hint"] is not None
+
     # Ensure using includes / overrides leaves our original skillet definition intact
     # added for issue #163
     child_skillet: Skillet = skillet_loader.get_skillet_with_name('network_profiles')
@@ -84,7 +87,7 @@ def test_load_skillet_from_path():
     assert skillet.name == 'include_other_skillets'
 
     # verify the correct number of snippets.
-    assert len(skillet.snippets) == 9
+    assert len(skillet.snippets) == 13
 
     included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
 
