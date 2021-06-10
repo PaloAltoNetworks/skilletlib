@@ -35,6 +35,11 @@ class PanosSkillet(Skillet):
 
     snippet_required_metadata = {'name'}
 
+    snippet_optional_metadata = {
+        'file': '',
+        'element': ''
+    }
+
     initialized = False
 
     allow_snippet_cache = False
@@ -182,8 +187,11 @@ class PanosSkillet(Skillet):
         snippet_list = list()
 
         for snippet_def in self.snippet_stack:
-
             if 'cmd' not in snippet_def or snippet_def['cmd'] == 'set':
+
+                if 'file' not in snippet_def and 'element' not in snippet_def:
+                    raise SkilletValidationException('Panos Snippet requires either a file or element attribute!')
+
                 if 'element' not in snippet_def or snippet_def['element'] == '':
                     snippet_def['element'] = self.load_template(snippet_def['file'])
 

@@ -564,6 +564,9 @@ class Skillet(ABC):
                     if snippet[k] == v:
                         snippet.pop(k, None)
 
+            if not safe_skillet_dict.get("depends", []):
+                safe_skillet_dict.pop('depends', None)
+
             # Custom YAML dumper to inject appropriate white-space
             class SkilletYamlDumper(yaml.SafeDumper):
                 def write_line_break(self, data=None):
