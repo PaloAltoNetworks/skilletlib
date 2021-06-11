@@ -750,19 +750,23 @@ class Panoply:
             # load the 9.1 baseline with
             skillet_dir = "baseline_91"
 
+        elif "10.1" in version:
+            # load the 9.1 baseline with
+            skillet_dir = "baseline_91"
+
+        # catch-all for future 10.x versions
+        elif '10' in version:
+            skillet_dir = "baseline_91"
+
         else:
             raise PanoplyException("Could not determine sw-version for baseline load")
 
         template_path = Path(__file__).parent.joinpath("assets", skillet_type_dir, skillet_dir)
         sl = SkilletLoader()
         baseline_skillet = sl.load_skillet_from_path(str(template_path.resolve()))
-        snippets = baseline_skillet.get_snippets()
-        snippet = snippets[0]
-        output, status = snippet.execute(context)
-
-        if status == "success":
-            return str(output)
-
+        output = baseline_skillet.execute(context)
+        if baseline_skillet.success:
+            return output["template"]
         else:
             raise PanoplyException("Could not generate baseline config!")
 
