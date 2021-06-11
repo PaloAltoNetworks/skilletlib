@@ -1312,11 +1312,13 @@ class Panoply:
             * xpath
             * full_xpath
         """
+
+        parser = etree.XMLParser(remove_blank_text=True)
         # convert the config string to an xml doc
-        latest_doc = etree.fromstring(latest_config)
+        latest_doc = etree.fromstring(latest_config, parser=parser)
 
         # let's grab the previous as well
-        previous_doc = etree.fromstring(previous_config)
+        previous_doc = etree.fromstring(previous_config, parser=parser)
 
         current_xpath = "."
         not_found_xpaths = list()
@@ -1356,7 +1358,7 @@ class Panoply:
             changed_element = changed_elements[0]
 
             cleaned_element = self.__clean_uuid(changed_element)
-            xml_string = etree.tostring(cleaned_element, pretty_print=True).decode(encoding="UTF-8")
+            xml_string = etree.tostring(cleaned_element, pretty_print=True, encoding='unicode')
 
             random_name = str(int(random.random() * 1000000))
 
