@@ -69,8 +69,8 @@ class RestSnippet(TemplateSnippet):
         if 'operation' in metadata:
             metadata['operation'] = str(metadata['operation']).lower()
 
-        if metadata['operation'] not in ('post', 'get'):
-            err = 'Supported operations are currently post and get only'
+        if metadata["operation"] not in ("post", "get", "delete"):
+            err = "Supported operations are currently post, get, and deleteonly"
             raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
         if 'path' in metadata:
@@ -93,14 +93,15 @@ class RestSnippet(TemplateSnippet):
 
         url = self.metadata['path']
 
-        if self.operation == 'post':
-            rendered_payload = self.metadata['element']
+        if self.operation in ["post", "delete"]:
+            rendered_payload = self.metadata.get("element")
             if 'form' in self.headers.get('Content-Type', ''):
                 payload = json.loads(rendered_payload)
             else:
                 payload = rendered_payload
 
-            response = self.session.post(url, data=payload, headers=self.metadata['headers'], verify=False)
+            method = getattr(self.session, self.operation)
+            response = method(url, data=payload, headers=self.metadata['headers'], verify=False)
             return self.__handle_response(response)
 
         # support 'noop' for #100
