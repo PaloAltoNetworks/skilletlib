@@ -489,18 +489,23 @@ class SkilletLoader:
                     # handle case where we have a single dict item with name == 'all' to override all snippet attributes
                     # see issue #182 for details
                     if len(snippet['include_variables']) == 1 and snippet['include_variables'][0]['name'] == 'all':
-                        override_snippet = snippet['include_variables'][0]
+                        override_variable = snippet['include_variables'][0]
 
                         for v in included_skillet.variables:
+
+                            original_name = v['name']
+                            # #163 - always uses deepcopy when using includes / overrides
+                            overwritten_variable = copy.deepcopy(v)
+                            # update this variable definition accordingly if necessary
+                            overwritten_variable.update(override_variable)
+                            overwritten_variable["name"] = original_name
                             if v["name"] not in [x["name"] for x in variables]:
-                                original_name = v['name']
-                                # #163 - always uses deepcopy when using includes / overrides
-                                overwritten_variable = copy.deepcopy(v)
-                                # update this variable definition accordingly if necessary
-                                overwritten_variable.update(override_snippet)
-                                overwritten_variable["name"] = original_name
                                 # this variable does not exist in the skillet_dict variables, so add it here
                                 variables.append(overwritten_variable)
+                            else:
+                                # this variable has already been included or already exists, let's merge values
+                                existing_var = [x for x in variables if x["name"] == v["name"]][0]
+                                existing_var.update(self.__deep_merge_dicts(existing_var, overwritten_variable))
                     else:
                         for v in snippet['include_variables']:
                             # we need to include only the variables listed here and possibly update them with any
@@ -513,7 +518,6 @@ class SkilletLoader:
                             included_variable.update(v)
 
                             # now check to see if this skillet has this variable already defined
-                            found_variable = False
                             if not v["name"] in [x["name"] for x in variables]:
                                 variables.append(included_variable)
 
@@ -521,6 +525,32 @@ class SkilletLoader:
         skillet['variables'] = variables
 
         return skillet
+
+    def __deep_merge_dicts(self, d1: dict, d2: dict) -> dict:
+        """
+        Utility method to deeply merge two dicts with the following behavior
+            keys in d2 that do not exist in d1 are copied over
+            keys in d2 that exist in d1:
+                if the value is a list, extend the list from d1 with values from d2
+                if the value if a dict, then recurion fun!
+                otherwise, overwrite the value from d1 with d2
+
+        :param d1: first dict
+        :param d2: second dict
+        :return: d1 extended with values from d2
+        """
+        o = copy.deepcopy(d1)
+        for k, v in d2.items():
+            if k not in o:
+                o[k] = d2[k]
+            elif isinstance(v, list):
+                o[k].extend(d2[k])
+            elif isinstance(v, dict):
+                o[k] = self.__deep_merge_dicts(o[k], d2[k])
+            else:
+                o[k] = d2[k]
+
+        return o
 
     @staticmethod
     def normalize_skillet_dict(skillet: dict) -> dict:

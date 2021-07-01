@@ -574,11 +574,16 @@ class Skillet(ABC):
                     if len(self.indents) < 3:
                         super().write_line_break()
 
+                # we should not use anchors in YAML at all for this
+                def ignore_aliases(self, data):
+                    return True
+
             # Add a str presenter for multi-line text
             def str_presenter(dumper, data):
                 if len(data.splitlines()) > 1:
                     return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
                 return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
             SkilletYamlDumper.add_representer(str, str_presenter)
 
             return yaml.dump(safe_skillet_dict, indent=4, Dumper=SkilletYamlDumper)
