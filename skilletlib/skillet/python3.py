@@ -31,6 +31,7 @@ class Python3Skillet(Skillet):
         snippet_list = list()
         for snippet_def in self.snippet_stack:
             snippet = Python3Snippet(snippet_def)
+            setattr(snippet, "skillet", self)
             snippet_list.append(snippet)
 
         return snippet_list
