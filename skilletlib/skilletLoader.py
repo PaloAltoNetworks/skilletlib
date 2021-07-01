@@ -544,7 +544,7 @@ class SkilletLoader:
             if k not in o:
                 o[k] = d2[k]
             elif isinstance(v, list):
-                o[k].extend(d2[k])
+                o[k].extend([x for x in d2[k] if x not in o[k]])
             elif isinstance(v, dict):
                 o[k] = self.__deep_merge_dicts(o[k], d2[k])
             else:
