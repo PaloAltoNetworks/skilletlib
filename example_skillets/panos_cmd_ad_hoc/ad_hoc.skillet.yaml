@@ -1,0 +1,21 @@
+name: example-panos-cmd-ad_hoc
+label: Example of how use the 'ad_hoc' command for PAN-OS
+
+description: |
+  This example Skillet shows how to retrive information from a PAN-OS device using the 'ad_hoc' command type. This
+  command type allows you to query the firewall using a custom query_set
+
+type: panos
+
+labels:
+  collection:
+    - Example Skillets
+
+snippets:
+  # example output capture and test structure layout
+  - name: list_saved_configurations
+    cmd: ad_hoc
+    qs: type=op&action=complete&xpath=/operations/show/config/saved
+    outputs:
+      - name: saved_configs
+        capture_list: .//completions/completion/@value

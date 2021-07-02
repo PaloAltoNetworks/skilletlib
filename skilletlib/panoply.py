@@ -443,6 +443,23 @@ class Panoply:
 
         return self.xapi.xml_result()
 
+    def ad_hoc(self, qs: str) -> str:
+        """
+        Runs an ad_hoc command against this device.
+
+        example: type=op&action=complete&xpath=/operations/show/config/saved
+
+        :param qs: qs
+        :return: the unparsed xml document from the device API
+        """
+        try:
+            self.xapi.ad_hoc(qs=qs, modify_qs=True)
+
+        except PanXapiError as e:
+            raise PanoplyException(f"Could not execute query_set: {qs}: {e}")
+
+        return self.xapi.xml_document
+
     def fetch_license(self, auth_code: str) -> bool:
         """
         Fetch and install licenses for PAN-OS NGFW

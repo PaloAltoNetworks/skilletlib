@@ -105,6 +105,11 @@ class PanosSnippet(TemplateSnippet):
             cmd_str = self.metadata['cmd_str']
             output = self.panoply.execute_cli(cmd_str)
 
+        elif self.cmd == 'ad_hoc':
+            logger.info(f'  Executing ad_hoc cmd: {self.name}')
+            qs = self.metadata['qs']
+            output = self.panoply.ad_hoc(qs)
+
         elif self.cmd == 'noop':
             output = ''
 
@@ -181,6 +186,10 @@ class PanosSnippet(TemplateSnippet):
                     metadata['output_type'] = 'validation'
                     return metadata
             err = 'xpath and file or element are required attributes for validate_xml cmd'
+        elif self.cmd == 'ad_hoc':
+            if 'qs' in metadata:
+                return metadata
+            err = 'qs is a required parameter for ad_hoc cmd'
         elif self.cmd == 'noop':
             if 'output_type' not in metadata:
                 metadata['output_type'] = 'manual'
