@@ -657,6 +657,88 @@ class Panoply:
 
         return facts
 
+    def get_extended_facts(self) -> dict:
+        """
+        Get extended facts about the device to which we are connected.
+
+        Return interfaces, security_rules, and zones
+
+        :return: dict with extended facts
+        """
+
+        ef = {
+            "interfaces": self.get_interfaces(),
+            "security_rules": self.get_security_rules(),
+            "zones": self.get_zones()
+        }
+
+        return ef
+
+    def get_interfaces(self) -> dict:
+        """
+        Return a dict of all interfaces configured on this device. The dict has the following structure:
+
+        {
+          "ifnet": {
+            "entry": [
+              {
+                "name": "ethernet1/1",
+                "zone": "internet",
+                "fwd": "vr:default",
+                "vsys": "1",
+                "dyn-addr": null,
+                "addr6": null,
+                "tag": "0",
+                "ip": "10.48.58.161/23",
+                "id": "16",
+                "addr": null
+              }
+            ]
+          },
+          "hw": {
+            "entry": [
+              {
+                "name": "ethernet1/1",
+                "duplex": "full",
+                "type": "0",
+                "state": "up",
+                "st": "10000/full/up",
+                "mac": "fa:16:3e:65:7d:05",
+                "mode": "(autoneg)",
+                "speed": "10000",
+                "id": "16"
+              }
+            ]
+          }
+        }
+
+        :return: dict with two keys 'ifnet' and 'hw'.
+        """
+
+        interfaces_xml = self.execute_op('<show><interface>all</interface></show>', parse_result=False)
+
+        if self.xapi.status != 'success':
+            raise PanoplyException('Could not get interfaces!')
+
+        interfaces_result = xmltodict.parse(interfaces_xml)
+        return interfaces_result.get('response', {}).get('result', {})
+
+    def get_zones(self) -> list:
+        """
+        Return the list of configured zones on this device.
+
+        :return: list of zone names
+        """
+        return self.__get_completion(xpath='/operations/show/zone-protection/zone', completion_type='op')
+
+    def get_security_rules(self) -> list:
+
+        return self.__get_completion(xpath='/config/devices/entry/vsys/entry/rulebase/security/rules',
+                                     completion_type='config')
+
+    def debug_completion(self, xpath, ct) -> list:
+        return self.__get_completion(xpath=xpath, completion_type=ct)
+
     def load_baseline(self) -> bool:
         """
         Load baseline config that contains ONLY connecting username / password
@@ -1473,6 +1555,47 @@ class Panoply:
                 diffs.append(cmd_cleaned)
 
         return self.__order_set_commands(diffs)
+
+    def __get_completion(self, xpath: str, completion_type=None) -> list:
+        """
+        Utility method to query the device for a completion value.
+
+        Example: To get list of zone names, use the following xpath: /operations/show/zone-protection/zone
+        This is equivalent to typing 'show zone-protection zone' and hitting tab on the CLI
+
+        :param xpath: xpath to the cli command from which to request a completion
+        :param completion_type: completion type: op, config, set. Default is 'op'
+        :return: list of completion values
+        """
+
+        completions = list()
+        try:
+            if not self.connected:
+                return completions
+
+            if completion_type is None:
+                completion_type = 'op'
+
+            if completion_type == 'config':
+                self.xapi.ad_hoc(qs=f"type={completion_type}&action=show&action=complete&xpath={xpath}", modify_qs=True)
+            else:
+                self.xapi.ad_hoc(qs=f"type={completion_type}&action=complete&xpath={xpath}", modify_qs=True)
+
+            if self.xapi.status != "success":
+                raise PanoplyException(f"Could not list completions from the device for xpath: {xpath}")
+
+            response_root = self.xapi.element_root
+            config_items = response_root.findall(".//completion")
+            for config in config_items:
+                if "value" in config.attrib:
+                    completions.append(config.attrib["value"])
+
+            return completions
+
+        except PanXapiError as pe:
+            logger.error("Could not list completions from device")
+            logger.error(pe)
+            raise PanoplyException(f"Could not list completions from the device for xpath: {xpath}")
 
     def __check_element(self, el: etree.Element, xpath: str, pc: etree.Element, not_founds: list) -> list:
         """

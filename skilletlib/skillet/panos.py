@@ -102,7 +102,7 @@ class PanosSkillet(Skillet):
 
                 self.panoply = self.__init_panoply(hostname, username, password, port)
 
-                context['config'] = self.panoply.get_configuration()
+                context = self.__augment_context(context)
 
             elif legacy_required_fields.issubset(initial_context):
                 hostname = initial_context.get('TARGET_IP', None)
@@ -112,7 +112,7 @@ class PanosSkillet(Skillet):
 
                 self.panoply = self.__init_panoply(hostname, username, password, port)
 
-                context['config'] = self.panoply.get_configuration()
+                context = self.__augment_context(context)
 
             elif provider_required_fields.issubset(initial_context):
                 hostname = initial_context['ip_address']
@@ -122,7 +122,7 @@ class PanosSkillet(Skillet):
 
                 self.panoply = self.__init_panoply(hostname, username, password, port)
 
-                context['config'] = self.panoply.get_configuration()
+                context = self.__augment_context(context)
 
             elif api_key_required_fields.issubset(initial_context):
                 hostname = initial_context['hostname']
@@ -133,7 +133,7 @@ class PanosSkillet(Skillet):
 
                 self.panoply = self.__init_panoply(hostname=hostname, api_key=api_key, port=port)
 
-                context['config'] = self.panoply.get_configuration()
+                context = self.__augment_context(context)
 
             else:
                 logger.info(f'offline mode detected for {__name__}')
@@ -143,13 +143,13 @@ class PanosSkillet(Skillet):
         else:
             # we were passed in a panoply object already, check if we are connected and grab the configuration if so
             if self.panoply.connected:
-                context['config'] = self.panoply.get_configuration()
+                context = self.__augment_context(context)
 
             else:
                 # fix for #110
                 if 'config' not in context:
                     # allow the config to be set in the context by the user. This ensures calling initialize_context
-                    # twice does not trigger this exception. Only through it when we are not connected and the user
+                    # twice does not trigger this exception. Only throw it when we are not connected and the user
                     # has not set the config variable
                     raise SkilletLoaderException('Could not get configuration! Not connected to PAN-OS Device')
 
@@ -173,6 +173,14 @@ class PanosSkillet(Skillet):
                                             api_password=password,
                                             api_port=port,
                                             api_key=api_key)
+
+    def __augment_context(self, context: dict) -> dict:
+        context['config'] = self.panoply.get_configuration()
+        context['__facts'] = self.panoply.facts
+        context['__zones'] = self.panoply.get_zones()
+        context['__interfaces'] = self.panoply.get_interfaces()
+        context['__security_rules'] = self.panoply.get_security_rules()
+        return context
 
     def get_snippets(self) -> List[PanosSnippet]:
         """
