@@ -1215,10 +1215,8 @@ class Panoply:
             return self.get_configuration_version(config_source)
 
         else:
-            if self.facts.get("panorama-server", None) is not None:
-                cmd = "show config merged"
-            else:
-                cmd = "show config running"
+            # fixme - check for panorama and possibly do something differently
+            cmd = "show config running"
 
         try:
 
@@ -1830,7 +1828,7 @@ class Panoply:
             if leaf_xpath.startswith(xpath):
                 # note we do not remove found snippets from the source snippets list, which may result
                 # in duplicates. The calling code will need to ensure it does not append the results of this method
-                # which out checking for dups first
+                # with out checking for dups first
                 filtered_snippets.append(s)
 
         return filtered_snippets
