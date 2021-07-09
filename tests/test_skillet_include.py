@@ -43,7 +43,7 @@ def test_skillet_includes():
     assert skillet.name == 'include_other_skillets'
 
     # verify the correct number of snippets.
-    assert len(skillet.snippets) == 13
+    assert len(skillet.snippets) == 14
 
     included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
 
@@ -67,8 +67,21 @@ def test_skillet_includes():
     another_included_variable: dict = skillet.get_variable_by_name('zone_to_test')
     assert another_included_variable["default"] == "untrust"
 
-    override_from_all_variable: dict = skillet.get_variable_by_name('qos_class')
-    assert override_from_all_variable["toggle_hint"] is not None
+    # verify that shared children variables merge attributes
+    merged_override_from_all_variable: dict = skillet.get_variable_by_name('qos_class')
+    assert merged_override_from_all_variable["toggle_hint"] is not None
+    assert merged_override_from_all_variable["toggle_hint"]["value"] == ["untrust", "internet"]
+
+    # verify that the override variables brought up to the parent are preserved
+    parent_preserve_variable: dict = skillet.get_variable_by_name('shared_base_variable')
+    assert "toggle_hint" not in parent_preserve_variable
+
+    # verify that child override works
+    child_override_1_variable: dict = skillet.get_variable_by_name('child_1_unique_variable')
+    assert child_override_1_variable["toggle_hint"] is not None
+
+    child_override_2_variable: dict = skillet.get_variable_by_name('child_2_unique_variable')
+    assert child_override_2_variable["toggle_hint"] is not None
 
     # Ensure using includes / overrides leaves our original skillet definition intact
     # added for issue #163
@@ -87,7 +100,7 @@ def test_load_skillet_from_path():
     assert skillet.name == 'include_other_skillets'
 
     # verify the correct number of snippets.
-    assert len(skillet.snippets) == 13
+    assert len(skillet.snippets) == 14
 
     included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
 
