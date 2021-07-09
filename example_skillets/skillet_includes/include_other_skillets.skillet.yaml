@@ -15,6 +15,15 @@ variables:
     default: test123456
     type_hint: text
 
+  # When variables are duplicated or shared within all children skillets, overriding the variable attributes in one snippet
+  # can affect how the variable is brought into another child snippet. In certain scenarios when you want to preserve one
+  # child's variable definition and have it override all other definitions, you can bring the variable into the parents'
+  # variable section to set the variable definition, not applying any child overrides.
+  - name: shared_base_variable
+    description: Random variable shared with all children skillets
+    default: test123456
+    type_hint: text
+
 snippets:
   - name: parse_config
     cmd: parse
@@ -59,12 +68,24 @@ snippets:
       - name: zone_to_test
         default: untrust
 
-  - name: Final Include
+  - name: Include some more
     include: qos_class
     # You may sometimes which to include all variables, but override certain attributes of all of them. This example
-    # will include all variables, and add / override the toggle_hint attribute for each of them
+    # will include all variables, and add / override the toggle_hint attribute for each of them. This is really helpful
+    # when the snippet is executed conditionally with a when statement because you will only want to include these specific
+    # variables when the snippet is meant to be executed.
     include_variables:
       - name: all
         toggle_hint:
           source: zone_to_test
           value: untrust
+
+  - name: Final Include
+    include: logging_status
+    # When children override the same variable (for this example, it is the qos_class variable), the properties get merged
+    # from all included variables.
+    include_variables:
+      - name: all
+        toggle_hint:
+          source: zone_to_test
+          value: internet

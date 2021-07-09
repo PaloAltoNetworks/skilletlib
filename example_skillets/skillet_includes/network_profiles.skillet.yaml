@@ -19,6 +19,11 @@ variables:
     default: test123456
     type_hint: text
 
+  - name: shared_base_variable
+    description: Random variable shared with all children skillets
+    default: test_val1
+    type_hint: text
+
 snippets:
   - name: parse_network_profiles
     label: Capturing Profile Values
