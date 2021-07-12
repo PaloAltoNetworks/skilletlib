@@ -78,7 +78,8 @@ snippets:
       - name: all
         toggle_hint:
           source: zone_to_test
-          value: untrust
+          value:
+            - untrust
 
   - name: Final Include
     include: logging_status
@@ -88,4 +89,5 @@ snippets:
       - name: all
         toggle_hint:
           source: zone_to_test
-          value: internet
+          value:
+            - internet
