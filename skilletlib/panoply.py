@@ -744,14 +744,31 @@ class Panoply:
         """
         Return the list of configured zones on this device.
 
+        * returns a blank list for Panorama devices!
+
         :return: list of zone names
         """
-        return self.__get_completion(xpath='/operations/show/zone-protection/zone', completion_type='op')
+        if self.facts["model"] != 'Panorama':
+            return self.__get_completion(xpath='/operations/show/zone-protection/zone', completion_type='op')
+
+        else:
+            logger.info('not returning zones for Panorama')
+            return []
 
     def get_security_rules(self) -> list:
+        """
+        Return the list of configured security rules on this device.
 
-        return self.__get_completion(xpath='/config/devices/entry/vsys/entry/rulebase/security/rules',
-                                     completion_type='config')
+        * returns a blank list for Panorama devices!
+
+        :return: list of security rules
+        """
+        if self.facts["model"] != 'Panorama':
+            return self.__get_completion(xpath='/config/devices/entry/vsys/entry/rulebase/security/rules',
+                                         completion_type='config')
+        else:
+            logger.info('not returning security rules for Panorama')
+            return []
 
     def debug_completion(self, xpath, ct) -> list:
         return self.__get_completion(xpath=xpath, completion_type=ct)

@@ -142,7 +142,7 @@ class PanosSkillet(Skillet):
 
         else:
             # we were passed in a panoply object already, check if we are connected and grab the configuration if so
-            if self.panoply.connected:
+            if self.panoply.connected and not self.initialized:
                 context = self.__augment_context(context)
 
             else:
@@ -209,6 +209,8 @@ class PanosSkillet(Skillet):
         if self.initialized:
             self.allow_snippet_cache = True
 
+        # update the snippets attribute with our newly initialized snippets to keep panoply object around
+        self.snippets = snippet_list
         return snippet_list
 
     @staticmethod
