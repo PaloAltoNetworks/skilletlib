@@ -70,7 +70,8 @@ def test_skillet_includes():
     # verify that shared children variables merge attributes
     merged_override_from_all_variable: dict = skillet.get_variable_by_name('qos_class')
     assert merged_override_from_all_variable["toggle_hint"] is not None
-    assert merged_override_from_all_variable["toggle_hint"]["value"] == ["untrust", "internet"]
+    assert "internet" in merged_override_from_all_variable["toggle_hint"]["value"]
+    assert "untrust" in merged_override_from_all_variable["toggle_hint"]["value"]
 
     # verify that the override variables brought up to the parent are preserved
     parent_preserve_variable: dict = skillet.get_variable_by_name('shared_base_variable')
