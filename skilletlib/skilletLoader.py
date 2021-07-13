@@ -420,6 +420,7 @@ class SkilletLoader:
         """
         snippets = list()
         variables: list = skillet['variables']
+        parent_only_variables = variables.copy()
 
         for snippet in skillet.get('snippets', []):
 
@@ -441,9 +442,10 @@ class SkilletLoader:
                     propagated_snippet['name'] = f'{included_skillet.name}.{include_snippet_name}'
                     snippets.append(propagated_snippet)
 
+                # incorporate every variable into the compiled skillet's variable list
                 for v in included_skillet.variables:
-                    if v["name"] not in [x["name"] for x in variables]:
-                        variables.append(v)
+                    variables = self.update_variable_list(variables, parent_only_variables,
+                                                          v, False)
 
             elif 'include_snippets' not in snippet:
                 # include all snippets by default
@@ -480,32 +482,31 @@ class SkilletLoader:
 
             if 'include_variables' in snippet:
                 if isinstance(snippet['include_variables'], str) and snippet['include_variables'] == 'all':
+                    # incorporate every variable into the compiled skillet's variable list
                     for v in included_skillet.variables:
-                        if v["name"] not in [x["name"] for x in variables]:
-                            variables.append(v)
+                        variables = self.update_variable_list(variables, parent_only_variables,
+                                                              v, False)
 
                 elif isinstance(snippet['include_variables'], list):
 
                     # handle case where we have a single dict item with name == 'all' to override all snippet attributes
                     # see issue #182 for details
                     if len(snippet['include_variables']) == 1 and snippet['include_variables'][0]['name'] == 'all':
-                        override_variable = snippet['include_variables'][0]
+                        override_attribute = snippet['include_variables'][0]
 
                         for v in included_skillet.variables:
-
                             original_name = v['name']
                             # #163 - always uses deepcopy when using includes / overrides
-                            overwritten_variable = copy.deepcopy(v)
+                            overridden_variable = copy.deepcopy(v)
                             # update this variable definition accordingly if necessary
-                            overwritten_variable.update(override_variable)
-                            overwritten_variable["name"] = original_name
-                            if v["name"] not in [x["name"] for x in variables]:
-                                # this variable does not exist in the skillet_dict variables, so add it here
-                                variables.append(overwritten_variable)
-                            else:
-                                # this variable has already been included or already exists, let's merge values
-                                existing_var = [x for x in variables if x["name"] == v["name"]][0]
-                                existing_var.update(self.__deep_merge_dicts(existing_var, overwritten_variable))
+                            overridden_variable.update(override_attribute)
+                            # reformat name from 'all' back to original name
+                            overridden_variable["name"] = original_name
+                            # incorporate variable into compiled list but merge if var exists
+                            variables = self.update_variable_list(variables, parent_only_variables,
+                                                                  overridden_variable, True)
+
+                    # handle case where there's a list of variable to include and override
                     else:
                         for v in snippet['include_variables']:
                             # we need to include only the variables listed here and possibly update them with any
@@ -517,14 +518,44 @@ class SkilletLoader:
                             # update this variable definition accordingly if necessary
                             included_variable.update(v)
 
-                            # now check to see if this skillet has this variable already defined
-                            if not v["name"] in [x["name"] for x in variables]:
-                                variables.append(included_variable)
+                            # incorporate variable into compiled list and no merge since in this case the
+                            # child variable overrides anything that exists
+                            variables = self.update_variable_list(variables, parent_only_variables,
+                                                                  included_variable, False)
 
         skillet['snippets'] = snippets
         skillet['variables'] = variables
 
         return skillet
+
+    def update_variable_list(self, compiled_variables: list, parent_variables: list, child_variable: dict,
+                             merged: bool) -> list:
+        """
+        Adds the given child skillet's variable into the current compiled skillet's variable list
+
+        :param compiled_variables: current compiled skillet's variable list
+        :param parent_variables: copy of original parent skillet's variable list for override
+        :param child_variable: skillet variable to be integrated
+        :param merged: bool if child_variable should be merged with existing
+        :return: variables list with child_variable integrated
+        """
+        child_var_name = child_variable["name"]
+
+        # Do not override and do preserve the parent variables if child_variable is a duplicate
+        if child_var_name in [x["name"] for x in parent_variables]:
+            return compiled_variables
+
+        # Check if the variable does not exist in the compiled variables list so add it here
+        if child_var_name not in [x["name"] for x in compiled_variables]:
+            compiled_variables.append(child_variable)
+        else:
+            # If already in the current compiled list, check to see if we need to merge
+            if merged:
+                existing_var = [x for x in compiled_variables if x["name"] == child_var_name][0]
+                existing_var.update(self.__deep_merge_dicts(existing_var, child_variable))
+
+        # Return updated compiled variables
+        return compiled_variables
 
     def __deep_merge_dicts(self, d1: dict, d2: dict) -> dict:
         """
