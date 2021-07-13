@@ -41,54 +41,88 @@ def test_skillet_includes():
     skillet: Skillet = skillet_loader.get_skillet_with_name('include_other_skillets')
     # verify we can find and load the correct skillet
     assert skillet.name == 'include_other_skillets'
-
     # verify the correct number of snippets.
     assert len(skillet.snippets) == 14
 
-    included_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
+    # Check that parent snippets and variables are brought in correctly
+    not_included_snippet: Snippet = skillet.get_snippet_by_name('parse_config')
+    # verify that non-included snippets are appended to the skillet, from include_other_skillets
+    assert not_included_snippet is not None
 
+    parent_preserve_variable: dict = skillet.get_variable_by_name('shared_base_variable')
+    # verify that the override variables brought up to the parent are preserved
+    assert "toggle_hint" not in parent_preserve_variable
+
+    # Check that a snippet of this format is brought in correctly
+    #       - name: something
+    #         include: child_skillet
+    simple_include_snippet: Snippet = skillet.get_snippet_by_name('update_schedule.get_update_schedule')
+    # verify that snippet with just include: keyword is brought in properly, from update_schedule
+    assert simple_include_snippet is not None
+
+    simple_include_variable: dict = skillet.get_variable_by_name('some_update_variable')
+    # verify that variable with just include: keyword is brought in properly, from update_schedule
+    assert simple_include_variable is not None
+
+    # Check that a snippet of this format is brought in correctly
+    #       - name: something
+    #         include: child_skillet
+    #         include_snippets:
+    #           - name: snippet_1
+    #             attribute:
+    included_snip_only_snippet: Snippet = skillet.get_snippet_by_name('network_profiles.check_network_profiles')
     # verify we can get an included snippet from the skillet object
-    assert included_snippet is not None
-
+    assert included_snip_only_snippet is not None
     # verify the 'label' metadata attribute has been overridden correctly
-    assert included_snippet.metadata.get('label', '') == 'Check Network Profiles Override'
+    assert included_snip_only_snippet.metadata.get('label', '') == 'Check Network Profiles Override'
 
-    included_variable: dict = skillet.get_variable_by_name('another_variable')
+    included_snip_only_variable: dict = skillet.get_variable_by_name('another_variable')
+    # verify the child variable is present in compiled skillet
+    assert included_snip_only_variable is not None
 
-    # verify the included variable is present in the compiled skillet
-    assert included_variable is not None
 
-    # verify the default value is correctly overridden from the included variable
-    assert included_variable.get('default', '') == 'test123456'
+    # Check that a snippet of this format is brought in correctly
+    #       - name: something
+    #         include: child_skillet
+    #         include_variables:
+    #           - name: variable_1
+    #             attribute:
+    included_var_only_snippet: Snippet = skillet.get_snippet_by_name('check_zones.ensure_desired_zone')
+    # verify we can get an included snippet from the skillet object
+    assert included_var_only_snippet is not None
 
-    second_included_variable: dict = skillet.get_variable_by_name('some_update_variable')
-    assert second_included_variable is not None
+    included_var_only_variable: dict = skillet.get_variable_by_name('zone_to_test')
+    # verify the child's default gets overridden because of the parent's attribute definition
+    assert included_var_only_variable["default"] == "untrust"
 
-    another_included_variable: dict = skillet.get_variable_by_name('zone_to_test')
-    assert another_included_variable["default"] == "untrust"
+    # Check that a snippet of this format is brought in correctly
+    #       - name: something
+    #         include: child_skillet
+    #         include_variables:
+    #           - name: all
+    #             attribute:
+    merge_snip_snippet: Snippet = skillet.get_snippet_by_name("qos_class.qos_parse")
+    # verify that the snippets get added to compiled snippet
+    assert merge_snip_snippet is not None
 
-    # verify that shared children variables merge attributes
     merged_override_from_all_variable: dict = skillet.get_variable_by_name('qos_class')
+    # verify that shared children variables merge attributes
     assert merged_override_from_all_variable["toggle_hint"] is not None
     assert "internet" in merged_override_from_all_variable["toggle_hint"]["value"]
     assert "untrust" in merged_override_from_all_variable["toggle_hint"]["value"]
 
-    # verify that the override variables brought up to the parent are preserved
-    parent_preserve_variable: dict = skillet.get_variable_by_name('shared_base_variable')
-    assert "toggle_hint" not in parent_preserve_variable
-
-    # verify that child override works
     child_override_1_variable: dict = skillet.get_variable_by_name('child_1_unique_variable')
+    # verify that child override works
     assert child_override_1_variable["toggle_hint"] is not None
 
     child_override_2_variable: dict = skillet.get_variable_by_name('child_2_unique_variable')
+    # verify that child override works
     assert child_override_2_variable["toggle_hint"] is not None
 
-    # Ensure using includes / overrides leaves our original skillet definition intact
-    # added for issue #163
+    # Added for issue #163
     child_skillet: Skillet = skillet_loader.get_skillet_with_name('network_profiles')
     child_snippet: Snippet = child_skillet.get_snippet_by_name('check_network_profiles')
-
+    # ensure using includes / overrides leaves our original skillet definition intact
     assert child_snippet.metadata.get('label', '') == 'Ensure Named profile exists'
 
 
