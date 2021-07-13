@@ -80,7 +80,6 @@ def test_skillet_includes():
     # verify the child variable is present in compiled skillet
     assert included_snip_only_variable is not None
 
-
     # Check that a snippet of this format is brought in correctly
     #       - name: something
     #         include: child_skillet
