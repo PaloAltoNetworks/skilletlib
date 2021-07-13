@@ -440,21 +440,7 @@ class SkilletLoader:
             if included_skillet is None:
                 raise SkilletLoaderException(f'Could not find included Skillet with name: {snippet["include"]}')
 
-            if "include_snippets" not in snippet and "include_variables" not in snippet:
-                # include all snippets by default
-                for included_snippet in included_skillet.snippet_stack:
-                    include_snippet_name = included_snippet["name"]
-                    propagated_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
-
-                    # ensure the name is set properly
-                    propagated_snippet["name"] = f"{included_skillet.name}.{include_snippet_name}"
-                    snippets.append(propagated_snippet)
-
-                # incorporate every variable into the compiled skillet's variable list
-                for v in included_skillet.variables:
-                    variables = self.__update_variable_list(variables, parent_only_variables, v, False)
-
-            elif "include_snippets" not in snippet:
+            if "include_snippets" not in snippet:
                 # include all snippets by default
                 for included_snippet in included_skillet.snippet_stack:
                     include_snippet_name = included_snippet["name"]
@@ -488,7 +474,10 @@ class SkilletLoader:
 
                     snippets.append(include_meta)
 
-            if "include_variables" in snippet:
+            if "include_variables" not in snippet:
+                for v in included_skillet.variables:
+                    variables = self.__update_variable_list(variables, parent_only_variables, v, False)
+            else:
                 if isinstance(snippet["include_variables"], str) and snippet["include_variables"] == "all":
                     # incorporate every variable into the compiled skillet's variable list
                     for v in included_skillet.variables:
