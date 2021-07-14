@@ -19,16 +19,24 @@ description: |
 type: pan_validation
 labels:
   collection:
-    - Example Skillets
-    - Validation
+    - Test Skillets
 
 variables:
+  - name: shared_base_variable
+    description: Random variable shared with all children skillets
+    default: test_val2
+    type_hint: text
+
   - name: qos_class
     description: QoS Class to Check
     default: class4
     type_hint: text
     help_text: Which class to ensure has at least one valid profile configured for it
 
+  - name: child_1_unique_variable
+    description: Random variable unique to one child
+    default: test123456
+    type_hint: text
 
 snippets:
   - name: qos_parse
