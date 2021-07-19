@@ -57,21 +57,21 @@ class SkilletLoader:
     skillet_errors = list()
 
     # tmp_dir where resolved git repositories will be cloned
-    tmp_dir = '~./.skilletlib'
+    tmp_dir = "~./.skilletlib"
 
     # list of directories to skip and not recurse into
-    skip_dirs = ['.terraform', '.git', '.venv', 'venv', '.idea', '.tox', '.eggs']
+    skip_dirs = [".terraform", ".git", ".venv", "venv", ".idea", ".tox", ".eggs"]
 
     def __init__(self, path=None):
 
         self.skillets = list()
         self.resolved_skillets = list()
 
-        debug = os.environ.get('SKILLET_DEBUG', False)
+        debug = os.environ.get("SKILLET_DEBUG", False)
 
         if debug:
             logger.setLevel(logging.DEBUG)
-            logger.debug('Debugging output enabled')
+            logger.debug("Debugging output enabled")
 
         if path is not None:
             self.load_all_skillets_from_dir(path)
@@ -108,7 +108,7 @@ class SkilletLoader:
 
         if self.__skillet_has_includes(skillet_dict):
             self.__resolve_submodule_skillets(skillet_path_object)
-            self.__resolve_neighbor_skillets(skillet_dict['name'], skillet_path_object)
+            self.__resolve_neighbor_skillets(skillet_dict["name"], skillet_path_object)
 
         compiled_skillet_dict = self.compile_skillet_dict(skillet_dict)
         return self.create_skillet(compiled_skillet_dict)
@@ -120,46 +120,55 @@ class SkilletLoader:
         :param skillet_dict: Dictionary loaded from the skillet.yaml definition file
         :return: Skillet Object
         """
-        skillet_type = skillet_dict['type']
+        skillet_type = skillet_dict["type"]
 
-        if skillet_type == 'panos' or skillet_type == 'panorama' or skillet_type == 'panorama-gpcs':
+        if skillet_type == "panos" or skillet_type == "panorama" or skillet_type == "panorama-gpcs":
             from skilletlib.skillet.panos import PanosSkillet
+
             return PanosSkillet(skillet_dict)
 
-        elif skillet_type == 'pan_validation':
+        elif skillet_type == "pan_validation":
             from skilletlib.skillet.pan_validation import PanValidationSkillet
+
             return PanValidationSkillet(skillet_dict)
 
-        elif skillet_type == 'python3':
+        elif skillet_type == "python3":
             from skilletlib.skillet.python3 import Python3Skillet
+
             return Python3Skillet(skillet_dict)
 
-        elif skillet_type == 'template':
+        elif skillet_type == "template":
             from skilletlib.skillet.template import TemplateSkillet
+
             return TemplateSkillet(skillet_dict)
 
-        elif skillet_type == 'docker':
+        elif skillet_type == "docker":
             from skilletlib.skillet.docker import DockerSkillet
+
             return DockerSkillet(skillet_dict)
 
-        elif skillet_type == 'rest':
+        elif skillet_type == "rest":
             from skilletlib.skillet.rest import RestSkillet
+
             return RestSkillet(skillet_dict)
 
-        elif skillet_type == 'workflow':
+        elif skillet_type == "workflow":
             from skilletlib.skillet.workflow import WorkflowSkillet
+
             return WorkflowSkillet(skillet_dict, self)
 
-        elif skillet_type == 'terraform':
+        elif skillet_type == "terraform":
             from skilletlib.skillet.terraform import TerraformSkillet
+
             return TerraformSkillet(skillet_dict)
 
-        elif skillet_type == 'app':
+        elif skillet_type == "app":
             from skilletlib.skillet.app import AppSkillet
+
             return AppSkillet(skillet_dict)
 
         else:
-            raise SkilletLoaderException(f'Unknown Skillet Type: {skillet_type}!')
+            raise SkilletLoaderException(f"Unknown Skillet Type: {skillet_type}!")
 
     def _parse_skillet(self, path: (str, Path)) -> dict:
         """
@@ -178,60 +187,58 @@ class SkilletLoader:
             path_obj = path
 
         else:
-            raise SkilletLoaderException('Invalid path type found in _parse_skillet!')
+            raise SkilletLoaderException("Invalid path type found in _parse_skillet!")
 
-        if 'meta-cnc' in path_str or 'skillet.y' in path_str:
+        if "meta-cnc" in path_str or "skillet.y" in path_str:
             meta_cnc_file = path_obj
 
             if not path_obj.exists():
-                raise SkilletNotFoundException(f'Could not find skillet.yaml file as this location: {path}')
+                raise SkilletNotFoundException(f"Could not find skillet.yaml file as this location: {path}")
 
         else:
             # we were only passed a directory like '.' or something, try to find a skillet.yaml or .meta-cnc.yml
             directory = path_obj
-            logger.debug(f'using directory {directory}')
+            logger.debug(f"using directory {directory}")
 
             found_files = list()
-            found_files.extend(directory.glob('.meta-cnc.y*'))
-            found_files.extend(directory.glob('*skillet.y*'))
+            found_files.extend(directory.glob(".meta-cnc.y*"))
+            found_files.extend(directory.glob("*skillet.y*"))
 
             if not found_files:
-                raise SkilletNotFoundException('Could not find skillet definition file at this location')
+                raise SkilletNotFoundException("Could not find skillet definition file at this location")
 
             if len(found_files) > 1:
-                logger.warning('Found more than 1 skillet file at this location! Using first file found!')
+                logger.warning("Found more than 1 skillet file at this location! Using first file found!")
 
             meta_cnc_file = found_files[0]
 
         if meta_cnc_file is None:
-            raise SkilletNotFoundException('Could not find skillet definition file at this location')
+            raise SkilletNotFoundException("Could not find skillet definition file at this location")
 
         snippet_path = str(meta_cnc_file.parent.absolute())
         skillet_file = str(meta_cnc_file.name)
 
         try:
 
-            with meta_cnc_file.open(mode='r', encoding='utf-8') as sc:
+            with meta_cnc_file.open(mode="r", encoding="utf-8") as sc:
                 raw_service_config = oyaml.safe_load(sc.read())
                 skillet = self.normalize_skillet_dict(raw_service_config)
-                skillet['snippet_path'] = snippet_path
-                skillet['skillet_path'] = snippet_path
-                skillet['skillet_filename'] = skillet_file
+                skillet["snippet_path"] = snippet_path
+                skillet["skillet_path"] = snippet_path
+                skillet["skillet_filename"] = skillet_file
                 return skillet
 
         except IOError:
-            logger.error('Could not open metadata file in dir %s' % meta_cnc_file.parent)
-            raise SkilletLoaderException('IOError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+            logger.error("Could not open metadata file in dir %s" % meta_cnc_file.parent)
+            raise SkilletLoaderException("IOError: Could not parse metadata file in dir %s" % meta_cnc_file.parent)
 
         except YAMLError as ye:
             logger.error(ye)
-            raise SkilletLoaderException(
-                'YAMLError: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+            raise SkilletLoaderException("YAMLError: Could not parse metadata file in dir %s" % meta_cnc_file.parent)
 
         except Exception as ex:
             logger.error(ex)
-            raise SkilletLoaderException(
-                'Exception: Could not parse metadata file in dir %s' % meta_cnc_file.parent)
+            raise SkilletLoaderException("Exception: Could not parse metadata file in dir %s" % meta_cnc_file.parent)
 
     def __resolve_neighbor_skillets(self, skillet_name: str, skillet_path: Path) -> None:
         """
@@ -247,8 +254,8 @@ class SkilletLoader:
             skillet_path = skillet_path.parent
 
         skillet_definitions = list()
-        skillet_definitions.extend(skillet_path.glob('*.skillet.y*ml'))
-        skillet_definitions.extend(skillet_path.glob('.meta-cnc.y*ml'))
+        skillet_definitions.extend(skillet_path.glob("*.skillet.y*ml"))
+        skillet_definitions.extend(skillet_path.glob(".meta-cnc.y*ml"))
 
         neighbor_skillets = list()
 
@@ -256,22 +263,22 @@ class SkilletLoader:
 
             try:
                 skillet = self.load_skillet_dict_from_path(d)
-                if skillet['name'] != skillet_name:
+                if skillet["name"] != skillet_name:
                     neighbor_skillets.append(skillet)
 
             except SkilletLoaderException as sle:
                 err_dict = dict()
-                err_dict['path'] = str(d.absolute())
-                err_dict['error'] = str(sle)
+                err_dict["path"] = str(d.absolute())
+                err_dict["error"] = str(sle)
                 self.skillet_errors.append(err_dict)
-                logger.warning(f'Loader Error for dir {d.absolute()} - {sle}')
+                logger.warning(f"Loader Error for dir {d.absolute()} - {sle}")
 
             except OSError as oe:
                 err_dict = dict()
-                err_dict['path'] = str(d.absolute())
-                err_dict['error'] = str(oe)
+                err_dict["path"] = str(d.absolute())
+                err_dict["error"] = str(oe)
                 self.skillet_errors.append(err_dict)
-                logger.warning(f'OS Error for dir {d.absolute()} - {oe}')
+                logger.warning(f"OS Error for dir {d.absolute()} - {oe}")
 
         for skillet_dict in neighbor_skillets:
             if not self.__skillet_has_includes(skillet_dict):
@@ -297,7 +304,7 @@ class SkilletLoader:
         all_parents.extend(path.parents)
 
         for p in all_parents:
-            git_dir = p.joinpath('.git')
+            git_dir = p.joinpath(".git")
             if git_dir.exists():
                 git_root = p
                 break
@@ -342,20 +349,21 @@ class SkilletLoader:
         :return: None
         """
 
-        if 'depends' not in skillet:
+        if "depends" not in skillet:
             return None
 
-        depends_list = skillet.get('depends', [])
+        depends_list = skillet.get("depends", [])
         for depends in depends_list:
-            cloned_skillets = self.load_skillet_dicts_from_git(depends['url'], depends['name'], depends['branch'],
-                                                               self.tmp_dir)
+            cloned_skillets = self.load_skillet_dicts_from_git(
+                depends["url"], depends["name"], depends["branch"], self.tmp_dir
+            )
             for cs in cloned_skillets:
                 found_include = False
-                for css in cs['snippets']:
-                    if 'include' in css:
+                for css in cs["snippets"]:
+                    if "include" in css:
                         found_include = True
 
-                if not found_include and 'depends' not in cs:
+                if not found_include and "depends" not in cs:
                     # we do not do recursive dependency resolution. Only index skillets with no dependencies
                     self.resolved_skillets.append(self.create_skillet(cs))
 
@@ -371,8 +379,8 @@ class SkilletLoader:
         :return: boolean True if a snippet with an included skillet is found
         """
 
-        for snippet in skillet_dict.get('snippets', []):
-            if 'include' in snippet:
+        for snippet in skillet_dict.get("snippets", []):
+            if "include" in snippet:
                 return True
 
         return False
@@ -390,19 +398,19 @@ class SkilletLoader:
         # fix for #163 - ensure we use deepcopy to avoid modifying the origin snippet definition
         child_copy = copy.deepcopy(child)
 
-        if 'tags' in parent:
-            if 'tags' not in child_copy:
-                child_copy['tags'] = list()
+        if "tags" in parent:
+            if "tags" not in child_copy:
+                child_copy["tags"] = list()
 
-            child_copy['tags'].extend(parent['tags'])
+            child_copy["tags"].extend(parent["tags"])
 
-        elif 'tag' in parent:
-            if 'tag' not in child_copy:
-                child_copy['tag'] = list()
+        elif "tag" in parent:
+            if "tag" not in child_copy:
+                child_copy["tag"] = list()
 
-            child_copy['tag'].extend(parent['tag'])
+            child_copy["tag"].extend(parent["tag"])
 
-        attributes = ('when', 'label', 'documentation_link', 'description', 'pass_message', 'fail_message')
+        attributes = ("when", "label", "documentation_link", "description", "pass_message", "fail_message")
         for a in attributes:
             if a in parent:
                 child_copy[a] = parent[a]
@@ -419,53 +427,41 @@ class SkilletLoader:
         :return: full compiled skillet definition dictionary
         """
         snippets = list()
-        variables: list = skillet['variables']
+        variables: list = skillet["variables"]
+        parent_only_variables: list = variables.copy()
 
-        for snippet in skillet.get('snippets', []):
+        for snippet in skillet.get("snippets", []):
 
-            if 'include' not in snippet:
+            if "include" not in snippet:
                 snippets.append(snippet)
                 continue
 
-            included_skillet: Skillet = self.get_skillet_with_name(snippet['include'], include_resolved_skillets=True)
+            included_skillet: Skillet = self.get_skillet_with_name(snippet["include"], include_resolved_skillets=True)
             if included_skillet is None:
                 raise SkilletLoaderException(f'Could not find included Skillet with name: {snippet["include"]}')
 
-            if 'include_snippets' not in snippet and 'include_variables' not in snippet:
+            if "include_snippets" not in snippet:
                 # include all snippets by default
                 for included_snippet in included_skillet.snippet_stack:
-                    include_snippet_name = included_snippet['name']
-                    propagated_snippet = self.__propagate_snippet_metadata(snippet, included_snippet)
-
-                    # ensure the name is set properly
-                    propagated_snippet['name'] = f'{included_skillet.name}.{include_snippet_name}'
-                    snippets.append(propagated_snippet)
-
-                for v in included_skillet.variables:
-                    if v["name"] not in [x["name"] for x in variables]:
-                        variables.append(v)
-
-            elif 'include_snippets' not in snippet:
-                # include all snippets by default
-                for included_snippet in included_skillet.snippet_stack:
-                    include_snippet_name = included_snippet['name']
+                    include_snippet_name = included_snippet["name"]
                     included_meta = self.__propagate_snippet_metadata(snippet, included_snippet)
-                    included_meta['name'] = f'{included_skillet.name}.{include_snippet_name}'
+                    included_meta["name"] = f"{included_skillet.name}.{include_snippet_name}"
                     snippets.append(included_meta)
 
             else:
-                for include_snippet in snippet['include_snippets']:
-                    include_snippet_name = include_snippet['name']
+                for include_snippet in snippet["include_snippets"]:
+                    include_snippet_name = include_snippet["name"]
                     include_snippet_object = included_skillet.get_snippet_by_name(include_snippet_name)
                     include_meta = include_snippet_object.metadata
                     # the meta attribute in the metadata is a dict that we do not want to completely overwrite
-                    if 'meta' in include_snippet:
-                        include_snippet_object_meta = include_meta.get('meta', {})
-                        if isinstance(include_snippet_object_meta, dict) and \
-                                isinstance(include_snippet.get('meta', {}), dict):
+                    if "meta" in include_snippet:
+                        include_snippet_object_meta = include_meta.get("meta", {})
+                        if isinstance(include_snippet_object_meta, dict) and isinstance(
+                            include_snippet.get("meta", {}), dict
+                        ):
                             new_meta = include_snippet_object_meta.copy()
-                            new_meta.update(include_snippet.get('meta', {}))
-                            include_snippet['meta'] = new_meta
+                            new_meta.update(include_snippet.get("meta", {}))
+                            include_snippet["meta"] = new_meta
 
                     # propagate everything form the parent if it's there
                     include_meta = self.__propagate_snippet_metadata(snippet, include_meta)
@@ -474,57 +470,91 @@ class SkilletLoader:
                     include_meta.update(include_snippet)
 
                     # ensure the name is set properly
-                    include_meta['name'] = f'{included_skillet.name}.{include_snippet_name}'
+                    include_meta["name"] = f"{included_skillet.name}.{include_snippet_name}"
 
                     snippets.append(include_meta)
 
-            if 'include_variables' in snippet:
-                if isinstance(snippet['include_variables'], str) and snippet['include_variables'] == 'all':
+            if "include_variables" not in snippet:
+                for v in included_skillet.variables:
+                    variables = self.__update_variable_list(variables, parent_only_variables, v, False)
+            else:
+                if isinstance(snippet["include_variables"], str) and snippet["include_variables"] == "all":
+                    # incorporate every variable into the compiled skillet's variable list
                     for v in included_skillet.variables:
-                        if v["name"] not in [x["name"] for x in variables]:
-                            variables.append(v)
+                        variables = self.__update_variable_list(variables, parent_only_variables, v, False)
 
-                elif isinstance(snippet['include_variables'], list):
+                elif isinstance(snippet["include_variables"], list):
 
                     # handle case where we have a single dict item with name == 'all' to override all snippet attributes
                     # see issue #182 for details
-                    if len(snippet['include_variables']) == 1 and snippet['include_variables'][0]['name'] == 'all':
-                        override_variable = snippet['include_variables'][0]
+                    if len(snippet["include_variables"]) == 1 and snippet["include_variables"][0]["name"] == "all":
+                        override_attribute = snippet["include_variables"][0]
 
                         for v in included_skillet.variables:
-
-                            original_name = v['name']
+                            original_name = v["name"]
                             # #163 - always uses deepcopy when using includes / overrides
-                            overwritten_variable = copy.deepcopy(v)
+                            overridden_variable = copy.deepcopy(v)
                             # update this variable definition accordingly if necessary
-                            overwritten_variable.update(override_variable)
-                            overwritten_variable["name"] = original_name
-                            if v["name"] not in [x["name"] for x in variables]:
-                                # this variable does not exist in the skillet_dict variables, so add it here
-                                variables.append(overwritten_variable)
-                            else:
-                                # this variable has already been included or already exists, let's merge values
-                                existing_var = [x for x in variables if x["name"] == v["name"]][0]
-                                existing_var.update(self.__deep_merge_dicts(existing_var, overwritten_variable))
+                            overridden_variable.update(override_attribute)
+                            # reformat name from 'all' back to original name
+                            overridden_variable["name"] = original_name
+                            # incorporate variable into compiled list but merge if var exists
+                            variables = self.__update_variable_list(
+                                variables, parent_only_variables, overridden_variable, True
+                            )
+
+                    # handle case where there's a list of variable to include and override
                     else:
-                        for v in snippet['include_variables']:
+                        for v in snippet["include_variables"]:
                             # we need to include only the variables listed here and possibly update them with any
                             # new / modified attributes
-                            included_variable_orig = included_skillet.get_variable_by_name(v['name'])
+                            included_variable_orig = included_skillet.get_variable_by_name(v["name"])
 
                             # #163 - always uses deepcopy when using includes / overrides
                             included_variable = copy.deepcopy(included_variable_orig)
                             # update this variable definition accordingly if necessary
                             included_variable.update(v)
 
-                            # now check to see if this skillet has this variable already defined
-                            if not v["name"] in [x["name"] for x in variables]:
-                                variables.append(included_variable)
+                            # incorporate variable into compiled list and no merge since in this case the
+                            # child variable overrides anything that exists
+                            variables = self.__update_variable_list(
+                                variables, parent_only_variables, included_variable, False
+                            )
 
-        skillet['snippets'] = snippets
-        skillet['variables'] = variables
+        skillet["snippets"] = snippets
+        skillet["variables"] = variables
 
         return skillet
+
+    def __update_variable_list(
+        self, compiled_variables: list, parent_variables: list, child_variable: dict, merged: bool
+    ) -> list:
+        """
+        Adds the given child skillet's variable into the current compiled skillet's variable list
+
+        :param compiled_variables: current compiled skillet's variable list
+        :param parent_variables: copy of original parent skillet's variable list for override
+        :param child_variable: skillet variable to be integrated
+        :param merged: bool if child_variable should be merged with existing
+        :return: variables list with child_variable integrated
+        """
+        child_var_name = child_variable["name"]
+
+        # Do not override and do preserve the parent variables if child_variable is a duplicate
+        if child_var_name in [x["name"] for x in parent_variables]:
+            return compiled_variables
+
+        # Check if the variable does not exist in the compiled variables list so add it here
+        if child_var_name not in [x["name"] for x in compiled_variables]:
+            compiled_variables.append(child_variable)
+        else:
+            # If already in the current compiled list, check to see if we need to merge
+            if merged:
+                existing_var = [x for x in compiled_variables if x["name"] == child_var_name][0]
+                existing_var.update(self.__deep_merge_dicts(existing_var, child_variable))
+
+        # Return updated compiled variables
+        return compiled_variables
 
     def __deep_merge_dicts(self, d1: dict, d2: dict) -> dict:
         """
@@ -567,186 +597,206 @@ class SkilletLoader:
         if type(skillet) is not dict:
             skillet = dict()
 
-        if 'name' not in skillet:
-            skillet['name'] = 'Unknown Skillet'
+        if "name" not in skillet:
+            skillet["name"] = "Unknown Skillet"
 
-        if 'label' not in skillet:
-            skillet['label'] = 'Unknown Skillet'
+        if "label" not in skillet:
+            skillet["label"] = "Unknown Skillet"
 
-        if 'type' not in skillet:
-            skillet['type'] = 'template'
+        if "type" not in skillet:
+            skillet["type"] = "template"
 
-        if 'description' not in skillet:
-            skillet['description'] = 'template skillet'
+        if "description" not in skillet:
+            skillet["description"] = "template skillet"
 
         # first verify the variables stanza is present and is a list
-        if 'variables' not in skillet:
-            skillet['variables'] = list()
+        if "variables" not in skillet:
+            skillet["variables"] = list()
 
-        elif skillet['variables'] is None:
-            skillet['variables'] = list()
+        elif skillet["variables"] is None:
+            skillet["variables"] = list()
 
-        elif type(skillet['variables']) is not list:
-            skillet['variables'] = list()
+        elif type(skillet["variables"]) is not list:
+            skillet["variables"] = list()
 
-        elif type(skillet['variables']) is list:
+        elif type(skillet["variables"]) is list:
 
-            for variable in skillet['variables']:
+            for variable in skillet["variables"]:
 
                 if type(variable) is not dict:
-                    logger.debug('Removing Invalid Variable Definition')
-                    skillet['variables'].remove(variable)
+                    logger.debug("Removing Invalid Variable Definition")
+                    skillet["variables"].remove(variable)
 
                 else:
 
-                    if 'name' not in variable:
-                        variable['name'] = 'Unknown variable'
+                    if "name" not in variable:
+                        variable["name"] = "Unknown variable"
 
-                    if 'type_hint' not in variable:
-                        variable['type_hint'] = 'text'
+                    if "type_hint" not in variable:
+                        variable["type_hint"] = "text"
 
-                    if 'default' not in variable:
-                        variable['default'] = ''
+                    if "default" not in variable:
+                        variable["default"] = ""
 
-        if 'depends' not in skillet:
-            skillet['depends'] = list()
+        if "depends" not in skillet:
+            skillet["depends"] = list()
 
-        elif not isinstance(skillet['depends'], list):
-            skillet['depends'] = list()
+        elif not isinstance(skillet["depends"], list):
+            skillet["depends"] = list()
 
-        elif isinstance(skillet['depends'], list):
-            for depends in skillet['depends']:
+        elif isinstance(skillet["depends"], list):
+            for depends in skillet["depends"]:
 
                 if not isinstance(depends, dict):
-                    print('Removing Invalid Depends Definition')
+                    print("Removing Invalid Depends Definition")
                     print(type(depends))
-                    skillet['depends'].remove(depends)
+                    skillet["depends"].remove(depends)
 
                 else:
-                    if not {'url', 'name'}.issubset(depends):
-                        print('Removing Invalid Depends Definition - incorrect attributes')
+                    if not {"url", "name"}.issubset(depends):
+                        print("Removing Invalid Depends Definition - incorrect attributes")
                         print('Required "url" and "name" to be present. "branch" is optional')
                         print(depends)
 
                     else:
-                        if depends['url'] is None or depends['url'] == '' \
-                                or depends['name'] is None or depends['name'] == '':
-                            print('Removing Invalid Depends Definition - incorrect attribute values')
+                        if (
+                            depends["url"] is None
+                            or depends["url"] == ""
+                            or depends["name"] is None
+                            or depends["name"] == ""
+                        ):
+                            print("Removing Invalid Depends Definition - incorrect attribute values")
                             print('Required "url" and "name" to be not be blank or None')
                             print(depends)
 
         # verify labels stanza is present and is a OrderedDict
-        if 'labels' not in skillet:
-            skillet['labels'] = OrderedDict()
+        if "labels" not in skillet:
+            skillet["labels"] = OrderedDict()
 
-        elif skillet['labels'] is None:
-            skillet['labels'] = OrderedDict()
+        elif skillet["labels"] is None:
+            skillet["labels"] = OrderedDict()
 
-        elif type(skillet['labels']) is not OrderedDict and type(skillet['labels']) is not dict:
-            skillet['labels'] = OrderedDict()
+        elif type(skillet["labels"]) is not OrderedDict and type(skillet["labels"]) is not dict:
+            skillet["labels"] = OrderedDict()
 
         # ensure we have a collection label
-        if 'collection' not in skillet['labels'] or type(skillet['labels']['collection']) is None:
+        if "collection" not in skillet["labels"] or type(skillet["labels"]["collection"]) is None:
             # do not force a collection for 'app' type skillets as these aren't meant to be shown to the end user
 
-            if skillet['type'] != 'app':
-                skillet['labels']['collection'] = list()
-                skillet['labels']['collection'].append('Unknown')
+            if skillet["type"] != "app":
+                skillet["labels"]["collection"] = list()
+                skillet["labels"]["collection"].append("Unknown")
 
-        elif type(skillet['labels']['collection']) is str:
+        elif type(skillet["labels"]["collection"]) is str:
             new_collection = list()
-            old_value = skillet['labels']['collection']
+            old_value = skillet["labels"]["collection"]
             new_collection.append(old_value)
-            skillet['labels']['collection'] = new_collection
+            skillet["labels"]["collection"] = new_collection
 
         # ensure no app_data attribute is present in the skillet definition
-        if 'app_data' in skillet:
-            skillet.pop('app_data')
+        if "app_data" in skillet:
+            skillet.pop("app_data")
 
         # verify snippets stanza is present and is a list
-        if 'snippets' not in skillet:
-            skillet['snippets'] = list()
+        if "snippets" not in skillet:
+            skillet["snippets"] = list()
 
-        elif skillet['snippets'] is None:
-            skillet['snippets'] = list()
+        elif skillet["snippets"] is None:
+            skillet["snippets"] = list()
 
-        elif type(skillet['snippets']) is not list:
-            skillet['snippets'] = list()
+        elif type(skillet["snippets"]) is not list:
+            skillet["snippets"] = list()
 
-        for snippet in skillet['snippets']:
+        for snippet in skillet["snippets"]:
             if not isinstance(snippet, dict):
-                skillet['snippets'].remove(snippet)
+                skillet["snippets"].remove(snippet)
 
-            if 'include' in snippet:
-                include_def = snippet['include']
+            if "include" in snippet:
+                include_def = snippet["include"]
 
                 if not isinstance(include_def, str):
-                    skillet['snippets'].remove(snippet)
-                    logger.error(f'{skillet["name"]}: '
-                                 'Removing invalid snippet definition: include is not a str')
+                    skillet["snippets"].remove(snippet)
+                    logger.error(f'{skillet["name"]}: ' "Removing invalid snippet definition: include is not a str")
                     continue
 
-                if 'include_snippets' in snippet:
-                    include_snippets_def = snippet['include_snippets']
+                if "include_snippets" in snippet:
+                    include_snippets_def = snippet["include_snippets"]
                     if not isinstance(include_snippets_def, list):
-                        skillet['snippets'].remove(snippet)
-                        logger.error(f'{skillet["name"]}: Removing invalid snippet definition: include_snippets '
-                                     'is not a list')
+                        skillet["snippets"].remove(snippet)
+                        logger.error(
+                            f'{skillet["name"]}: Removing invalid snippet definition: include_snippets ' "is not a list"
+                        )
                         continue
 
                     for isd in include_snippets_def:
                         if not isinstance(isd, dict):
                             include_snippets_def.remove(isd)
-                            logger.error(f'{skillet["name"]}: Removing invalid include_snippets definition: '
-                                         'include_snippets item is not a dict')
+                            logger.error(
+                                f'{skillet["name"]}: Removing invalid include_snippets definition: '
+                                "include_snippets item is not a dict"
+                            )
                             continue
 
-                        if 'name' not in isd:
+                        if "name" not in isd:
                             include_snippets_def.remove(isd)
-                            logger.error(f'{skillet["name"]}: Removing invalid include_snippets definition: '
-                                         'include_snippets item requires a name attribute')
+                            logger.error(
+                                f'{skillet["name"]}: Removing invalid include_snippets definition: '
+                                "include_snippets item requires a name attribute"
+                            )
                             continue
 
-                if 'include_variables' in snippet:
-                    include_variables_def = snippet['include_variables']
+                if "include_variables" in snippet:
+                    include_variables_def = snippet["include_variables"]
                     if isinstance(include_variables_def, str):
-                        if not include_variables_def == 'all':
-                            skillet['snippets'].remove(snippet)
-                            logger.error(f'{skillet["name"]}: Removing invalid snippet definition: '
-                                         'include_variables must be all or list')
+                        if not include_variables_def == "all":
+                            skillet["snippets"].remove(snippet)
+                            logger.error(
+                                f'{skillet["name"]}: Removing invalid snippet definition: '
+                                "include_variables must be all or list"
+                            )
                             continue
 
                     elif isinstance(include_variables_def, list):
                         for ivd in include_variables_def:
                             if not isinstance(ivd, dict):
                                 include_variables_def.remove(ivd)
-                                logger.error(f'{skillet["name"]}: Removing invalid include_variables definition: '
-                                             'include_variables item is not a dict')
+                                logger.error(
+                                    f'{skillet["name"]}: Removing invalid include_variables definition: '
+                                    "include_variables item is not a dict"
+                                )
                                 continue
 
-                            if 'name' not in ivd:
+                            if "name" not in ivd:
                                 include_variables_def.remove(ivd)
-                                logger.error(f'{skillet["name"]}: Removing invalid include_variables definition: '
-                                             'include_variables item requires a name')
+                                logger.error(
+                                    f'{skillet["name"]}: Removing invalid include_variables definition: '
+                                    "include_variables item requires a name"
+                                )
                                 continue
                     else:
-                        skillet['snippets'].remove(snippet)
-                        logger.error(f'{skillet["name"]}: '
-                                     'Removing invalid snippet definition: include_variables is not a list or all')
+                        skillet["snippets"].remove(snippet)
+                        logger.error(
+                            f'{skillet["name"]}: '
+                            "Removing invalid snippet definition: include_variables is not a list or all"
+                        )
                         continue
 
             else:
 
-                if 'include_snippets' in snippet:
-                    skillet['snippets'].remove(snippet)
-                    logger.error(f'{skillet["name"]}: '
-                                 f'Removing invalid snippet definition: include_snippets requires an include attribute')
+                if "include_snippets" in snippet:
+                    skillet["snippets"].remove(snippet)
+                    logger.error(
+                        f'{skillet["name"]}: '
+                        f"Removing invalid snippet definition: include_snippets requires an include attribute"
+                    )
                     continue
 
-                if 'include_variables' in snippet:
-                    skillet['snippets'].remove(snippet)
-                    logger.error(f'{skillet["name"]}: '
-                                 'Removing invalid snippet definition: include_variables requires an include attribute')
+                if "include_variables" in snippet:
+                    skillet["snippets"].remove(snippet)
+                    logger.error(
+                        f'{skillet["name"]}: '
+                        "Removing invalid snippet definition: include_variables requires an include attribute"
+                    )
                     continue
 
         return skillet
@@ -763,29 +813,40 @@ class SkilletLoader:
         errs = list()
 
         if skillet is None:
-            errs.append('Skillet is blank or could not be loaded')
+            errs.append("Skillet is blank or could not be loaded")
             return errs
 
         if not isinstance(skillet, dict):
-            errs.append('Skillet is malformed')
+            errs.append("Skillet is malformed")
             return errs
 
         # verify labels stanza is present
-        if 'labels' not in skillet:
-            errs.append('No labels attribute present in skillet')
+        if "labels" not in skillet:
+            errs.append("No labels attribute present in skillet")
         else:
-            if 'collection' not in skillet['labels']:
-                errs.append('No collection defined in skillet')
+            if "collection" not in skillet["labels"]:
+                errs.append("No collection defined in skillet")
 
-        if 'label' not in skillet:
-            errs.append('No label attribute in skillet')
+        if "label" not in skillet:
+            errs.append("No label attribute in skillet")
 
-        if 'type' not in skillet:
-            errs.append('No type attribute in skillet')
+        if "type" not in skillet:
+            errs.append("No type attribute in skillet")
         else:
-            valid_types = ['panos', 'panorama', 'panorama-gpcs', 'pan_validation',
-                           'python3', 'rest', 'terraform', 'template', 'workflow', 'docker', 'app']
-            if skillet['type'] not in valid_types:
+            valid_types = [
+                "panos",
+                "panorama",
+                "panorama-gpcs",
+                "pan_validation",
+                "python3",
+                "rest",
+                "terraform",
+                "template",
+                "workflow",
+                "docker",
+                "app",
+            ]
+            if skillet["type"] not in valid_types:
                 errs.append(f'Unknown type {skillet["type"]} in skillet')
 
         return errs
@@ -800,7 +861,7 @@ class SkilletLoader:
         """
 
         if not self.skillets and not self.resolved_skillets:
-            raise SkilletLoaderException('No Skillets have been loaded!')
+            raise SkilletLoaderException("No Skillets have been loaded!")
 
         for skillet in self.skillets:
             if skillet.name == skillet_name:
@@ -847,24 +908,24 @@ class SkilletLoader:
         for skillet_dict in skillet_definitions:
             found_include = False
 
-            for snippet in skillet_dict.get('snippets', []):
-                if 'include' in snippet:
+            for snippet in skillet_dict.get("snippets", []):
+                if "include" in snippet:
                     found_include = True
 
             if not found_include:
                 try:
                     self.skillets.append(self.create_skillet(skillet_dict))
-                    processed_skillets.append(skillet_dict['name'])
+                    processed_skillets.append(skillet_dict["name"])
 
                 except SkilletLoaderException as sle:
                     err_dict = dict()
-                    err_dict['path'] = skillet_dict.get('name', '')
-                    err_dict['error'] = str(sle)
+                    err_dict["path"] = skillet_dict.get("name", "")
+                    err_dict["error"] = str(sle)
                     self.skillet_errors.append(err_dict)
 
         # now resolve deps for those that do inclusions
         for skillet_dict in skillet_definitions:
-            if skillet_dict['name'] in processed_skillets:
+            if skillet_dict["name"] in processed_skillets:
                 continue
 
             # do not yet pull down deps automatically. FIXME - need to signal to skilletlib that this operation is OK
@@ -876,8 +937,8 @@ class SkilletLoader:
 
             except SkilletLoaderException as sle:
                 err_dict = dict()
-                err_dict['path'] = skillet_dict.get('name', '')
-                err_dict['error'] = str(sle)
+                err_dict["path"] = skillet_dict.get("name", "")
+                err_dict["error"] = str(sle)
                 self.skillet_errors.append(err_dict)
 
         return self.skillets
@@ -893,12 +954,12 @@ class SkilletLoader:
         :param skillet_list: combined list of all skillet_dicts
         :return: list of Skillets
         """
-        logger.debug(f'Checking dir: {directory}')
+        logger.debug(f"Checking dir: {directory}")
         err_condition = False
 
         skillet_definitions = list()
-        skillet_definitions.extend(directory.glob('*.skillet.y*ml'))
-        skillet_definitions.extend(directory.glob('.meta-cnc.y*ml'))
+        skillet_definitions.extend(directory.glob("*.skillet.y*ml"))
+        skillet_definitions.extend(directory.glob(".meta-cnc.y*ml"))
 
         for d in skillet_definitions:
 
@@ -907,23 +968,23 @@ class SkilletLoader:
                 skillet_list.append(skillet)
 
             except SkilletNotFoundException:
-                err_condition = f'Skillet not found in dir {d.name}'
+                err_condition = f"Skillet not found in dir {d.name}"
 
             except SkilletLoaderException as sle:
                 # for panhandler gl #19 - keep track of loader errors and associated directory
                 err_dict = dict()
-                err_dict['path'] = str(d.absolute())
-                err_dict['error'] = str(sle)
+                err_dict["path"] = str(d.absolute())
+                err_dict["error"] = str(sle)
                 self.skillet_errors.append(err_dict)
-                err_condition = f'Loader Error for dir {d.absolute()} - {sle}'
+                err_condition = f"Loader Error for dir {d.absolute()} - {sle}"
 
             except OSError as oe:
                 # catch all OSErrors for #117
                 err_dict = dict()
-                err_dict['path'] = str(d.absolute())
-                err_dict['error'] = str(oe)
+                err_dict["path"] = str(d.absolute())
+                err_dict["error"] = str(oe)
                 self.skillet_errors.append(err_dict)
-                err_condition = f'OS Error for dir {d.absolute()} - {oe}'
+                err_condition = f"OS Error for dir {d.absolute()} - {oe}"
 
         if err_condition:
             logger.warning(err_condition)
@@ -950,8 +1011,7 @@ class SkilletLoader:
 
         return skillet_list
 
-    def load_skillets_from_git(self, repo_url, repo_name, repo_branch,
-                               local_dir=None) -> List[Skillet]:
+    def load_skillets_from_git(self, repo_url, repo_name, repo_branch, local_dir=None) -> List[Skillet]:
         """
         Performs a local clone of the given Git repository URL and returns a list of all found skillets defined
         therein.
@@ -983,8 +1043,7 @@ class SkilletLoader:
         if local_dir is None:
             local_dir = self.tmp_dir
 
-        skillet_definitions = self.load_skillet_dicts_from_git(repo_url, repo_name, repo_branch,
-                                                               local_dir)
+        skillet_definitions = self.load_skillet_dicts_from_git(repo_url, repo_name, repo_branch, local_dir)
 
         skillets = list()
         for skillet_dict in skillet_definitions:
@@ -992,8 +1051,7 @@ class SkilletLoader:
 
         return skillets
 
-    def load_skillet_dicts_from_git(self, repo_url, repo_name, repo_branch,
-                                    local_dir=None) -> List[dict]:
+    def load_skillet_dicts_from_git(self, repo_url, repo_name, repo_branch, local_dir=None) -> List[dict]:
         """
         Performs a local clone of the given Git repository URL and returns a list of all found skillet definition
         dictionaries defined therein.

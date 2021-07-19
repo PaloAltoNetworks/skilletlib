@@ -1,0 +1,90 @@
+
+name: logging_status
+label: Capture pattern from Text output
+description: |
+  This example Skillet shows how to use output capturing with text based output. Some PAN-OS commands return a text
+  output instead of XML or JSON structured data. In these cases, you can use 'capture_pattern' to return a the first
+  occurance of a regular expression match. To capture more than one item, you can use the 'capture_list' attribute. This
+  will return all matches from the given regular expression.
+
+type: panos
+labels:
+  collection:
+    - Test Skillets
+
+variables:
+  - name: qos_class
+    description: QoS Class to Check
+    default: class4
+    type_hint: text
+    help_text: Which class to ensure has at least one valid profile configured for it
+
+  - name: child_2_unique_variable
+    description: Random variable unique to another child
+    default: test123456
+    type_hint: text
+
+
+snippets:
+  - name: get_logging_status
+    cmd: cli
+    # This cli command will return a text blob
+    cmd_str: show logging-status
+    output_type: text
+    outputs:
+      # let's capture a variable called 'connected_server_ip'
+      - name: connected_server_ip
+        # this will search the text returned from the cli command and return the first match found using this regex
+        # pattern
+        capture_pattern: is active and connected to (.*)\n
+        # this will capture ALL matches from the following regex as a list. No matches always return an empty list
+      - name: all_cms
+        capture_list: Not Sending to CMS (\d+)
+
+# Example output from the cli is given here for illustrative purposes
+
+# output is:
+# -----------------------------------------------------------------------------------------------------------------------------
+#      Type      Last Log Created        Last Log Fwded       Last Seq Num Fwded  Last Seq Num Acked         Total Logs Fwded
+#-----------------------------------------------------------------------------------------------------------------------------
+#> CMS 0
+#	Not Sending to CMS 0
+#> CMS 1
+#	Not Sending to CMS 1
+#
+#>Log Collection Service
+#'Log Collection log forwarding agent' is active and connected to 1.2.3.4
+#
+#
+#    config         Not Available         Not Available                        0                   0                        0
+#    system         Not Available         Not Available                        0                   0                        0
+#    threat         Not Available         Not Available                        0                   0                        0
+#   traffic   2020/07/15 14:48:00   2020/07/15 14:48:09                       41                  41                       41
+#  hipmatch         Not Available         Not Available                        0                   0                        0
+#gtp-tunnel         Not Available         Not Available                        0                   0                        0
+#    userid         Not Available         Not Available                        0                   0                        0
+#     iptag         Not Available         Not Available                        0                   0                        0
+#      auth         Not Available         Not Available                        0                   0                        0
+#      sctp         Not Available         Not Available                        0                   0                        0
+#   decrypt         Not Available         Not Available                        0                   0                        0
+#globalprotect         Not Available         Not Available                        0                   0                        0
+
+# Snippet execution output will be:
+
+# {
+#    "snippets": {
+#        "get_logging_status": {
+#            "results": "success",
+#            "changed": false
+#        }
+#    },
+#    "outputs": {
+#        "connected_server_ip": "1.2.3.4",
+#        "all_cms": [
+#            "0",
+#            "1"
+#        ]
+#    },
+#    "result": "success",
+#    "changed": false
+# }

@@ -8,14 +8,14 @@ description: |
 type: pan_validation
 labels:
   collection:
-    - Example Skillets
-    - Validation
+    - Test Skillets
 
 variables:
   - name: zone_to_test
     description: Name of the Zone to test
     default: internet
     type_hint: text
+
   - name: interface_to_test
     description: Name of the Interface to test
     default: ethernet1/1
