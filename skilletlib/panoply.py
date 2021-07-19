@@ -1350,6 +1350,9 @@ class Panoply:
         # get all versions
         versions = self.get_configuration_versions()
 
+        if len(versions) == 1:
+            raise PanoplyException('PAN-OS does not have any previous configs available!')
+        
         # convert this list of str into list of int and sort it
         sorted_versions = sorted(list(map(int, [x["version"] for x in versions])))
 
