@@ -954,10 +954,6 @@ class Panoply:
         """
         Loop and wait until device is ready or times out
 
-        .. note::
-
-            This currently only supports PAN-OS devices and not Panorama
-
         :param interval: how often to check in seconds
         :param timeout: how long to wait until we declare a timeout condition
         :return: boolean true on ready, false on timeout
@@ -968,28 +964,31 @@ class Panoply:
         while True:
             try:
 
-                # fix for #60 - show chassis ready is not available on panorama
-                if self.facts.get("model", "Panorama") == "Panorama":
-                    cmd = "<show><system><info></info></system></show>"
-                    is_panorama = True
-                else:
-                    cmd = "<show><chassis-ready></chassis-ready></show>"
-                    is_panorama = False
+                self.connect(allow_offline=True)
+                if self.connected:
 
-                self.xapi.op(cmd=cmd)
-                resp = self.xapi.xml_result()
+                    # fix for #60 - show chassis ready is not available on panorama
+                    if self.facts.get("model", "Panorama") == "Panorama":
+                        cmd = "<show><system><info></info></system></show>"
+                        is_panorama = True
+                    else:
+                        cmd = "<show><chassis-ready></chassis-ready></show>"
+                        is_panorama = False
 
-                if self.xapi.status == "success":
-                    # in the case of panorama, we may be up but the auto-commit job may still be running
-                    # continue to wait until there are no more jobs
-                    # FIXME - should probably enhance this to only check for auto-commit job, it's possible there
-                    # can be other jobs running with a busy / heavily used panorama instance
-                    if is_panorama:
-                        if not self.has_running_jobs():
+                    self.xapi.op(cmd=cmd)
+                    resp = self.xapi.xml_result()
+
+                    if self.xapi.status == "success":
+                        # in the case of panorama, we may be up but the auto-commit job may still be running
+                        # continue to wait until there are no more jobs
+                        # FIXME - should probably enhance this to only check for auto-commit job, it's possible there
+                        # can be other jobs running with a busy / heavily used panorama instance
+                        if is_panorama:
+                            if not self.has_running_jobs():
+                                return True
+
+                        if resp.strip() == "yes":
                             return True
-
-                    if resp.strip() == "yes":
-                        return True
 
             except TargetLoginException:
                 logger.error("Could not log in to device...")
