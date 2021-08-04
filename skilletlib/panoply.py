@@ -61,14 +61,14 @@ class Panoply:
     """
 
     def __init__(
-            self,
-            hostname: Optional[str] = None,
-            api_username: Optional[str] = None,
-            api_password: Optional[str] = None,
-            api_port: Optional[int] = 443,
-            serial_number: Optional[str] = None,
-            debug: Optional[bool] = False,
-            api_key: Optional[str] = None,
+        self,
+        hostname: Optional[str] = None,
+        api_username: Optional[str] = None,
+        api_password: Optional[str] = None,
+        api_port: Optional[int] = 443,
+        serial_number: Optional[str] = None,
+        debug: Optional[bool] = False,
+        api_key: Optional[str] = None,
     ):
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
@@ -238,8 +238,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                        '<entry name="Service_Conn_Device_Group"/>'
-                        "</device-group></shared-policy></commit-all>",
+                    '<entry name="Service_Conn_Device_Group"/>'
+                    "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -251,8 +251,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                        '<entry name="Remote_Network_Device_Group"/>'
-                        "</device-group></shared-policy></commit-all>",
+                    '<entry name="Remote_Network_Device_Group"/>'
+                    "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -264,8 +264,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                        '<entry name="Mobile_User_Device_Group"/>'
-                        "</device-group></shared-policy></commit-all>",
+                    '<entry name="Mobile_User_Device_Group"/>'
+                    "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -691,7 +691,7 @@ class Panoply:
         ef = {
             "interfaces": self.get_interfaces(),
             "security_rules": self.get_security_rules(),
-            "zones": self.get_zones()
+            "zones": self.get_zones(),
         }
 
         return ef
@@ -737,13 +737,13 @@ class Panoply:
         :return: dict with two keys 'ifnet' and 'hw'.
         """
 
-        interfaces_xml = self.execute_op('<show><interface>all</interface></show>', parse_result=False)
+        interfaces_xml = self.execute_op("<show><interface>all</interface></show>", parse_result=False)
 
-        if self.xapi.status != 'success':
-            raise PanoplyException('Could not get interfaces!')
+        if self.xapi.status != "success":
+            raise PanoplyException("Could not get interfaces!")
 
         interfaces_result = xmltodict.parse(interfaces_xml)
-        return interfaces_result.get('response', {}).get('result', {})
+        return interfaces_result.get("response", {}).get("result", {})
 
     def get_zones(self) -> list:
         """
@@ -753,11 +753,11 @@ class Panoply:
 
         :return: list of zone names
         """
-        if self.facts["model"] != 'Panorama':
-            return self.__get_completion(xpath='/operations/show/zone-protection/zone', completion_type='op')
+        if self.facts["model"] != "Panorama":
+            return self.__get_completion(xpath="/operations/show/zone-protection/zone", completion_type="op")
 
         else:
-            logger.info('not returning zones for Panorama')
+            logger.info("not returning zones for Panorama")
             return []
 
     def get_security_rules(self) -> list:
@@ -768,11 +768,12 @@ class Panoply:
 
         :return: list of security rules
         """
-        if self.facts["model"] != 'Panorama':
-            return self.__get_completion(xpath='/config/devices/entry/vsys/entry/rulebase/security/rules',
-                                         completion_type='config')
+        if self.facts["model"] != "Panorama":
+            return self.__get_completion(
+                xpath="/config/devices/entry/vsys/entry/rulebase/security/rules", completion_type="config"
+            )
         else:
-            logger.info('not returning security rules for Panorama')
+            logger.info("not returning security rules for Panorama")
             return []
 
     def debug_completion(self, xpath, ct) -> list:
@@ -876,7 +877,7 @@ class Panoply:
             skillet_dir = "baseline_91"
 
         # catch-all for future 10.x versions
-        elif '10' in version:
+        elif "10" in version:
             skillet_dir = "baseline_91"
 
         else:
@@ -1029,8 +1030,11 @@ class Panoply:
         connected_devices_xml = self.execute_cli("show devices connected")
         connected_devices_dict = xmltodict.parse(connected_devices_xml)
 
-        if "devices" in connected_devices_xml and connected_devices_dict["devices"] is not None \
-                and "entry" in connected_devices_dict["devices"]:
+        if (
+            "devices" in connected_devices_xml
+            and connected_devices_dict["devices"] is not None
+            and "entry" in connected_devices_dict["devices"]
+        ):
             connected_devices = connected_devices_dict["devices"]["entry"]
 
         else:
@@ -1356,7 +1360,7 @@ class Panoply:
         versions = self.get_configuration_versions()
 
         if len(versions) == 1:
-            raise PanoplyException('PAN-OS does not have any previous configs available!')
+            raise PanoplyException("PAN-OS does not have any previous configs available!")
 
         # convert this list of str into list of int and sort it
         sorted_versions = sorted(list(map(int, [x["version"] for x in versions])))
@@ -1480,7 +1484,7 @@ class Panoply:
             changed_element = changed_elements[0]
 
             cleaned_element = self.__clean_uuid(changed_element)
-            xml_string = etree.tostring(cleaned_element, pretty_print=True, encoding='unicode')
+            xml_string = etree.tostring(cleaned_element, pretty_print=True, encoding="unicode")
 
             random_name = str(int(random.random() * 1000000))
 
@@ -1614,9 +1618,9 @@ class Panoply:
                 return completions
 
             if completion_type is None:
-                completion_type = 'op'
+                completion_type = "op"
 
-            if completion_type == 'config':
+            if completion_type == "config":
                 self.xapi.ad_hoc(qs=f"type={completion_type}&action=show&action=complete&xpath={xpath}", modify_qs=True)
             else:
                 self.xapi.ad_hoc(qs=f"type={completion_type}&action=complete&xpath={xpath}", modify_qs=True)
@@ -1810,11 +1814,11 @@ class Panoply:
                 set_cmd.replace(
                     "devices localhost.localdomain vsys vsys1 log-settings profiles", "shared log-settings profiles"
                 )
-                    .replace("devices localhost.localdomain vsys vsys1 ", "")
-                    .replace("devices localhost.localdomain ", "")
-                    .replace("set ", "")
-                    .replace("/", slash_marker)
-                    .replace(" ", "/")
+                .replace("devices localhost.localdomain vsys vsys1 ", "")
+                .replace("devices localhost.localdomain ", "")
+                .replace("set ", "")
+                .replace("/", slash_marker)
+                .replace(" ", "/")
             )
             fake_snippets.append(snippet)
 
@@ -2220,14 +2224,14 @@ class Panos(Panoply):
     """
 
     def __init__(
-            self,
-            hostname: Optional[str],
-            api_username: Optional[str],
-            api_password: Optional[str],
-            api_port: Optional[int] = 443,
-            serial_number: Optional[str] = None,
-            debug: Optional[bool] = False,
-            api_key: Optional[str] = None,
+        self,
+        hostname: Optional[str],
+        api_username: Optional[str],
+        api_password: Optional[str],
+        api_port: Optional[int] = 443,
+        serial_number: Optional[str] = None,
+        debug: Optional[bool] = False,
+        api_key: Optional[str] = None,
     ):
 
         super().__init__(hostname, api_username, api_password, api_port, serial_number, debug, api_key)
