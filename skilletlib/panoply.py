@@ -21,6 +21,7 @@ import random
 import re
 import sys
 import time
+from http.client import RemoteDisconnected
 from pathlib import Path
 from typing import Optional
 from typing import Tuple
@@ -60,14 +61,14 @@ class Panoply:
     """
 
     def __init__(
-        self,
-        hostname: Optional[str] = None,
-        api_username: Optional[str] = None,
-        api_password: Optional[str] = None,
-        api_port: Optional[int] = 443,
-        serial_number: Optional[str] = None,
-        debug: Optional[bool] = False,
-        api_key: Optional[str] = None,
+            self,
+            hostname: Optional[str] = None,
+            api_username: Optional[str] = None,
+            api_password: Optional[str] = None,
+            api_port: Optional[int] = 443,
+            serial_number: Optional[str] = None,
+            debug: Optional[bool] = False,
+            api_key: Optional[str] = None,
     ):
         """
         Initialize a new panoply object. Passing in the authentication information will cause this class to attempt
@@ -237,8 +238,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                    '<entry name="Service_Conn_Device_Group"/>'
-                    "</device-group></shared-policy></commit-all>",
+                        '<entry name="Service_Conn_Device_Group"/>'
+                        "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -250,8 +251,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                    '<entry name="Remote_Network_Device_Group"/>'
-                    "</device-group></shared-policy></commit-all>",
+                        '<entry name="Remote_Network_Device_Group"/>'
+                        "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -263,8 +264,8 @@ class Panoply:
                 self.xapi.commit(
                     action="all",
                     cmd="<commit-all><shared-policy><device-group>"
-                    '<entry name="Mobile_User_Device_Group"/>'
-                    "</device-group></shared-policy></commit-all>",
+                        '<entry name="Mobile_User_Device_Group"/>'
+                        "</device-group></shared-policy></commit-all>",
                 )
 
                 results = self.xapi.xml_result()
@@ -587,6 +588,10 @@ class Panoply:
                 logger.warning("Unexpected Results from deactivate_vm_license")
                 logger.warning(results)
                 return False
+
+        except RemoteDisconnected:
+            logger.info("PAN-OS dropped the connection due to licensing request")
+            return True
 
         except PanoplyException as pxe:
             logger.error(f"Caught Exception in deactivate_vm_license: {pxe}")
@@ -1024,7 +1029,8 @@ class Panoply:
         connected_devices_xml = self.execute_cli("show devices connected")
         connected_devices_dict = xmltodict.parse(connected_devices_xml)
 
-        if "devices" in connected_devices_xml and "entry" in connected_devices_dict["devices"]:
+        if "devices" in connected_devices_xml and connected_devices_dict["devices"] is not None \
+                and "entry" in connected_devices_dict["devices"]:
             connected_devices = connected_devices_dict["devices"]["entry"]
 
         else:
@@ -1351,7 +1357,7 @@ class Panoply:
 
         if len(versions) == 1:
             raise PanoplyException('PAN-OS does not have any previous configs available!')
-        
+
         # convert this list of str into list of int and sort it
         sorted_versions = sorted(list(map(int, [x["version"] for x in versions])))
 
@@ -1804,11 +1810,11 @@ class Panoply:
                 set_cmd.replace(
                     "devices localhost.localdomain vsys vsys1 log-settings profiles", "shared log-settings profiles"
                 )
-                .replace("devices localhost.localdomain vsys vsys1 ", "")
-                .replace("devices localhost.localdomain ", "")
-                .replace("set ", "")
-                .replace("/", slash_marker)
-                .replace(" ", "/")
+                    .replace("devices localhost.localdomain vsys vsys1 ", "")
+                    .replace("devices localhost.localdomain ", "")
+                    .replace("set ", "")
+                    .replace("/", slash_marker)
+                    .replace(" ", "/")
             )
             fake_snippets.append(snippet)
 
@@ -2214,14 +2220,14 @@ class Panos(Panoply):
     """
 
     def __init__(
-        self,
-        hostname: Optional[str],
-        api_username: Optional[str],
-        api_password: Optional[str],
-        api_port: Optional[int] = 443,
-        serial_number: Optional[str] = None,
-        debug: Optional[bool] = False,
-        api_key: Optional[str] = None,
+            self,
+            hostname: Optional[str],
+            api_username: Optional[str],
+            api_password: Optional[str],
+            api_port: Optional[int] = 443,
+            serial_number: Optional[str] = None,
+            debug: Optional[bool] = False,
+            api_key: Optional[str] = None,
     ):
 
         super().__init__(hostname, api_username, api_password, api_port, serial_number, debug, api_key)

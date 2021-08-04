@@ -69,8 +69,8 @@ class RestSnippet(TemplateSnippet):
         if 'operation' in metadata:
             metadata['operation'] = str(metadata['operation']).lower()
 
-        if metadata["operation"] not in ("post", "get", "delete"):
-            err = "Supported operations are currently post, get, and deleteonly"
+        if metadata["operation"] not in ("post", "get", "delete", "put"):
+            err = "Supported operations are currently post, get, put, and delete only"
             raise SkilletLoaderException(f'Invalid metadata configuration: {err}')
 
         if 'path' in metadata:
@@ -93,7 +93,7 @@ class RestSnippet(TemplateSnippet):
 
         url = self.metadata['path']
 
-        if self.operation in ["post", "delete"]:
+        if self.operation in ["post", "delete", "put"]:
             rendered_payload = self.metadata.get("element")
             if 'form' in self.headers.get('Content-Type', ''):
                 payload = json.loads(rendered_payload)
