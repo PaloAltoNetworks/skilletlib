@@ -71,9 +71,9 @@ class RestSnippet(TemplateSnippet):
         if "operation" in metadata:
             metadata["operation"] = str(metadata["operation"]).lower()
 
-        if metadata["operation"] not in ("post", "get", "delete", "put"):
+        if metadata["operation"] not in ("post", "get", "delete", "put", "noop"):
             err = "Supported operations are currently post, get, put, and delete only"
-            raise SkilletLoaderException(f"Invalid metadata configuration: {err}")
+            raise SkilletExecutionException(f"Invalid metadata configuration: {err}")
 
         if "path" in metadata:
             metadata["path"] = str(metadata["path"]).strip().replace("\n", "")
@@ -87,6 +87,10 @@ class RestSnippet(TemplateSnippet):
 
         if self.operation not in ("post", "get", "delete", "put", "noop"):
             raise SkilletExecutionException(f"Unsupported operation: {self.operation} in {self.name}")
+
+        # support 'noop' for #100
+        if self.operation == "noop":
+            return "noop", "success"
 
         context = dict()
 
