@@ -92,7 +92,6 @@ class Skillet(ABC):
 
         if debug:
             logger.setLevel(logging.DEBUG)
-            logger.debug('Debugging output enabled')
 
     @abstractmethod
     def get_snippets(self) -> List[Snippet]:
@@ -117,7 +116,7 @@ class Skillet(ABC):
         :return: str contents
         """
         if template_path == '' or template_path is None:
-            logger.error('Refusing to load empty template path')
+            logger.error(f'Refusing to load empty template path in {self.name}')
             return ''
 
         skillet_path = Path(self.path)

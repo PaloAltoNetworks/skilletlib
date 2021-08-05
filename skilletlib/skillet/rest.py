@@ -42,6 +42,8 @@ class RestSkillet(Skillet):
                 # load the element attribute if we have a payload
                 if operation in ('post', 'put') and 'payload' in snippet_def:
                     snippet_def['element'] = self.load_template(snippet_def['payload'])
+                if operation == 'post' and 'file' in snippet_def:
+                    snippet_def['element'] = self.load_template(snippet_def['file'])
 
             snippet = RestSnippet('', snippet_def, self.session)
             snippet_list.append(snippet)
