@@ -185,12 +185,12 @@ class Snippet(ABC):
                 logger.warning("Snippet filter is malformed...")
                 return False
             for filter_def in (
-                "include_by_tag",
-                "include_by_name",
-                "include_by_regex",
-                "exclude_by_tag",
-                "exclude_by_name",
-                "exclude_by_regex",
+                    "include_by_tag",
+                    "include_by_name",
+                    "include_by_regex",
+                    "exclude_by_tag",
+                    "exclude_by_name",
+                    "exclude_by_regex",
             ):
                 if filter_def in fc:
                     if type(fc[filter_def]) is list:
@@ -668,7 +668,7 @@ class Snippet(ABC):
             def _func_remove_proto(self, s):
                 """Remove protocols from URL's, such as https://"""
                 if re.search("^[a-zA-Z]{0,5}://", s):
-                    return s[s.index("//") + 2 :]
+                    return s[s.index("//") + 2:]
                 return s
 
             @jmespath_functions.signature({"types": ["string"]}, {"types": ["string"]})

@@ -8,7 +8,6 @@ from requests import Response
 from requests import Session
 
 from .template import TemplateSnippet
-from ..exceptions import SkilletLoaderException
 from ..exceptions import SkilletExecutionException
 
 logger = logging.getLogger(__name__)
