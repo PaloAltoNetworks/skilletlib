@@ -102,13 +102,13 @@ class RestSnippet(TemplateSnippet):
         url = self.metadata["path"]
 
         payload = self.__configure_payload()
+        method = getattr(self.session, self.operation)
         if payload:
-            method = getattr(self.session, self.operation)
             response = method(url, data=payload, headers=self.metadata["headers"], verify=False)
             return self.__handle_response(response)
         else:
             # FIX for #59 - Ensure we pass headers to get operations properly
-            response = self.session.get(url, verify=False, headers=self.metadata["headers"])
+            response = method(url, verify=False, headers=self.metadata["headers"])
             return self.__handle_response(response)
 
     def __handle_response(self, response: Response) -> Tuple[str, str]:
