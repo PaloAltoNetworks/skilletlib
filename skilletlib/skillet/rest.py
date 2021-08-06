@@ -39,9 +39,9 @@ class RestSkillet(Skillet):
         for snippet_def in self.snippet_stack:
             if "element" not in snippet_def or snippet_def["element"] == "":
                 # load the element attribute if we have a payload
-                if "payload" in snippet_def:
+                if "payload" in snippet_def and snippet_def["payload"] != "":
                     snippet_def["element"] = self.load_template(snippet_def["payload"])
-                elif "file" in snippet_def:
+                elif "file" in snippet_def and snippet_def["file"] != "":
                     snippet_def["element"] = self.load_template(snippet_def["file"])
                 else:
                     snippet_def["element"] = ""
