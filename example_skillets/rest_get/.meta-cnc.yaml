@@ -29,4 +29,4 @@ snippets:
       - name: fwType
         capture_pattern: $.result.fwType
       - name: addrList
-        capture_pattern: $.result.addrList
+        capture_list: $.result.addrList

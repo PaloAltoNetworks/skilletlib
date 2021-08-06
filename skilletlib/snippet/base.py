@@ -1326,7 +1326,7 @@ class Snippet(ABC):
             output["capture_pattern"] = "."
 
         try:
-            for i in ("capture_pattern", "capture_value", "capture_object"):
+            for i in ("capture_pattern", "capture_value", "capture_object", "capture_list"):
                 if i in output:
                     capture_pattern = output[i]
                 else:
@@ -1352,7 +1352,16 @@ class Snippet(ABC):
                 jsonpath_expr = parse(capture_pattern)
                 result = jsonpath_expr.find(json_object)
                 if len(result) == 1:
-                    captured_output[var_name] = str(result[0].value)
+                    if i == 'capture_list':
+                        # explicity set a list if requested for #188
+                        result_value = result[0].value
+                        if not isinstance(result_value, list):
+                            captured_output[var_name] = [result_value]
+                        else:
+                            captured_output[var_name] = result_value
+                    else:
+                        captured_output[var_name] = str(result[0].value)
+
                 else:
                     # FR #81 - add ability to capture from a list
                     capture_list = list()
