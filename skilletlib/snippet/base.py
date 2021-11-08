@@ -406,10 +406,6 @@ class Snippet(ABC):
             # allow jinja syntax in capture_pattern, capture_value, capture_object etc
             output = self.__render_output_metadata(output, self.context)
 
-            if not results:
-                outputs[output["name"]] = ""
-                continue
-
             if "capture_variable" in output:
                 outputs[output["name"]] = self.render(output["capture_variable"], self.context)
 
@@ -425,6 +421,10 @@ class Snippet(ABC):
                     outputs[output["name"]] = value
 
             else:
+
+                if not results:
+                    outputs[output["name"]] = ""
+                    continue
 
                 if output_type == "xml":
                     outputs = self.__handle_xml_outputs(output, results)
