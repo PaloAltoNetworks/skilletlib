@@ -18,10 +18,14 @@ import logging
 import os
 import shutil
 
-from git import Repo
-from git.exc import GitCommandError
-
 from skilletlib.exceptions import SkilletLoaderException
+
+HAS_GIT = True
+try:
+    from git import Repo
+    from git.exc import GitCommandError
+except ImportError:
+    HAS_GIT = False
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +44,6 @@ class Git:
         :param store: Directory to store repository in. Defaults to the current directory.
         """
 
-        if not self.check_git_exists():
-            raise SkilletLoaderException('A git client must be installed to use this remote!')
-
         self.repo_url = repo_url
         self.store = store
         self.Repo = None
@@ -59,6 +60,9 @@ class Git:
         """
         if not name:
             raise ValueError("Missing or bad name passed to Clone command.")
+
+        if not HAS_GIT:
+            raise SkilletLoaderException('A git client must be installed to clone repos!')
 
         self.name = name
         path = self.store + os.sep + name
@@ -119,6 +123,9 @@ class Git:
         :param branch_name: Branch to checkout.
         :return: None
         """
+        if not HAS_GIT:
+            raise SkilletLoaderException('A git client must be installed to manage branches!')
+
         logger.debug("Checking out: " + branch_name)
 
         if self.update:
@@ -126,10 +133,6 @@ class Git:
             self.Repo.remotes.origin.pull()
 
         self.Repo.git.checkout(branch_name)
-
-    @staticmethod
-    def check_git_exists():
-        return shutil.which("git")
 
     def get_submodule_dirs(self, path=None) -> list:
         """
@@ -140,6 +143,9 @@ class Git:
         :param path: path to
         :return:
         """
+
+        if not HAS_GIT:
+            return []
 
         submodule_list = list()
 
