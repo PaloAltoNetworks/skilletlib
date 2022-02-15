@@ -378,6 +378,8 @@ class Skillet(ABC):
                     else:
                         self.snippet_outputs[snippet.name] = [snippet_outputs]
 
+                finally:
+                    snippet.reset_metadata()
         finally:
             self.cleanup()
 
