@@ -17,6 +17,6 @@ before_script:
 
 test:
   script:
-    - pip3 install tox flake8
+    - pip install tox flake8
     - tox -e py39,flake8
 
