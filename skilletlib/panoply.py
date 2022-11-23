@@ -490,6 +490,10 @@ class Panoply:
                 logger.warning(results)
                 return False
 
+        except RemoteDisconnected:
+            logger.info("PAN-OS dropped the connection due to licensing request")
+            return True
+
         except PanXapiError as pxe:
             # bug present in 9.0.4 that returns content-type of xml but the content is only text.
             # this causes a ParseError to be thrown, however, the operation was actually successful
