@@ -466,6 +466,7 @@ class Panoply:
         Fetch and install licenses for PAN-OS NGFW
 
         :param auth_code: Authorization code to use to license the NGFW
+        :param force_fetch_license: Fetch licenses even if NGFW is already licensed
         :return: True when license installation succeeds / False otherwise
         """
 
@@ -485,6 +486,10 @@ class Panoply:
             logger.debug(f"fetch_license results: {results}")
 
             if "License installed" in results:
+                return True
+            # If VMseries is already licensed but auth_code adds more features it will return <licenses />
+            # containting all the licenses installed
+            if "<licenses>" in results:
                 return True
 
             else:
