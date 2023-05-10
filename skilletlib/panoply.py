@@ -461,7 +461,7 @@ class Panoply:
 
         return self.xapi.xml_document
 
-    def fetch_license(self, auth_code: str) -> bool:
+    def fetch_license(self, auth_code: str, force_fetch_license: bool = False) -> bool:
         """
         Fetch and install licenses for PAN-OS NGFW
 
@@ -471,7 +471,9 @@ class Panoply:
 
         if self.facts.get("family", "") == "vm":
 
-            if self.facts.get("vm-license", "none") != "none":
+            if force_fetch_license:
+                logger.debug("force_fetch_license is set. Not checking if device is already licensed.")
+            elif self.facts.get("vm-license", "none") != "none":
                 logger.debug("This VM is already licensed")
                 return True
 
