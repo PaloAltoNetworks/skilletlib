@@ -764,7 +764,7 @@ class Panoply:
 
         :return: list of zone names
         """
-        if self.facts["model"] != "Panorama":
+        if not self.__is_panorama():
             return self.__get_completion(xpath="/operations/show/zone-protection/zone", completion_type="op")
 
         else:
@@ -779,7 +779,7 @@ class Panoply:
 
         :return: list of security rules
         """
-        if self.facts["model"] != "Panorama":
+        if not self.__is_panorama():
             return self.__get_completion(
                 xpath="/config/devices/entry/vsys/entry/rulebase/security/rules", completion_type="config"
             )
@@ -830,7 +830,7 @@ class Panoply:
         context["DNS_1"] = self.facts["dns-primary"]
         context["DNS_2"] = self.facts["dns-secondary"]
 
-        if self.facts["model"] == "Panorama":
+        if self.__is_panorama():
             skillet_type_dir = "panorama"
 
             if not reset_hostname:
@@ -985,7 +985,7 @@ class Panoply:
                 if self.connected:
 
                     # fix for #60 - show chassis ready is not available on panorama
-                    if self.facts.get("model", "Panorama") == "Panorama":
+                    if self.__is_panorama():
                         cmd = "<show><system><info></info></system></show>"
                         is_panorama = True
                     else:
@@ -1034,7 +1034,7 @@ class Panoply:
         if filter_terms is None:
             filter_terms = {}
 
-        if self.facts.get("model", "") != "Panorama":
+        if not self.__is_panorama():
             logger.info("Method only supported on Panorama Devices")
             return list()
 
@@ -2217,6 +2217,22 @@ class Panoply:
         post_xpaths = ["rulebase"]
 
         return xpaths, post_xpaths
+    
+    def __is_panorama(self) -> bool:
+        """
+        Check the model from system information and returns true if the model is Panorama (virtual or hardware appliance)
+
+        :return: boolean
+        """
+        model = self.facts["model"]
+        if model == "Panorama":
+            # Panorama virtual appliance
+            return True
+        elif model.startswith("M-"):
+            # Panorama hardware appliance (e.g. "M-600")
+            return True
+        else:
+            return False
 
 
 class EphemeralPanos(Panoply):
